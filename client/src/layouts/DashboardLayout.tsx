@@ -22,8 +22,8 @@ export default function DashboardLayout() {
         { name: 'Ajustes', href: '/settings', icon: Settings },
     ];
 
-    // Add Users link only for SUPER_ADMIN
-    const allNavigation = user?.role === 'SUPER_ADMIN'
+    // Add Users link for SUPER_ADMIN and ADMIN
+    const allNavigation = (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN')
         ? [...navigation, { name: 'Usuarios', href: '/users', icon: UserCog }]
         : navigation;
 

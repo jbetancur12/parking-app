@@ -10,11 +10,11 @@ const controller = new UserController();
 // All routes require authentication
 router.use(authenticateToken);
 
-// SUPER_ADMIN only routes
-router.get('/', requireRole([UserRole.SUPER_ADMIN]), controller.getAll);
-router.post('/', requireRole([UserRole.SUPER_ADMIN]), controller.create);
-router.put('/:id', requireRole([UserRole.SUPER_ADMIN]), controller.update);
-router.delete('/:id', requireRole([UserRole.SUPER_ADMIN]), controller.delete);
+// SUPER_ADMIN and ADMIN routes
+router.get('/', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.getAll);
+router.post('/', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.create);
+router.put('/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.update);
+router.delete('/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.delete);
 
 // Any authenticated user can change their own password
 router.post('/change-password', controller.changePassword);
