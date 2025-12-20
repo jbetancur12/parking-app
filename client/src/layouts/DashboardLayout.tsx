@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardLayout() {
@@ -22,6 +22,11 @@ export default function DashboardLayout() {
         { name: 'Ajustes', href: '/settings', icon: Settings },
     ];
 
+    // Add Users link only for SUPER_ADMIN
+    const allNavigation = user?.role === 'SUPER_ADMIN'
+        ? [...navigation, { name: 'Usuarios', href: '/users', icon: UserCog }]
+        : navigation;
+
     return (
         <div className="flex h-screen bg-gray-100">
             {/* Mobile Sidebar Overlay */}
@@ -41,7 +46,7 @@ export default function DashboardLayout() {
                     </button>
                 </div>
                 <nav className="mt-6 px-4 space-y-2">
-                    {navigation.map((item) => {
+                    {allNavigation.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.href;
                         return (

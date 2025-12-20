@@ -9,51 +9,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.UserRole = void 0;
+exports.WashServiceType = void 0;
 const core_1 = require("@mikro-orm/core");
-var UserRole;
-(function (UserRole) {
-    UserRole["SUPER_ADMIN"] = "SUPER_ADMIN";
-    UserRole["ADMIN"] = "ADMIN";
-    UserRole["OPERATOR"] = "OPERATOR";
-    UserRole["CASHIER"] = "CASHIER";
-})(UserRole || (exports.UserRole = UserRole = {}));
-let User = class User {
+let WashServiceType = class WashServiceType {
     constructor() {
         this.isActive = true;
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
     }
 };
-exports.User = User;
+exports.WashServiceType = WashServiceType;
 __decorate([
     (0, core_1.PrimaryKey)(),
     __metadata("design:type", Number)
-], User.prototype, "id", void 0);
-__decorate([
-    (0, core_1.Property)({ unique: true }),
-    __metadata("design:type", String)
-], User.prototype, "username", void 0);
+], WashServiceType.prototype, "id", void 0);
 __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", String)
-], User.prototype, "password", void 0);
+], WashServiceType.prototype, "name", void 0);
 __decorate([
-    (0, core_1.Enum)(() => UserRole),
+    (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2 }),
+    __metadata("design:type", Number)
+], WashServiceType.prototype, "price", void 0);
+__decorate([
+    (0, core_1.Property)(),
     __metadata("design:type", String)
-], User.prototype, "role", void 0);
+], WashServiceType.prototype, "vehicleType", void 0);
 __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", Boolean)
-], User.prototype, "isActive", void 0);
-__decorate([
-    (0, core_1.Property)({ onCreate: () => new Date() }),
-    __metadata("design:type", Date)
-], User.prototype, "createdAt", void 0);
-__decorate([
-    (0, core_1.Property)({ onUpdate: () => new Date() }),
-    __metadata("design:type", Date)
-], User.prototype, "updatedAt", void 0);
-exports.User = User = __decorate([
+], WashServiceType.prototype, "isActive", void 0);
+exports.WashServiceType = WashServiceType = __decorate([
     (0, core_1.Entity)()
-], User);
+], WashServiceType);

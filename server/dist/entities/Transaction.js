@@ -18,6 +18,7 @@ var TransactionType;
     TransactionType["EXPENSE"] = "EXPENSE";
     TransactionType["PARKING_REVENUE"] = "PARKING_REVENUE";
     TransactionType["MONTHLY_PAYMENT"] = "MONTHLY_PAYMENT";
+    TransactionType["WASH_SERVICE"] = "WASH_SERVICE";
 })(TransactionType || (exports.TransactionType = TransactionType = {}));
 let Transaction = class Transaction {
     constructor() {

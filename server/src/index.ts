@@ -13,6 +13,7 @@ import brandRoutes from './routes/brand.routes';
 import saleRoutes from './routes/sale.routes';
 import tariffRoutes from './routes/tariff.routes';
 import settingRoutes from './routes/setting.routes';
+import userRoutes from './routes/user.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
@@ -34,18 +35,18 @@ const startServer = async () => {
         const em = orm.em.fork();
         const count = await em.count(User);
         if (count === 0) {
-            console.log('🌱 Seeding admin user...');
-            const hashedPassword = await bcrypt.hash('123456', 10);
+            console.log('🌱 Seeding super admin user...');
+            const hashedPassword = await bcrypt.hash('admin123', 10);
             const admin = em.create(User, {
                 username: 'admin',
                 password: hashedPassword,
-                role: UserRole.ADMIN,
+                role: UserRole.SUPER_ADMIN,
                 isActive: true,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
             await em.persistAndFlush(admin);
-            console.log('✅ Admin user created: admin / 123456');
+            console.log('✅ Super Admin user created: admin / admin123');
         }
 
         // Fork the entity manager for each request
@@ -64,6 +65,7 @@ const startServer = async () => {
         app.use('/api/sales', saleRoutes);
         app.use('/api/tariffs', tariffRoutes);
         app.use('/api/settings', settingRoutes);
+        app.use('/api/users', userRoutes);
 
         app.get('/', (req, res) => {
             res.send('Parking App API is running');

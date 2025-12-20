@@ -1,8 +1,10 @@
 import { Entity, PrimaryKey, Property, Enum } from '@mikro-orm/core';
 
 export enum UserRole {
+    SUPER_ADMIN = 'SUPER_ADMIN',
     ADMIN = 'ADMIN',
-    EMPLOYEE = 'EMPLOYEE',
+    OPERATOR = 'OPERATOR',
+    CASHIER = 'CASHIER',
 }
 
 @Entity()

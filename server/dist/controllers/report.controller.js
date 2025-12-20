@@ -55,12 +55,50 @@ class ReportController {
                     $gte: startOfDay,
                     $lte: endOfDay
                 }
+            }, {
+                orderBy: { timestamp: 'DESC' }
             });
-            const totalIncome = transactions.reduce((acc, t) => acc + Number(t.amount), 0);
+            const stats = {
+                totalIncome: 0,
+                totalExpenses: 0,
+                parkingHourly: 0,
+                parkingDaily: 0,
+                monthlyIncome: 0,
+                washIncome: 0,
+                otherIncome: 0
+            };
+            transactions.forEach(t => {
+                const amount = Number(t.amount);
+                if (t.type === 'EXPENSE') {
+                    stats.totalExpenses += amount;
+                }
+                else {
+                    stats.totalIncome += amount;
+                    if (t.type === 'PARKING_REVENUE') {
+                        if (t.description.includes('[DAY]')) {
+                            stats.parkingDaily += amount;
+                        }
+                        else {
+                            // Default or explicit HOUR
+                            stats.parkingHourly += amount;
+                        }
+                    }
+                    else if (t.type === 'MONTHLY_PAYMENT') {
+                        stats.monthlyIncome += amount;
+                    }
+                    else if (t.type === 'WASH_SERVICE') {
+                        stats.washIncome += amount;
+                    }
+                    else if (t.type === 'INCOME') {
+                        stats.otherIncome += amount;
+                    }
+                }
+            });
             res.json({
                 date: dateParam,
-                totalIncome,
-                transactionCount: transactions.length
+                ...stats,
+                transactionCount: transactions.length,
+                transactions
             });
         }
         catch (error) {

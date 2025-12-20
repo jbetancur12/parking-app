@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ParkingSession = exports.ParkingStatus = exports.VehicleType = void 0;
+exports.ParkingSession = exports.PlanType = exports.ParkingStatus = exports.VehicleType = void 0;
 const core_1 = require("@mikro-orm/core");
 const Shift_1 = require("./Shift");
 var VehicleType;
@@ -24,8 +24,14 @@ var ParkingStatus;
     ParkingStatus["COMPLETED"] = "COMPLETED";
     ParkingStatus["CANCELLED"] = "CANCELLED";
 })(ParkingStatus || (exports.ParkingStatus = ParkingStatus = {}));
+var PlanType;
+(function (PlanType) {
+    PlanType["HOUR"] = "HOUR";
+    PlanType["DAY"] = "DAY";
+})(PlanType || (exports.PlanType = PlanType = {}));
 let ParkingSession = class ParkingSession {
     constructor() {
+        this.planType = PlanType.HOUR; // Default to HOUR
         this.entryTime = new Date();
         this.status = ParkingStatus.ACTIVE;
     }
@@ -43,6 +49,10 @@ __decorate([
     (0, core_1.Enum)(() => VehicleType),
     __metadata("design:type", String)
 ], ParkingSession.prototype, "vehicleType", void 0);
+__decorate([
+    (0, core_1.Enum)(() => PlanType),
+    __metadata("design:type", String)
+], ParkingSession.prototype, "planType", void 0);
 __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", Date)

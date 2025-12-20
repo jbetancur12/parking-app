@@ -12,6 +12,13 @@ const shift_routes_1 = __importDefault(require("./routes/shift.routes"));
 const parking_routes_1 = __importDefault(require("./routes/parking.routes"));
 const monthly_routes_1 = __importDefault(require("./routes/monthly.routes"));
 const report_routes_1 = __importDefault(require("./routes/report.routes"));
+const expense_routes_1 = __importDefault(require("./routes/expense.routes"));
+const wash_routes_1 = __importDefault(require("./routes/wash.routes"));
+const brand_routes_1 = __importDefault(require("./routes/brand.routes"));
+const sale_routes_1 = __importDefault(require("./routes/sale.routes"));
+const tariff_routes_1 = __importDefault(require("./routes/tariff.routes"));
+const setting_routes_1 = __importDefault(require("./routes/setting.routes"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const User_1 = require("./entities/User");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const app = (0, express_1.default)();
@@ -27,18 +34,18 @@ const startServer = async () => {
         const em = orm.em.fork();
         const count = await em.count(User_1.User);
         if (count === 0) {
-            console.log('🌱 Seeding admin user...');
-            const hashedPassword = await bcryptjs_1.default.hash('123456', 10);
+            console.log('🌱 Seeding super admin user...');
+            const hashedPassword = await bcryptjs_1.default.hash('admin123', 10);
             const admin = em.create(User_1.User, {
                 username: 'admin',
                 password: hashedPassword,
-                role: User_1.UserRole.ADMIN,
+                role: User_1.UserRole.SUPER_ADMIN,
                 isActive: true,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
             await em.persistAndFlush(admin);
-            console.log('✅ Admin user created: admin / 123456');
+            console.log('✅ Super Admin user created: admin / admin123');
         }
         // Fork the entity manager for each request
         app.use((req, res, next) => {
@@ -49,6 +56,13 @@ const startServer = async () => {
         app.use('/api/parking', parking_routes_1.default);
         app.use('/api/monthly', monthly_routes_1.default);
         app.use('/api/reports', report_routes_1.default);
+        app.use('/api/expenses', expense_routes_1.default);
+        app.use('/api/wash', wash_routes_1.default);
+        app.use('/api/brands', brand_routes_1.default);
+        app.use('/api/sales', sale_routes_1.default);
+        app.use('/api/tariffs', tariff_routes_1.default);
+        app.use('/api/settings', setting_routes_1.default);
+        app.use('/api/users', user_routes_1.default);
         app.get('/', (req, res) => {
             res.send('Parking App API is running');
         });

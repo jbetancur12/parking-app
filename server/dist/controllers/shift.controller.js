@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.closeShift = exports.getActiveShift = exports.openShift = void 0;
 const core_1 = require("@mikro-orm/core");
 const Shift_1 = require("../entities/Shift");
+const Transaction_1 = require("../entities/Transaction");
 const openShift = async (req, res) => {
     const em = core_1.RequestContext.getEntityManager();
     if (!em || !req.user) {
@@ -58,13 +59,40 @@ const closeShift = async (req, res) => {
         return res.status(404).json({ message: 'No active shift found' });
     }
     const { declaredAmount, notes } = req.body;
-    // Logic to calculate totals (parking + transactions) would go here
-    // For now, simple close
+    // Calculate totals from transactions
+    const transactions = await em.find(Transaction_1.Transaction, { shift: shift.id });
+    let totalIncome = 0;
+    let totalExpenses = 0;
+    transactions.forEach(t => {
+        if (t.type === Transaction_1.TransactionType.EXPENSE) {
+            totalExpenses += Math.abs(t.amount);
+        }
+        else {
+            totalIncome += t.amount;
+        }
+    });
+    shift.totalIncome = totalIncome;
+    shift.totalExpenses = totalExpenses;
     shift.isActive = false;
     shift.endTime = new Date();
     shift.declaredAmount = declaredAmount || 0;
     shift.notes = notes;
     await em.flush();
-    return res.json({ message: 'Shift closed successfully', shift });
+    // Return summary
+    const expectedCash = shift.baseAmount + totalIncome - totalExpenses;
+    const difference = shift.declaredAmount - expectedCash;
+    return res.json({
+        message: 'Shift closed successfully',
+        shift,
+        summary: {
+            baseAmount: shift.baseAmount,
+            totalIncome,
+            totalExpenses,
+            expectedCash,
+            declaredAmount: shift.declaredAmount,
+            difference,
+            transactionCount: transactions.length
+        }
+    });
 };
 exports.closeShift = closeShift;
