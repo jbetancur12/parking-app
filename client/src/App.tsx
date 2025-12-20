@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -25,6 +26,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
 function App() {
   return (
     <AuthProvider>
+      <Toaster richColors position="top-center" />
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

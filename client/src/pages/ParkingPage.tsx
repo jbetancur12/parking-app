@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Plus, Car, Bike, Truck, X, Search, Printer } from 'lucide-react';
+import { Plus, Car, Bike, Truck, X, Search, Printer, Clock, Calendar } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { PrintTicket } from '../components/PrintTicket';
 import { PrintReceipt } from '../components/PrintReceipt';
+import { toast } from 'sonner';
 
 interface ParkingSession {
     id: number;
@@ -22,7 +23,7 @@ export default function ParkingPage() {
     const [plate, setPlate] = useState('');
     const [vehicleType, setVehicleType] = useState('CAR');
     const [planType, setPlanType] = useState('HOUR');
-    const [error, setError] = useState('');
+
 
     // Exit State
     const [exitResult, setExitResult] = useState<any>(null);
@@ -82,8 +83,9 @@ export default function ParkingPage() {
             // Show print confirmation modal
             setPendingPrintSession(newSession);
             setShowPrintConfirm(true);
+            toast.success('Vehículo ingresado');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al registrar entrada');
+            toast.error(err.response?.data?.message || 'Error al registrar entrada');
         }
     };
 
@@ -105,7 +107,7 @@ export default function ParkingPage() {
             const response = await api.get(`/parking/preview/${plate}`);
             setPreviewData(response.data);
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al obtener vista previa');
+            toast.error(err.response?.data?.message || 'Error al obtener vista previa');
         }
     };
 
@@ -145,12 +147,20 @@ export default function ParkingPage() {
             setPreviewData(null);
             fetchSessions();
 
+            toast.success('Salida registrada correctamente');
+
             // Show print option
-            if (confirm(`Salida registrada\nTotal: $${exitData.cost.toLocaleString()}\n\n¿Desea imprimir el recibo?`)) {
-                setTimeout(() => handlePrintReceipt(), 100);
-            }
+            // Changed from confirm() to using the modal UI we already have (PrintReceipt Modal)
+            // But if we want instant print query:
+            toast('¿Desea imprimir recibo?', {
+                action: {
+                    label: 'Imprimir',
+                    onClick: () => setTimeout(() => handlePrintReceipt(), 100)
+                }
+            });
+
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al registrar salida');
+            toast.error(err.response?.data?.message || 'Error al registrar salida');
         }
     };
 
@@ -335,8 +345,6 @@ export default function ParkingPage() {
                             <button onClick={() => setIsEntryModalOpen(false)}><X size={20} /></button>
                         </div>
 
-                        {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</div>}
-
                         <form onSubmit={handleEntrySubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Placa</label>
@@ -350,45 +358,52 @@ export default function ParkingPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo</label>
-                                <div className="grid grid-cols-3 gap-2 mt-1">
-                                    {['CAR', 'MOTORCYCLE', 'OTHER'].map((type) => (
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Vehículo</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { type: 'CAR', icon: Car, label: 'Carro' },
+                                        { type: 'MOTORCYCLE', icon: Bike, label: 'Moto' },
+                                        { type: 'OTHER', icon: Truck, label: 'Otro' }
+                                    ].map(({ type, icon: Icon, label }) => (
                                         <button
                                             type="button"
                                             key={type}
                                             onClick={() => setVehicleType(type)}
-                                            className={`py-2 text-sm rounded-md border ${vehicleType === type
-                                                ? 'bg-blue-50 border-blue-500 text-blue-700'
-                                                : 'bg-white border-gray-300 text-gray-700'
+                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${vehicleType === type
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm transform scale-[1.02]'
+                                                : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
                                                 }`}
                                         >
-                                            {type === 'CAR' ? 'CARRO' : type === 'MOTORCYCLE' ? 'MOTO' : 'OTRO'}
+                                            <Icon size={28} className="mb-1" />
+                                            <span className="text-xs font-bold">{label}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Plan de Facturación</label>
-                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Plan de Facturación</label>
+                                <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
                                         onClick={() => setPlanType('HOUR')}
-                                        className={`py-2 text-sm rounded-md border ${planType === 'HOUR'
-                                            ? 'bg-blue-50 border-blue-500 text-blue-700'
-                                            : 'bg-white border-gray-300 text-gray-700'
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
+                                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                                            : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
                                             }`}
                                     >
-                                        Por Hora
+                                        <Clock size={24} className="mb-1" />
+                                        <span className="text-xs font-bold">Por Hora</span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setPlanType('DAY')}
-                                        className={`py-2 text-sm rounded-md border ${planType === 'DAY'
-                                            ? 'bg-blue-50 border-blue-500 text-blue-700'
-                                            : 'bg-white border-gray-300 text-gray-700'
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
+                                            ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm'
+                                            : 'border-gray-200 bg-white text-gray-500 hover:border-purple-200 hover:bg-purple-50'
                                             }`}
                                     >
-                                        Por Día
+                                        <Calendar size={24} className="mb-1" />
+                                        <span className="text-xs font-bold">Por Día</span>
                                     </button>
                                 </div>
                             </div>
@@ -403,8 +418,8 @@ export default function ParkingPage() {
                 </div>
             )}
 
-            {/* Sessions List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -466,6 +481,57 @@ export default function ParkingPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {filteredSessions.map((session) => (
+                    <div key={session.id} className="bg-white p-4 rounded-lg shadow flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2">
+                                {session.vehicleType === 'CAR' ? <Car className="text-blue-500" size={24} /> :
+                                    session.vehicleType === 'MOTORCYCLE' ? <Bike className="text-orange-500" size={24} /> :
+                                        <Truck className="text-gray-500" size={24} />}
+
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">{session.plate}</h3>
+                                    <span className="text-xs text-gray-500 uppercase">{session.vehicleType === 'CAR' ? 'Carro' : session.vehicleType === 'MOTORCYCLE' ? 'Moto' : 'Otro'}</span>
+                                </div>
+                            </div>
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${session.planType === 'DAY' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                                {session.planType === 'DAY' ? 'Día' : 'Hora'}
+                            </span>
+                        </div>
+
+                        <div className="text-sm text-gray-600 border-t pt-2 mt-1">
+                            <div className="flex justify-between">
+                                <span>Entrada:</span>
+                                <span className="font-medium">{new Date(session.entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mt-1">
+                            <button
+                                onClick={() => handleReprintTicket(session)}
+                                className="flex items-center justify-center gap-2 bg-gray-100 text-blue-700 py-2 rounded-lg font-medium text-sm active:bg-gray-200"
+                            >
+                                <Printer size={16} /> Ticket
+                            </button>
+                            <button
+                                onClick={() => handleExitClick(session.plate)}
+                                className="flex items-center justify-center gap-2 bg-red-100 text-red-700 py-2 rounded-lg font-medium text-sm active:bg-red-200"
+                            >
+                                <X size={16} /> Salida
+                            </button>
+                        </div>
+                    </div>
+                ))}
+                {filteredSessions.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                        <Car size={48} className="mx-auto text-gray-300 mb-2" />
+                        <p>{searchTerm ? 'No se encontraron vehículos.' : 'No hay vehículos activos.'}</p>
+                    </div>
+                )}
             </div>
 
             {/* Hidden Print Components */}
