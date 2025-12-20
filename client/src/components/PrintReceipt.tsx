@@ -11,76 +11,91 @@ interface PrintReceiptProps {
         cost: number;
         duration: string;
     };
+    settings?: any;
 }
 
 export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
-    ({ session }, ref) => {
+    ({ session, settings }, ref) => {
+        const width = settings?.ticket_width === '80mm' ? '80mm' : '58mm';
+        const logo = settings?.company_logo;
+
         return (
-            <div ref={ref} className="p-4 max-w-[80mm] mx-auto bg-white text-black">
+            <div ref={ref} className="p-2 mx-auto bg-white text-black font-mono text-[10pt] leading-tight" style={{ width: width, maxWidth: width }}>
                 <style>
                     {`
                         @media print {
                             body { margin: 0; }
-                            @page { size: 80mm auto; margin: 0; }
+                            @page { size: ${width} auto; margin: 0; }
                         }
                     `}
                 </style>
 
-                <div className="text-center mb-4">
-                    <h1 className="text-2xl font-bold">PARKINGSOF</h1>
-                    <p className="text-xs">Recibo de Pago</p>
-                    <div className="border-t-2 border-dashed border-gray-400 my-2"></div>
+                {/* Header */}
+                <div className="text-center mb-2">
+                    {logo && (
+                        <div className="flex justify-center mb-2">
+                            <img src={logo} alt="Logo" style={{ maxHeight: '60px', maxWidth: '100%' }} />
+                        </div>
+                    )}
+
+                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'APARCA'}</h1>
+                    {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
+                    {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
+                    {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}
+
+                    <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
+                    <p className="font-bold">RECIBO DE PAGO</p>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-2 uppercase">
                     <div className="flex justify-between mb-1">
-                        <span className="font-semibold">RECIBO #:</span>
+                        <span className="font-bold">RECIBO #:</span>
                         <span>{session.id ? session.id.toString().padStart(6, '0') : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between mb-1">
-                        <span className="font-semibold">PLACA:</span>
-                        <span className="text-lg font-bold">{session.plate}</span>
+                        <span className="font-bold">PLACA:</span>
+                        <span className="text-xl font-bold">{session.plate}</span>
                     </div>
                     <div className="flex justify-between mb-1">
-                        <span className="font-semibold">TIPO:</span>
-                        <span>{session.vehicleType}</span>
+                        <span className="font-bold">TIPO:</span>
+                        <span>{session.vehicleType === 'CAR' ? 'CARRO' : session.vehicleType === 'MOTORCYCLE' ? 'MOTO' : 'OTRO'}</span>
                     </div>
                     <div className="flex justify-between mb-1">
-                        <span className="font-semibold">PLAN:</span>
-                        <span>{session.planType === 'HOUR' ? 'Por Hora' : 'Por Día'}</span>
+                        <span className="font-bold">PLAN:</span>
+                        <span>{session.planType === 'HOUR' ? 'POR HORA' : 'POR DIA'}</span>
                     </div>
                 </div>
 
-                <div className="border-t-2 border-gray-300 my-2"></div>
+                <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
 
-                <div className="mb-4">
-                    <div className="flex justify-between mb-1 text-sm">
-                        <span>Entrada:</span>
-                        <span>{new Date(session.entryTime).toLocaleString()}</span>
+                <div className="mb-2 uppercase">
+                    <div className="flex justify-between mb-1">
+                        <span>ENTRADA:</span>
+                        <span>{new Date(session.entryTime).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    <div className="flex justify-between mb-1 text-sm">
-                        <span>Salida:</span>
-                        <span>{new Date(session.exitTime).toLocaleString()}</span>
+                    <div className="flex justify-between mb-1">
+                        <span>SALIDA:</span>
+                        <span>{new Date(session.exitTime).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    <div className="flex justify-between mb-1 font-semibold">
-                        <span>Duración:</span>
+                    <div className="flex justify-between mb-1 font-bold">
+                        <span>DURACIÓN:</span>
                         <span>{session.duration}</span>
                     </div>
                 </div>
 
-                <div className="border-t-2 border-gray-300 my-2"></div>
+                <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
 
-                <div className="mb-4">
-                    <div className="flex justify-between text-2xl font-bold">
+                <div className="mb-2">
+                    <div className="flex justify-between text-xl font-bold">
                         <span>TOTAL:</span>
                         <span>${session.cost.toLocaleString()}</span>
                     </div>
                 </div>
 
-                <div className="text-center text-xs mt-4">
-                    <div className="border-t-2 border-dashed border-gray-400 my-2"></div>
-                    <p className="font-semibold">GRACIAS POR SU VISITA</p>
-                    <p className="mt-2 text-gray-600">Vuelva pronto</p>
+                <div className="text-center text-[8pt] mt-4">
+                    <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
+                    <p className="font-bold">¡GRACIAS POR SU VISITA!</p>
+                    <p className="mt-1 text-gray-500">Software: APARCA</p>
                 </div>
             </div>
         );

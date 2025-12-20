@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { settingService } from '../services/setting.service';
 import { Users, Plus, RefreshCw, Search, X, Download, AlertTriangle } from 'lucide-react';
 import { exportToExcel } from '../utils/excelExport';
 import { useReactToPrint } from 'react-to-print';
@@ -21,6 +22,7 @@ interface Client {
 
 export default function MonthlyClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
+    const [settings, setSettings] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'EXPIRED'>('ALL');
@@ -84,8 +86,18 @@ export default function MonthlyClientsPage() {
         }
     };
 
+    const fetchSettings = async () => {
+        try {
+            const data = await settingService.getAll();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error loading settings', error);
+        }
+    };
+
     useEffect(() => {
         fetchClients();
+        fetchSettings();
     }, [searchTerm]);
 
     const handleCreate = async (e: React.FormEvent) => {
@@ -296,6 +308,7 @@ export default function MonthlyClientsPage() {
                     <PrintMonthlyReceipt
                         ref={componentRef}
                         data={printData}
+                        settings={settings}
                     />
                 )}
             </div>

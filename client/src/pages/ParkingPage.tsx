@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { settingService } from '../services/setting.service';
 import { Plus, Car, Bike, Truck, X, Search, Printer, Clock, Calendar } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { PrintTicket } from '../components/PrintTicket';
@@ -17,6 +18,8 @@ interface ParkingSession {
 
 export default function ParkingPage() {
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
+    const [settings, setSettings] = useState<any>(null);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
     const { isOnline, addOfflineItem, queue, isSyncing } = useOffline();
@@ -53,12 +56,25 @@ export default function ParkingPage() {
 
     useEffect(() => {
         fetchSessions();
+        fetchSettings();
+
 
         // Fetch active agreements
         api.get('/agreements/active')
             .then(res => setAgreements(res.data))
             .catch(err => console.error('Error fetching agreements', err));
     }, []);
+
+
+
+    const fetchSettings = async () => {
+        try {
+            const data = await settingService.getAll();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error loading settings', error);
+        }
+    };
 
     const fetchSessions = async () => {
         try {
@@ -768,10 +784,10 @@ export default function ParkingPage() {
             {/* Hidden Print Components */}
             <div style={{ display: 'none' }}>
                 {printData && printData.type === 'ticket' && (
-                    <PrintTicket ref={ticketRef} session={printData.session} />
+                    <PrintTicket ref={ticketRef} session={printData.session} settings={settings} />
                 )}
                 {printData && printData.type === 'receipt' && (
-                    <PrintReceipt ref={receiptRef} session={printData.session} />
+                    <PrintReceipt ref={receiptRef} session={printData.session} settings={settings} />
                 )}
             </div>
         </div >

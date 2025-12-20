@@ -5,7 +5,7 @@ export class SystemSetting {
     @PrimaryKey()
     key!: string;
 
-    @Property()
+    @Property({ type: 'text' })
     value!: string;
 
     @Property({ nullable: true })
