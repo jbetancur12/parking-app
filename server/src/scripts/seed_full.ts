@@ -123,7 +123,23 @@ const seed = async () => {
             monthlyRate: 40000,
             isActive: true
         });
-        await em.persistAndFlush([client1, client2]);
+
+        // Expired Client
+        const expiredDate = new Date();
+        expiredDate.setDate(expiredDate.getDate() - 1); // Yesterday
+
+        const client3 = em.create(MonthlyClient, {
+            name: 'Carlos Vencido',
+            plate: 'OLD-000',
+            phone: '320000000',
+            vehicleType: 'CAR',
+            startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)), // Started 1 month ago
+            endDate: expiredDate, // Expired yesterday
+            monthlyRate: 80000,
+            isActive: true // Still active in system, just expired subscription
+        });
+
+        await em.persistAndFlush([client1, client2, client3]);
 
         console.log('🚗 Creating Parking Sessions...');
         const sessions = [];

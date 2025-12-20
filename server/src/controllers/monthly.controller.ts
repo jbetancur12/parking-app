@@ -194,4 +194,27 @@ export class MonthlyClientController {
     }
 
 
+    // Toggle active status
+    async toggleStatus(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EntityManager found' });
+
+            const { id } = req.params;
+            const client = await em.findOne(MonthlyClient, { id: Number(id) });
+
+            if (!client) {
+                return res.status(404).json({ message: 'Client not found' });
+            }
+
+            client.isActive = !client.isActive;
+            await em.flush();
+
+            res.json({ message: 'Status updated', isActive: client.isActive });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error updating status' });
+        }
+    }
+
 }

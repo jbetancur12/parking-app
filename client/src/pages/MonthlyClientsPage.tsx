@@ -189,6 +189,16 @@ export default function MonthlyClientsPage() {
         });
     };
 
+    const handleToggleStatus = async (clientId: number) => {
+        if (!confirm('¿Está seguro de cambiar el estado de este cliente?')) return;
+        try {
+            await api.patch(`/monthly/${clientId}/status`);
+            fetchClients();
+        } catch (err) {
+            alert('Error updating status');
+        }
+    };
+
     const resetForm = () => {
         setPlate('');
         setName('');
@@ -198,13 +208,25 @@ export default function MonthlyClientsPage() {
 
     // Filter clients based on status
     const filteredClients = clients.filter(client => {
+        // If searching, show all matches regardless of strict status filtering
+        if (searchTerm) return true;
+
         const now = new Date();
         const endDate = new Date(client.endDate);
         const isExpired = endDate < now;
 
+        // ACTIVE: Active AND Not Expired
         if (filterStatus === 'ACTIVE') return client.isActive && !isExpired;
-        if (filterStatus === 'EXPIRED') return !client.isActive || isExpired;
-        return true; // ALL
+
+        // EXPIRED: Active AND Expired (Candidates for deactivation or renewal)
+        if (filterStatus === 'EXPIRED') return client.isActive && isExpired;
+
+        // ALL: Show all Active (Expired or Not) - Hide Inactive unless searched?
+        // Let's hide inactive by default to keep list clean, unless in 'ALL' we want everything?
+        // User wants to "hide" them. So Inactive should ONLY show in search.
+        if (filterStatus === 'ALL') return client.isActive;
+
+        return true;
     });
 
     const handleExport = () => {
@@ -254,26 +276,26 @@ export default function MonthlyClientsPage() {
                     onClick={() => setFilterStatus('ALL')}
                     className={`px-4 py-2 rounded-md ${filterStatus === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                 >
-                    Todos ({clients.length})
+                    Todos
                 </button>
                 <button
                     onClick={() => setFilterStatus('ACTIVE')}
                     className={`px-4 py-2 rounded-md ${filterStatus === 'ACTIVE' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                 >
-                    Activos ({clients.filter(c => c.isActive && new Date(c.endDate) >= new Date()).length})
+                    Activos
                 </button>
                 <button
                     onClick={() => setFilterStatus('EXPIRED')}
                     className={`px-4 py-2 rounded-md ${filterStatus === 'EXPIRED' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                 >
-                    Vencidos ({clients.filter(c => !c.isActive || new Date(c.endDate) < new Date()).length})
+                    Vencidos
                 </button>
                 <button
                     onClick={handleExport}
                     className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
                 >
                     <Download size={18} />
-                    Exportar a Excel
+                    Exportar
                 </button>
             </div>
 
@@ -282,7 +304,7 @@ export default function MonthlyClientsPage() {
                 <Search className="absolute left-3 top-3 text-gray-400" size={20} />
                 <input
                     type="text"
-                    placeholder="Buscar por nombre o placa..."
+                    placeholder="Buscar por nombre o placa (incluso desactivados)..."
                     className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -443,11 +465,19 @@ export default function MonthlyClientsPage() {
                                         {client.phone || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                            {isExpired ? 'Vencido' : 'Activo'}
-                                        </span>
-                                        <div className="text-xs text-gray-400 mt-1">
-                                            Vence: {new Date(client.endDate).toLocaleDateString()}
+                                        <div className="flex flex-col">
+                                            {client.isActive ? (
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {isExpired ? 'Vencido' : 'Activo'}
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 w-fit">
+                                                    Desactivado
+                                                </span>
+                                            )}
+                                            <div className="text-xs text-gray-400 mt-1">
+                                                Vence: {new Date(client.endDate).toLocaleDateString()}
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -457,13 +487,35 @@ export default function MonthlyClientsPage() {
                                         >
                                             Historial
                                         </button>
+
+                                        {/* Renewal is always available */}
                                         <button
                                             onClick={() => handleRenew(client.id)}
                                             className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium"
+                                            title="Renovar y Activar"
                                         >
                                             <RefreshCw size={14} className="inline mr-1" />
                                             Renovar
                                         </button>
+
+                                        {/* Deactivate/Activate button */}
+                                        {client.isActive ? (
+                                            isExpired && (
+                                                <button
+                                                    onClick={() => handleToggleStatus(client.id)}
+                                                    className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium"
+                                                >
+                                                    Desactivar
+                                                </button>
+                                            )
+                                        ) : (
+                                            <button
+                                                onClick={() => handleToggleStatus(client.id)}
+                                                className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium"
+                                            >
+                                                Activar
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             );
