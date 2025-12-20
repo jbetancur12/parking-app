@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import electron from 'vite-plugin-electron'
+import renderer from 'vite-plugin-electron-renderer'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     VitePWA({
@@ -33,6 +36,30 @@ export default defineConfig({
       devOptions: {
         enabled: true
       }
-    })
+    }),
+    electron([
+      {
+        // Main-Process entry point of the Electron App.
+        entry: 'electron/main.ts',
+      },
+      {
+        entry: 'electron/preload.ts',
+        onstart(options) {
+          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
+          // instead of restarting the entire Electron App.
+          options.reload()
+        },
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                format: 'cjs'
+              }
+            }
+          }
+        }
+      },
+    ]),
+    renderer(),
   ],
 })

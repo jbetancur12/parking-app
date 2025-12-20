@@ -4,7 +4,7 @@ import api from '../services/api';
 import { settingService } from '../services/setting.service';
 import { Play, Square, AlertCircle, X, TrendingUp, Users, Clock } from 'lucide-react';
 import React from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 
@@ -35,9 +35,7 @@ export default function DashboardPage() {
     // Print ref for shift summary
     const shiftSummaryRef = React.useRef<HTMLDivElement>(null);
 
-    const handlePrintShiftSummary = useReactToPrint({
-        contentRef: shiftSummaryRef,
-    });
+    const handlePrintShiftSummary = useElectronPrint({ contentRef: shiftSummaryRef });
 
     useEffect(() => {
         checkActiveShift();

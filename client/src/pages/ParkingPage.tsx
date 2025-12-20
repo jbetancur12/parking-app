@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { settingService } from '../services/setting.service';
 import { Plus, Car, Bike, Truck, X, Search, Printer, Clock, Calendar } from 'lucide-react';
-import { useReactToPrint } from 'react-to-print';
+import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintTicket } from '../components/PrintTicket';
 import { PrintReceipt } from '../components/PrintReceipt';
 import { toast } from 'sonner';
@@ -46,13 +46,9 @@ export default function ParkingPage() {
     const receiptRef = React.useRef<HTMLDivElement>(null);
     const [printData, setPrintData] = useState<any>(null);
 
-    const handlePrintTicket = useReactToPrint({
-        contentRef: ticketRef,
-    });
+    const handlePrintTicket = useElectronPrint({ contentRef: ticketRef });
 
-    const handlePrintReceipt = useReactToPrint({
-        contentRef: receiptRef,
-    });
+    const handlePrintReceipt = useElectronPrint({ contentRef: receiptRef });
 
     useEffect(() => {
         fetchSessions();

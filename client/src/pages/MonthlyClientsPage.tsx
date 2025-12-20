@@ -3,7 +3,7 @@ import api from '../services/api';
 import { settingService } from '../services/setting.service';
 import { Users, Plus, RefreshCw, Search, X, Download, AlertTriangle } from 'lucide-react';
 import { exportToExcel } from '../utils/excelExport';
-import { useReactToPrint } from 'react-to-print';
+import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { toast } from 'sonner';
@@ -63,9 +63,8 @@ export default function MonthlyClientsPage() {
     const componentRef = React.useRef<HTMLDivElement>(null);
     const [printData, setPrintData] = useState<any>(null);
 
-    const handlePrint = useReactToPrint({
+    const handlePrint = useElectronPrint({
         contentRef: componentRef,
-        documentTitle: 'Recibo_Mensualidad',
         onAfterPrint: () => setPrintData(null),
     });
 

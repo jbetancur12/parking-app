@@ -4,7 +4,7 @@ import api from '../services/api';
 import { settingService } from '../services/setting.service';
 import { Clock, User, Printer } from 'lucide-react';
 import React from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';
 
 interface ClosedShift {
@@ -36,9 +36,7 @@ export default function ShiftHistoryPage() {
     // Print ref
     const shiftSummaryRef = React.useRef<HTMLDivElement>(null);
 
-    const handlePrintShiftSummary = useReactToPrint({
-        contentRef: shiftSummaryRef,
-    });
+    const handlePrintShiftSummary = useElectronPrint({ contentRef: shiftSummaryRef });
 
     useEffect(() => {
         fetchClosedShifts();

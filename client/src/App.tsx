@@ -1,9 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { OfflineProvider } from './context/OfflineContext';
 import LoginPage from './pages/LoginPage';
+import SetupPage from './pages/SetupPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
 import ParkingPage from './pages/ParkingPage';
@@ -33,6 +34,7 @@ function App() {
         <Toaster richColors position="top-center" />
         <Router>
           <Routes>
+            <Route path="/setup" element={<SetupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/ticket/:id" element={<TicketStatusPage />} />
             <Route

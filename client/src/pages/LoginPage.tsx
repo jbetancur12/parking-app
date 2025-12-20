@@ -18,6 +18,21 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, navigate]);
 
+    // Check system setup status
+    useEffect(() => {
+        const checkSetup = async () => {
+            try {
+                const response = await api.get('/auth/setup-status');
+                if (!response.data.isConfigured) {
+                    navigate('/setup');
+                }
+            } catch (error) {
+                console.error('Error checking setup status', error);
+            }
+        };
+        checkSetup();
+    }, [navigate]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
