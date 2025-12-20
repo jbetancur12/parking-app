@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Plus, Car, Bike, Truck, X } from 'lucide-react';
+import { Plus, Car, Bike, Truck, X, Search } from 'lucide-react';
 
 interface ParkingSession {
     id: number;
     plate: string;
     vehicleType: string;
     entryTime: string;
+    planType?: string;
 }
 
 export default function ParkingPage() {
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 
     // Entry Form State
@@ -21,6 +23,7 @@ export default function ParkingPage() {
 
     // Exit State
     const [exitResult, setExitResult] = useState<any>(null);
+    const [previewData, setPreviewData] = useState<any>(null);
 
     useEffect(() => {
         fetchSessions();
@@ -43,56 +46,114 @@ export default function ParkingPage() {
             setPlate('');
             fetchSessions();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Entry failed');
+            setError(err.response?.data?.message || 'Error al registrar entrada');
         }
     };
 
-    const handleExit = async (plate: string) => {
-        if (!confirm(`Register exit for ${plate}?`)) return;
+    const handleExitClick = async (plate: string) => {
         try {
-            const response = await api.post('/parking/exit', { plate });
-            setExitResult(response.data);
-            fetchSessions();
+            const response = await api.get(`/parking/preview/${plate}`);
+            setPreviewData(response.data);
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Exit failed');
+            alert(err.response?.data?.message || 'Error al obtener vista previa');
         }
     };
+
+    const confirmExit = async () => {
+        if (!previewData) return;
+        try {
+            const response = await api.post('/parking/exit', { plate: previewData.plate });
+            setExitResult(response.data);
+            setPreviewData(null);
+            fetchSessions();
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Error al registrar salida');
+        }
+    };
+
+    const filteredSessions = sessions.filter(session =>
+        session.plate.includes(searchTerm.toUpperCase())
+    );
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Parking Management</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Gestión de Parqueadero</h1>
                 <button
                     onClick={() => setIsEntryModalOpen(true)}
                     className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                 >
                     <Plus className="mr-2" size={20} />
-                    New Entry
+                    Nueva Entrada
                 </button>
             </div>
+
+            {/* Search Bar */}
+            <div className="mb-6 relative">
+                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <input
+                    type="text"
+                    placeholder="Buscar vehículo por placa..."
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Preview Modal */}
+            {previewData && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">Confirmar Salida</h2>
+                        <div className="space-y-3 mb-6">
+                            <p className="text-lg"><strong>Placa:</strong> {previewData.plate}</p>
+                            <p className="text-lg"><strong>Plan:</strong> {previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
+                            <p className="text-lg"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
+                            <div className="border-t pt-2 mt-2">
+                                <p className="text-sm text-gray-500">Total a Pagar</p>
+                                <p className="text-3xl font-bold text-green-600">${previewData.cost}</p>
+                            </div>
+                        </div>
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={() => setPreviewData(null)}
+                                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmExit}
+                                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
+                            >
+                                Confirmar Salida
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Exit Receipt Modal/Overlay */}
             {exitResult && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                        <h2 className="text-xl font-bold mb-4 text-green-600">Exit Successful</h2>
+                        <h2 className="text-xl font-bold mb-4 text-green-600">Salida Exitosa</h2>
                         <div className="space-y-2 mb-6">
-                            <p><strong>Plate:</strong> {exitResult.session.plate}</p>
-                            <p><strong>Duration:</strong> {exitResult.durationMinutes} min</p>
+                            <p><strong>Placa:</strong> {exitResult.session.plate}</p>
+                            <p><strong>Duración:</strong> {exitResult.durationMinutes} min</p>
                             <p className="text-2xl font-bold text-gray-800 mt-2">Total: ${exitResult.cost}</p>
                         </div>
                         <button
                             onClick={() => setExitResult(null)}
                             className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300"
                         >
-                            Close
+                            Cerrar
                         </button>
                         {/* Print Button Placeholder */}
                         <button
                             onClick={() => window.print()}
                             className="w-full mt-2 border border-gray-300 text-gray-600 py-2 rounded hover:bg-gray-50"
                         >
-                            Print Receipt
+                            Imprimir Recibo
                         </button>
                     </div>
                 </div>
@@ -103,7 +164,7 @@ export default function ParkingPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg w-full max-w-md">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Vehicle Entry</h2>
+                            <h2 className="text-lg font-semibold">Ingreso de Vehículo</h2>
                             <button onClick={() => setIsEntryModalOpen(false)}><X size={20} /></button>
                         </div>
 
@@ -111,7 +172,7 @@ export default function ParkingPage() {
 
                         <form onSubmit={handleEntrySubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">License Plate</label>
+                                <label className="block text-sm font-medium text-gray-700">Placa</label>
                                 <input
                                     type="text"
                                     value={plate}
@@ -122,7 +183,7 @@ export default function ParkingPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Vehicle Type</label>
+                                <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo</label>
                                 <div className="grid grid-cols-3 gap-2 mt-1">
                                     {['CAR', 'MOTORCYCLE', 'OTHER'].map((type) => (
                                         <button
@@ -134,13 +195,13 @@ export default function ParkingPage() {
                                                 : 'bg-white border-gray-300 text-gray-700'
                                                 }`}
                                         >
-                                            {type}
+                                            {type === 'CAR' ? 'CARRO' : type === 'MOTORCYCLE' ? 'MOTO' : 'OTRO'}
                                         </button>
                                     ))}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Billing Plan</label>
+                                <label className="block text-sm font-medium text-gray-700">Plan de Facturación</label>
                                 <div className="grid grid-cols-2 gap-2 mt-1">
                                     <button
                                         type="button"
@@ -150,7 +211,7 @@ export default function ParkingPage() {
                                             : 'bg-white border-gray-300 text-gray-700'
                                             }`}
                                     >
-                                        Per Hour
+                                        Por Hora
                                     </button>
                                     <button
                                         type="button"
@@ -160,7 +221,7 @@ export default function ParkingPage() {
                                             : 'bg-white border-gray-300 text-gray-700'
                                             }`}
                                     >
-                                        Per Day
+                                        Por Día
                                     </button>
                                 </div>
                             </div>
@@ -168,7 +229,7 @@ export default function ParkingPage() {
                                 type="submit"
                                 className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
                             >
-                                Register Entry
+                                Registrar Entrada
                             </button>
                         </form>
                     </div>
@@ -181,41 +242,47 @@ export default function ParkingPage() {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plate</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entry Time</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehículo</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placa</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Entrada</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {sessions.map((session) => (
+                            {filteredSessions.map((session) => (
                                 <tr key={session.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className="flex items-center">
                                             {session.vehicleType === 'CAR' ? <Car size={18} className="mr-2 text-gray-500" /> :
                                                 session.vehicleType === 'MOTORCYCLE' ? <Bike size={18} className="mr-2 text-gray-500" /> :
                                                     <Truck size={18} className="mr-2 text-gray-500" />}
-                                            {session.vehicleType}
+                                            {session.vehicleType === 'CAR' ? 'CARRO' : session.vehicleType === 'MOTORCYCLE' ? 'MOTO' : 'OTRO'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{session.plate}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                         {new Date(session.entryTime).toLocaleTimeString()}
                                     </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${session.planType === 'DAY' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                                            {session.planType === 'DAY' ? 'Por Día' : 'Por Hora'}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <button
-                                            onClick={() => handleExit(session.plate)}
+                                            onClick={() => handleExitClick(session.plate)}
                                             className="text-red-600 hover:text-red-900 bg-red-50 text-xs px-3 py-1 rounded-full font-medium"
                                         >
-                                            Checkout
+                                            Salida
                                         </button>
                                     </td>
                                 </tr>
                             ))}
-                            {sessions.length === 0 && (
+                            {filteredSessions.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                        No active vehicles found.
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                        {searchTerm ? 'No se encontraron vehículos con esa placa.' : 'No hay vehículos activos.'}
                                     </td>
                                 </tr>
                             )}

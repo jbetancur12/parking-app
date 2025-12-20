@@ -25,6 +25,10 @@ export const washService = {
         const response = await api.post('/wash/entries', { ...data, shiftId });
         return response.data;
     },
+    getAllByShift: async (shiftId: number) => {
+        const response = await api.get<WashEntry[]>(`/wash/entries/shift/${shiftId}`);
+        return response.data;
+    },
 
     seed: async () => {
         await api.post('/wash/seed');

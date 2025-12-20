@@ -8,6 +8,7 @@ const controller = new WashController();
 router.use(authenticateToken);
 
 router.get('/types', controller.getServiceTypes);
+router.get('/entries/shift/:shiftId', controller.getAllByShift);
 router.post('/entries', controller.createEntry);
 router.post('/seed', controller.seedServices);
 

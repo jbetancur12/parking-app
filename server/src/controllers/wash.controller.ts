@@ -45,7 +45,7 @@ export class WashController {
             // Financial Transaction
             const transaction = em.create(Transaction, {
                 shift,
-                type: TransactionType.INCOME, // Wash is income
+                type: TransactionType.WASH_SERVICE, // Wash service
                 amount: serviceType.price,
                 description: `Lavado: ${serviceType.name} (${plate})`,
                 timestamp: new Date()
@@ -58,6 +58,24 @@ export class WashController {
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error creating wash entry' });
+        }
+    }
+
+    async getAllByShift(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EM' });
+
+            const { shiftId } = req.params;
+            // Fetch wash entries, maybe populate serviceType if needed
+            const entries = await em.find(WashEntry, { shift: Number(shiftId) }, {
+                orderBy: { createdAt: 'DESC' },
+                populate: ['serviceType']
+            });
+
+            res.json(entries);
+        } catch (error) {
+            res.status(500).json({ message: 'Error fetching wash entries' });
         }
     }
 

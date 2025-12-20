@@ -9,6 +9,9 @@ import MonthlyClientsPage from './pages/MonthlyClientsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import BrandsPage from './pages/BrandsPage';
+import ExpensesPage from './pages/ExpensesPage';
+import IncomesPage from './pages/IncomesPage';
+import WashPage from './pages/WashPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuth();
@@ -35,6 +38,9 @@ function App() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="brands" element={<BrandsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="incomes" element={<IncomesPage />} />
+            <Route path="wash" element={<WashPage />} />
             {/* Add other nested routes here */}
           </Route>
         </Routes>

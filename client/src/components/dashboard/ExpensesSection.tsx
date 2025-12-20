@@ -48,13 +48,13 @@ export function ExpensesSection({ shiftId }: Props) {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Expenses (Egresos)</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Egresos</h2>
             </div>
 
             {/* Create Form */}
             <form onSubmit={handleCreate} className="flex gap-4 mb-6 bg-gray-50 p-4 rounded-lg items-end">
                 <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Descripción</label>
                     <input
                         type="text"
                         value={description}
@@ -65,7 +65,7 @@ export function ExpensesSection({ shiftId }: Props) {
                     />
                 </div>
                 <div className="w-32">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Amount</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Monto</label>
                     <input
                         type="number"
                         value={amount}
@@ -82,23 +82,23 @@ export function ExpensesSection({ shiftId }: Props) {
                     className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 flex items-center disabled:opacity-50"
                 >
                     <Plus size={16} className="mr-1" />
-                    Record Expense
+                    Registrar
                 </button>
             </form>
 
             {/* List */}
             {loading ? (
-                <p className="text-gray-500">Loading expenses...</p>
+                <p className="text-gray-500">Cargando...</p>
             ) : expenses.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">No expenses recorded for this shift.</p>
+                <p className="text-gray-400 text-center py-4">No hay egresos registrados.</p>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-100 text-gray-600">
                             <tr>
-                                <th className="px-4 py-2 text-left">Time</th>
-                                <th className="px-4 py-2 text-left">Description</th>
-                                <th className="px-4 py-2 text-right">Amount</th>
+                                <th className="px-4 py-2 text-left">Hora</th>
+                                <th className="px-4 py-2 text-left">Descripción</th>
+                                <th className="px-4 py-2 text-right">Monto</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -1,0 +1,195 @@
+import React, { useState, useEffect } from 'react';
+import { Car, Plus } from 'lucide-react';
+import { washService, type WashServiceType, type WashEntry } from '../services/wash.service';
+import api from '../services/api';
+
+export default function WashPage() {
+    const [types, setTypes] = useState<WashServiceType[]>([]);
+    const [entries, setEntries] = useState<WashEntry[]>([]);
+    const [plate, setPlate] = useState('');
+    const [selectedType, setSelectedType] = useState<number | ''>('');
+    const [operator, setOperator] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [activeShift, setActiveShift] = useState<any>(null);
+
+    useEffect(() => {
+        fetchActiveShift();
+        loadTypes();
+    }, []);
+
+    useEffect(() => {
+        if (activeShift) {
+            fetchHistory();
+        }
+    }, [activeShift]);
+
+    const fetchActiveShift = async () => {
+        try {
+            const response = await api.get('/shifts/current');
+            setActiveShift(response.data);
+        } catch (err) {
+            setActiveShift(null);
+        }
+    };
+
+    const loadTypes = async () => {
+        try {
+            let data = await washService.getTypes();
+            if (data.length === 0) {
+                await washService.seed();
+                data = await washService.getTypes();
+            }
+            setTypes(data);
+        } catch (error) {
+            console.error('Failed to load wash types');
+        }
+    };
+
+    const fetchHistory = async () => {
+        if (!activeShift) return;
+        try {
+            const data = await washService.getAllByShift(activeShift.id);
+            setEntries(data);
+        } catch (error) {
+            console.error('Failed to load history');
+        }
+    }
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedType || !plate || !activeShift) return;
+
+        setLoading(true);
+        try {
+            await washService.createEntry(activeShift.id, {
+                plate,
+                serviceTypeId: Number(selectedType),
+                operatorName: operator
+            });
+            setMessage('Lavado registrado!');
+            setPlate('');
+            setSelectedType('');
+            setOperator('');
+            setTimeout(() => setMessage(''), 3000);
+            fetchHistory();
+        } catch (error) {
+            alert('Error al registrar lavado');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!activeShift) {
+        return <div className="p-8 text-center text-gray-500">No hay un turno activo. Inicie turno en Inicio para registrar servicios.</div>;
+    }
+
+    return (
+        <div className="p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <Car className="mr-2" /> Lavadero de Autos
+            </h1>
+
+            {message && (
+                <div className="mb-4 bg-green-100 text-green-700 p-3 rounded-lg text-sm text-center font-medium">
+                    {message}
+                </div>
+            )}
+
+            {/* Form */}
+            <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-cyan-500">
+                <h2 className="text-lg font-semibold mb-4 text-gray-700">Nuevo Servicio</h2>
+                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Placa</label>
+                        <input
+                            type="text"
+                            value={plate}
+                            onChange={e => setPlate(e.target.value.toUpperCase())}
+                            className="w-full border rounded px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            placeholder="ABC-123"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Servicio</label>
+                        <select
+                            value={selectedType}
+                            onChange={e => setSelectedType(Number(e.target.value))}
+                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            required
+                        >
+                            <option value="">Seleccione Servicio...</option>
+                            {types.map(t => (
+                                <option key={t.id} value={t.id}>
+                                    {t.name} - ${t.price}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Operario (Opcional)</label>
+                        <input
+                            type="text"
+                            value={operator}
+                            onChange={e => setOperator(e.target.value)}
+                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            placeholder="Nombre"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan-700 flex items-center justify-center h-10"
+                    >
+                        <Plus size={18} className="mr-2" />
+                        Registrar Lavado
+                    </button>
+                </form>
+            </div>
+
+            {/* List */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-semibold text-gray-800">Historial del Día (Turno Actual)</h3>
+                </div>
+                {entries.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No hay lavados registrados en este turno.</p>
+                ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Servicio</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operario</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {entries.map(entry => (
+                                <tr key={entry.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {new Date(entry.createdAt).toLocaleTimeString()}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                        {entry.plate}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                        {(entry as any).serviceType?.name || 'Lavado'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {entry.operatorName || '-'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-800">
+                                        ${Number(entry.cost).toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+        </div>
+    );
+}

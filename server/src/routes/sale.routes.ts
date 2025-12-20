@@ -8,5 +8,6 @@ const controller = new SaleController();
 router.use(authenticateToken);
 
 router.post('/', controller.create);
+router.get('/shift/:shiftId', controller.getAllByShift);
 
 export default router;

@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardLayout() {
@@ -11,12 +11,15 @@ export default function DashboardLayout() {
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-        { name: 'Parking', href: '/parking', icon: Car },
-        { name: 'Clients', href: '/monthly-clients', icon: Users },
-        { name: 'Reports', href: '/reports', icon: FileText },
-        { name: 'Brands', href: '/brands', icon: Tag },
-        { name: 'Settings', href: '/settings', icon: Settings },
+        { name: 'Inicio', href: '/', icon: LayoutDashboard },
+        { name: 'Parqueo', href: '/parking', icon: Car },
+        { name: 'Egresos', href: '/expenses', icon: TrendingDown },
+        { name: 'Ingresos', href: '/incomes', icon: DollarSign },
+        { name: 'Lavadero', href: '/wash', icon: Droplets },
+        { name: 'Mensualidades', href: '/monthly-clients', icon: Users },
+        { name: 'Reportes', href: '/reports', icon: FileText },
+        { name: 'Marcas', href: '/brands', icon: Tag },
+        { name: 'Ajustes', href: '/settings', icon: Settings },
     ];
 
     return (
@@ -68,7 +71,7 @@ export default function DashboardLayout() {
                         className="flex w-full items-center px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
                     >
                         <LogOut className="mr-3 h-5 w-5" />
-                        Sign Out
+                        Cerrar Sesión
                     </button>
                 </div>
             </div>

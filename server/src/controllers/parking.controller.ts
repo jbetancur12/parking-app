@@ -7,6 +7,41 @@ import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
 
+const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
+    // Map tariffs for easy access
+    const rateMap: Record<string, number> = {};
+    tariffs.forEach(t => rateMap[t.tariffType] = Number(t.cost));
+
+    const exitTime = new Date();
+    const durationMs = exitTime.getTime() - session.entryTime.getTime();
+    const durationMinutes = Math.ceil(durationMs / (1000 * 60));
+
+    let cost = 0;
+
+    if (session.planType === PlanType.DAY) {
+        const days = Math.ceil(durationMinutes / 1440);
+        cost = days * (rateMap['DAY'] || 15000);
+    } else {
+        const hourRate = rateMap['HOUR'] || 3000;
+        const fullHours = Math.floor(durationMinutes / 60);
+        const remainderMinutes = durationMinutes % 60;
+
+        let chargeableHours = fullHours;
+
+        if (remainderMinutes > gracePeriod) {
+            chargeableHours += 1;
+        }
+
+        if (chargeableHours === 0) {
+            chargeableHours = 1;
+        }
+
+        cost = chargeableHours * hourRate;
+    }
+
+    return { cost, durationMinutes, exitTime };
+};
+
 export const entryVehicle = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
     if (!em || !req.user) {
@@ -56,6 +91,37 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
     return res.status(201).json(session);
 };
 
+export const previewExit = async (req: AuthRequest, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal Server Error' });
+
+    const { plate } = req.params;
+
+    const session = await em.findOne(ParkingSession, {
+        plate,
+        status: ParkingStatus.ACTIVE,
+    });
+
+    if (!session) {
+        return res.status(404).json({ message: 'No active session' });
+    }
+
+    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
+    const settingsList = await em.find(SystemSetting, {});
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+    const gracePeriod = Number(settings['grace_period'] || 5);
+
+    const result = calculateParkingCost(session, tariffs, gracePeriod);
+
+    return res.json({
+        plate: session.plate,
+        entryTime: session.entryTime,
+        planType: session.planType,
+        ...result
+    });
+};
+
 export const exitVehicle = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
     if (!em || !req.user) {
@@ -68,17 +134,15 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(400).json({ message: 'Plate is required' });
     }
 
-    // Find active shift
     const shift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
     });
 
     if (!shift) {
-        return res.status(400).json({ message: 'No active shift found. Open a shift first.' });
+        return res.status(400).json({ message: 'No active shift found' });
     }
 
-    // Find active session
     const session = await em.findOne(ParkingSession, {
         plate,
         status: ParkingStatus.ACTIVE,
@@ -88,49 +152,13 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ message: 'No active parking session found for this plate' });
     }
 
-    // Load Tariffs for this vehicle type
     const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
-
-    // Load Settings (Grace Period)
     const settingsList = await em.find(SystemSetting, {});
     const settings: Record<string, string> = {};
     settingsList.forEach(s => settings[s.key] = s.value);
     const gracePeriod = Number(settings['grace_period'] || 5);
 
-    // Map tariffs for easy access
-    const rateMap: Record<string, number> = {};
-    tariffs.forEach(t => rateMap[t.tariffType] = Number(t.cost));
-
-    const exitTime = new Date();
-    const durationMs = exitTime.getTime() - session.entryTime.getTime();
-    const durationMinutes = Math.ceil(durationMs / (1000 * 60));
-
-    let cost = 0;
-
-    // Calculation Logic
-    if (session.planType === PlanType.DAY) {
-        // Day Plan: Charge per Day
-        const days = Math.ceil(durationMinutes / 1440);
-        cost = days * (rateMap['DAY'] || 15000);
-    } else {
-        // Hourly Plan
-        const hourRate = rateMap['HOUR'] || 3000;
-
-        const fullHours = Math.floor(durationMinutes / 60);
-        const remainderMinutes = durationMinutes % 60;
-
-        let chargeableHours = fullHours;
-
-        if (remainderMinutes > gracePeriod) {
-            chargeableHours += 1;
-        }
-
-        if (chargeableHours === 0) {
-            chargeableHours = 1;
-        }
-
-        cost = chargeableHours * hourRate;
-    }
+    const { cost, durationMinutes, exitTime } = calculateParkingCost(session, tariffs, gracePeriod);
 
     session.exitTime = exitTime;
     session.cost = cost;
@@ -141,7 +169,7 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     const transaction = em.create(Transaction, {
         shift: shift,
         type: TransactionType.PARKING_REVENUE,
-        description: `Parking: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
+        description: `Parking [${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
         amount: cost,
         timestamp: new Date()
     });

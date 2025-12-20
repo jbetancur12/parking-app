@@ -29,24 +29,24 @@ export default function BrandsPage() {
             setName('');
             loadBrands();
         } catch (error) {
-            alert('Failed to create brand');
+            alert('Error al crear marca');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure?')) return;
+        if (!confirm('¿Está seguro?')) return;
         try {
             await brandService.delete(id);
             loadBrands();
         } catch (error) {
-            alert('Failed to delete brand');
+            alert('Error al eliminar marca');
         }
     };
 
     return (
         <div className="p-8">
             <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <Tag className="mr-2" /> Vehicle Brands
+                <Tag className="mr-2" /> Marcas de Vehículos
             </h1>
 
             {/* Create Form */}
@@ -56,7 +56,7 @@ export default function BrandsPage() {
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="flex-1 border rounded px-4 py-2"
-                    placeholder="New Brand Name (e.g. BMW)"
+                    placeholder="Nombre de Nueva Marca (e.j. BMW)"
                     required
                 />
                 <button
@@ -64,15 +64,15 @@ export default function BrandsPage() {
                     className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 flex items-center"
                 >
                     <Plus size={20} className="mr-2" />
-                    Add
+                    Agregar
                 </button>
             </form>
 
             {/* List */}
             {loading ? (
-                <p>Loading...</p>
+                <p>Cargando...</p>
             ) : brands.length === 0 ? (
-                <p className="text-gray-500">No brands configured.</p>
+                <p className="text-gray-500">No hay marcas configuradas.</p>
             ) : (
                 <div className="bg-white rounded-lg shadow max-w-2xl">
                     <ul className="divide-y">

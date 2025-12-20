@@ -32,7 +32,7 @@ export default function ReportsPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-                <FileText className="mr-3" /> Financial Reports
+                <FileText className="mr-3" /> Reportes Financieros
             </h1>
 
             {/* Controls */}
@@ -42,20 +42,20 @@ export default function ReportsPage() {
                         onClick={() => { setReportType('DAILY'); setReportData(null); }}
                         className={`px-4 py-2 rounded-md ${reportType === 'DAILY' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                     >
-                        Daily Report
+                        Reporte Diario
                     </button>
                     <button
                         onClick={() => { setReportType('SHIFT'); setReportData(null); }}
                         className={`px-4 py-2 rounded-md ${reportType === 'SHIFT' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                     >
-                        Shift Report
+                        Reporte de Turno
                     </button>
                 </div>
 
                 <div className="flex items-end space-x-4">
                     {reportType === 'DAILY' ? (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
                             <input
                                 type="date"
                                 value={date}
@@ -65,10 +65,10 @@ export default function ReportsPage() {
                         </div>
                     ) : (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Shift ID</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">ID de Turno</label>
                             <input
                                 type="number"
-                                placeholder="Enter Shift ID"
+                                placeholder="Ingrese ID Turno"
                                 value={shiftId}
                                 onChange={(e) => setShiftId(e.target.value)}
                                 className="border rounded-md px-3 py-2"
@@ -81,7 +81,7 @@ export default function ReportsPage() {
                         disabled={loading}
                     >
                         <Search size={18} className="mr-2" />
-                        Generate Report
+                        Generar Reporte
                     </button>
                 </div>
             </div>
@@ -92,34 +92,62 @@ export default function ReportsPage() {
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                            <div className="text-gray-500 text-sm">Total Income</div>
+                            <div className="text-gray-500 text-sm">Ingresos Totales</div>
                             <div className="text-2xl font-bold text-gray-800">${reportData.summary?.totalIncome || reportData.totalIncome || 0}</div>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-                            <div className="text-gray-500 text-sm">Transactions</div>
+                            <div className="text-gray-500 text-sm">Transacciones</div>
                             <div className="text-2xl font-bold text-gray-800">{reportData.summary?.transactionCount || reportData.transactionCount || 0}</div>
                         </div>
                         {reportType === 'SHIFT' && (
                             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
-                                <div className="text-gray-500 text-sm">Cash in Hand (Est.)</div>
+                                <div className="text-gray-500 text-sm">Efectivo en Caja (Est.)</div>
                                 <div className="text-2xl font-bold text-gray-800">${reportData.summary?.cashInHand || 0}</div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Detailed Statistics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-red-400">
+                            <div className="text-gray-500 text-xs uppercase">Egresos</div>
+                            <div className="text-xl font-bold text-red-600">${reportData.totalExpenses || 0}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-green-400">
+                            <div className="text-gray-500 text-xs uppercase">Otros Ingresos</div>
+                            <div className="text-xl font-bold text-gray-800">${reportData.otherIncome || 0}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-blue-400">
+                            <div className="text-gray-500 text-xs uppercase">Parqueo (Hora)</div>
+                            <div className="text-xl font-bold text-gray-800">${reportData.parkingHourly || 0}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-purple-400">
+                            <div className="text-gray-500 text-xs uppercase">Parqueo (Día)</div>
+                            <div className="text-xl font-bold text-gray-800">${reportData.parkingDaily || 0}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-indigo-400">
+                            <div className="text-gray-500 text-xs uppercase">Mensualidades</div>
+                            <div className="text-xl font-bold text-gray-800">${reportData.monthlyIncome || 0}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-b-4 border-cyan-400">
+                            <div className="text-gray-500 text-xs uppercase">Lavadero</div>
+                            <div className="text-xl font-bold text-gray-800">${reportData.washIncome || 0}</div>
+                        </div>
                     </div>
 
                     {/* Detailed List */}
                     {reportData.transactions && (
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                                <h3 className="text-lg font-semibold text-gray-800">Transaction Details</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">Detalles de Transacciones</h3>
                             </div>
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">

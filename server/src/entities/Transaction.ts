@@ -6,6 +6,7 @@ export enum TransactionType {
     EXPENSE = 'EXPENSE', // Gastos
     PARKING_REVENUE = 'PARKING_REVENUE', // Automatically generated from parking close
     MONTHLY_PAYMENT = 'MONTHLY_PAYMENT', // Monthly subscription payment
+    WASH_SERVICE = 'WASH_SERVICE', // Car wash service
 }
 
 @Entity()

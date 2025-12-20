@@ -38,4 +38,21 @@ export class SaleController {
             res.status(500).json({ message: 'Error registering sale' });
         }
     }
+
+    async getAllByShift(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EM' });
+
+            const { shiftId } = req.params;
+            const transactions = await em.find(Transaction, {
+                shift: Number(shiftId),
+                type: TransactionType.INCOME
+            }, { orderBy: { timestamp: 'DESC' } });
+
+            res.json(transactions);
+        } catch (error) {
+            res.status(500).json({ message: 'Error fetching sales' });
+        }
+    }
 }

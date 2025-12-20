@@ -31,10 +31,10 @@ export default function SettingsPage() {
         setLoading(true);
         try {
             await settingService.update({ grace_period: gracePeriod });
-            setMsg('Grace period saved');
+            setMsg('Tiempo de gracia guardado');
             setTimeout(() => setMsg(''), 3000);
         } catch (error) {
-            setMsg('Error saving settings');
+            setMsg('Error guardando ajustes');
         } finally {
             setLoading(false);
         }
@@ -53,23 +53,23 @@ export default function SettingsPage() {
         setLoading(true);
         try {
             await tariffService.update(tariffs);
-            setMsg('Settings saved successfully');
+            setMsg('Configuración guardada exitosamente');
             setTimeout(() => setMsg(''), 3000);
         } catch (error) {
-            setMsg('Error saving settings');
+            setMsg('Error guardando ajustes');
         } finally {
             setLoading(false);
         }
     };
 
     const handleSeed = async () => {
-        if (!confirm('This will reset tariffs to default values. Continue?')) return;
+        if (!confirm('Esto restablecerá las tarifas a valores predeterminados. ¿Continuar?')) return;
         try {
             await tariffService.seed();
             fetchTariffs();
-            setMsg('Defaults loaded');
+            setMsg('Valores por defecto cargados');
         } catch (error) {
-            setMsg('Error loading defaults');
+            setMsg('Error cargando valores por defecto');
         }
     };
 
@@ -80,7 +80,7 @@ export default function SettingsPage() {
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-6">
-                <Settings className="mr-3" /> Configuration
+                <Settings className="mr-3" /> Configuración
             </h1>
 
             {msg && (
@@ -91,18 +91,18 @@ export default function SettingsPage() {
 
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-700">Tariffs</h2>
+                    <h2 className="text-xl font-semibold text-gray-700">Tarifas</h2>
                     <button onClick={handleSeed} className="text-sm text-blue-600 hover:underline flex items-center">
-                        <RefreshCw size={14} className="mr-1" /> Reset Defaults
+                        <RefreshCw size={14} className="mr-1" /> Restablecer Valores
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Cars */}
                     <div>
-                        <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Cars</h3>
+                        <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Carros</h3>
                         {tariffs.length === 0 && (
-                            <p className="text-sm text-red-500 mb-2">No tariffs found. Click "Reset Defaults" above.</p>
+                            <p className="text-sm text-red-500 mb-2">No se encontraron tarifas. Haga clic en "Restablecer Valores" arriba.</p>
                         )}
                         {tariffs.filter(t => t.vehicleType === 'CAR' && t.tariffType !== 'MINUTE').map(t => (
                             <div key={t.id} className="flex justify-between items-center mb-3">
@@ -122,9 +122,9 @@ export default function SettingsPage() {
 
                     {/* Motorcycles */}
                     <div>
-                        <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Motorcycles</h3>
+                        <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Motos</h3>
                         {tariffs.length === 0 && (
-                            <p className="text-sm text-red-500 mb-2">No tariffs found.</p>
+                            <p className="text-sm text-red-500 mb-2">No se encontraron tarifas.</p>
                         )}
                         {tariffs.filter(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType !== 'MINUTE').map(t => (
                             <div key={t.id} className="flex justify-between items-center mb-3">
@@ -150,23 +150,23 @@ export default function SettingsPage() {
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center"
                     >
                         <Save className="mr-2" size={20} />
-                        {loading ? 'Saving...' : 'Save Configuration'}
+                        {loading ? 'Guardando...' : 'Guardar Configuración'}
                     </button>
                 </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-700 mb-4">Other Settings</h2>
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">Otras Configuraciones</h2>
 
                 <div className="flex items-center mb-4">
-                    <label className="text-gray-700 w-48 font-medium">Grace Period (Minutes):</label>
+                    <label className="text-gray-700 w-48 font-medium">Tiempo de Gracia (Minutos):</label>
                     <input
                         type="number"
                         value={gracePeriod}
                         onChange={(e) => setGracePeriod(e.target.value)}
                         className="w-24 border rounded px-2 py-1"
                     />
-                    <span className="ml-3 text-gray-500 text-sm">Applies after the first hour (hourly plan).</span>
+                    <span className="ml-3 text-gray-500 text-sm">Aplica después de la primera hora.</span>
                 </div>
 
                 <div className="flex justify-end">
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center"
                     >
                         <Save className="mr-2" size={20} />
-                        Save General Settings
+                        Guardar Ajustes
                     </button>
                 </div>
             </div>

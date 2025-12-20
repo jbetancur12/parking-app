@@ -42,13 +42,13 @@ export function WashSection({ shiftId }: Props) {
                 serviceTypeId: Number(selectedType),
                 operatorName: operator
             });
-            setMessage('Wash registered!');
+            setMessage('Lavado registrado!');
             setPlate('');
             setSelectedType('');
             setOperator('');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
-            alert('Failed to register wash');
+            alert('Error al registrar lavado');
         } finally {
             setLoading(false);
         }
@@ -58,7 +58,7 @@ export function WashSection({ shiftId }: Props) {
         <div>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                    <Car className="mr-2" /> Car Wash (Lavadero)
+                    <Car className="mr-2" /> Lavadero
                 </h2>
             </div>
 
@@ -70,7 +70,7 @@ export function WashSection({ shiftId }: Props) {
 
             <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg items-end">
                 <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Plate</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Placa</label>
                     <input
                         type="text"
                         value={plate}
@@ -81,14 +81,14 @@ export function WashSection({ shiftId }: Props) {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Service</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Servicio</label>
                     <select
                         value={selectedType}
                         onChange={e => setSelectedType(Number(e.target.value))}
                         className="w-full border rounded px-3 py-2 text-sm"
                         required
                     >
-                        <option value="">Select Service...</option>
+                        <option value="">Seleccione Servicio...</option>
                         {types.map(t => (
                             <option key={t.id} value={t.id}>
                                 {t.name} - ${t.price}
@@ -97,13 +97,13 @@ export function WashSection({ shiftId }: Props) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Operator (Optional)</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Operario (Opcional)</label>
                     <input
                         type="text"
                         value={operator}
                         onChange={e => setOperator(e.target.value)}
                         className="w-full border rounded px-3 py-2 text-sm"
-                        placeholder="Name"
+                        placeholder="Nombre"
                     />
                 </div>
                 <button
@@ -111,7 +111,7 @@ export function WashSection({ shiftId }: Props) {
                     disabled={loading}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 flex items-center justify-center"
                 >
-                    Register Wash
+                    Registrar Lavado
                 </button>
             </form>
         </div>
