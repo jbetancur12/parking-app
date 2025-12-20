@@ -1,10 +1,13 @@
-import { FileText, Search } from 'lucide-react';
+import { FileText, Search, Download } from 'lucide-react';
 import { useState } from 'react';
 import api from '../services/api';
+import { exportToExcel } from '../utils/excelExport';
 
 export default function ReportsPage() {
-    const [reportType, setReportType] = useState<'DAILY' | 'SHIFT'>('DAILY');
+    const [reportType, setReportType] = useState<'DAILY' | 'SHIFT' | 'RANGE'>('DAILY');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
+    const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
     const [shiftId, setShiftId] = useState('');
     const [reportData, setReportData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -15,6 +18,9 @@ export default function ReportsPage() {
         try {
             if (reportType === 'DAILY') {
                 const res = await api.get(`/reports/daily?date=${date}`);
+                setReportData(res.data);
+            } else if (reportType === 'RANGE') {
+                const res = await api.get(`/reports/daily?dateFrom=${dateFrom}&dateTo=${dateTo}`);
                 setReportData(res.data);
             } else {
                 if (!shiftId) return;
@@ -27,6 +33,25 @@ export default function ReportsPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExport = () => {
+        if (!reportData) return;
+
+        const exportData = [
+            {
+                'Tipo': reportType === 'DAILY' ? 'Diario' : reportType === 'RANGE' ? 'Rango' : 'Turno',
+                'Fecha': reportType === 'RANGE' ? `${dateFrom} a ${dateTo}` : date,
+                'Total Ingresos': reportData.totalRevenue || 0,
+                'Total Egresos': reportData.totalExpenses || 0,
+                'Neto': (reportData.totalRevenue || 0) - (reportData.totalExpenses || 0),
+                'Sesiones Parqueo': reportData.parkingSessions || 0,
+                'Clientes Mensuales': reportData.monthlyClients || 0
+            }
+        ];
+
+        const filename = `Reporte_${reportType}_${date}`;
+        exportToExcel(exportData, filename, 'Resumen');
     };
 
     return (
@@ -43,6 +68,12 @@ export default function ReportsPage() {
                         className={`px-4 py-2 rounded-md ${reportType === 'DAILY' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
                     >
                         Reporte Diario
+                    </button>
+                    <button
+                        onClick={() => { setReportType('RANGE'); setReportData(null); }}
+                        className={`px-4 py-2 rounded-md ${reportType === 'RANGE' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                    >
+                        Rango de Fechas
                     </button>
                     <button
                         onClick={() => { setReportType('SHIFT'); setReportData(null); }}
@@ -63,6 +94,27 @@ export default function ReportsPage() {
                                 className="border rounded-md px-3 py-2"
                             />
                         </div>
+                    ) : reportType === 'RANGE' ? (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+                                <input
+                                    type="date"
+                                    value={dateFrom}
+                                    onChange={(e) => setDateFrom(e.target.value)}
+                                    className="border rounded-md px-3 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+                                <input
+                                    type="date"
+                                    value={dateTo}
+                                    onChange={(e) => setDateTo(e.target.value)}
+                                    className="border rounded-md px-3 py-2"
+                                />
+                            </div>
+                        </>
                     ) : (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">ID de Turno</label>
@@ -83,6 +135,15 @@ export default function ReportsPage() {
                         <Search size={18} className="mr-2" />
                         Generar Reporte
                     </button>
+                    {reportData && (
+                        <button
+                            onClick={handleExport}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+                        >
+                            <Download size={18} className="mr-2" />
+                            Exportar a Excel
+                        </button>
+                    )}
                 </div>
             </div>
 

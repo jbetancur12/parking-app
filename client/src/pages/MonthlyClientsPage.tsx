@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Users, Plus, RefreshCw, Search, X } from 'lucide-react';
+import { Users, Plus, RefreshCw, Search, X, Download } from 'lucide-react';
+import { exportToExcel } from '../utils/excelExport';
 
 interface Client {
     id: number;
@@ -18,6 +19,7 @@ export default function MonthlyClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'EXPIRED'>('ALL');
     const [error, setError] = useState('');
 
     // Form State
@@ -27,7 +29,7 @@ export default function MonthlyClientsPage() {
     const [monthlyRate, setMonthlyRate] = useState('50000');
     const [vehicleType, setVehicleType] = useState('CAR');
 
-    const [historyModalOpen, setHistoryModalOpen] = useStateStyles(false);
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [history, setHistory] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
@@ -99,10 +101,32 @@ export default function MonthlyClientsPage() {
         setError('');
     };
 
-    // Helper state for styles, ignored
-    function useStateStyles(initial: boolean) {
-        return useState(initial);
-    }
+    // Filter clients based on status
+    const filteredClients = clients.filter(client => {
+        const now = new Date();
+        const endDate = new Date(client.endDate);
+        const isExpired = endDate < now;
+
+        if (filterStatus === 'ACTIVE') return client.isActive && !isExpired;
+        if (filterStatus === 'EXPIRED') return !client.isActive || isExpired;
+        return true; // ALL
+    });
+
+    const handleExport = () => {
+        const exportData = filteredClients.map(client => ({
+            'Placa': client.plate,
+            'Nombre': client.name,
+            'Teléfono': client.phone || '',
+            'Tipo Vehículo': client.vehicleType || '',
+            'Tarifa Mensual': client.monthlyRate,
+            'Fecha Inicio': new Date(client.startDate).toLocaleDateString(),
+            'Fecha Fin': new Date(client.endDate).toLocaleDateString(),
+            'Estado': client.isActive ? 'Activo' : 'Inactivo'
+        }));
+
+        const filename = `Clientes_Mensuales_${filterStatus}_${new Date().toISOString().split('T')[0]}`;
+        exportToExcel(exportData, filename, 'Clientes');
+    };
 
     return (
         <div>
@@ -116,6 +140,35 @@ export default function MonthlyClientsPage() {
                 >
                     <Plus className="mr-2" size={20} />
                     Nuevo Cliente
+                </button>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="mb-4 flex gap-2">
+                <button
+                    onClick={() => setFilterStatus('ALL')}
+                    className={`px-4 py-2 rounded-md ${filterStatus === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                    Todos ({clients.length})
+                </button>
+                <button
+                    onClick={() => setFilterStatus('ACTIVE')}
+                    className={`px-4 py-2 rounded-md ${filterStatus === 'ACTIVE' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                    Activos ({clients.filter(c => c.isActive && new Date(c.endDate) >= new Date()).length})
+                </button>
+                <button
+                    onClick={() => setFilterStatus('EXPIRED')}
+                    className={`px-4 py-2 rounded-md ${filterStatus === 'EXPIRED' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                    Vencidos ({clients.filter(c => !c.isActive || new Date(c.endDate) < new Date()).length})
+                </button>
+                <button
+                    onClick={handleExport}
+                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <Download size={18} />
+                    Exportar a Excel
                 </button>
             </div>
 
@@ -264,7 +317,7 @@ export default function MonthlyClientsPage() {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {clients.map((client) => {
+                        {filteredClients.map((client) => {
                             const isExpired = new Date(client.endDate) < new Date();
                             return (
                                 <tr key={client.id}>
@@ -285,26 +338,26 @@ export default function MonthlyClientsPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <button
-                                            onClick={() => handleHistory(client)}
-                                            className="text-gray-600 hover:text-blue-900"
-                                            title="Ver Historial"
+                                            onClick={() => viewHistory(client)}
+                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium"
                                         >
                                             Historial
                                         </button>
                                         <button
-                                            onClick={() => handleRenew(client)}
-                                            className="text-blue-600 hover:text-blue-900"
+                                            onClick={() => handleRenew(client.id)}
+                                            className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium"
                                         >
-                                            <RefreshCw size={16} className="inline mr-1" /> Renovar
+                                            <RefreshCw size={14} className="inline mr-1" />
+                                            Renovar
                                         </button>
                                     </td>
                                 </tr>
-                            )
+                            );
                         })}
-                        {clients.length === 0 && (
+                        {filteredClients.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                    No se encontraron clientes.
+                                    No hay clientes {filterStatus === 'ACTIVE' ? 'activos' : filterStatus === 'EXPIRED' ? 'vencidos' : ''}.
                                 </td>
                             </tr>
                         )}
