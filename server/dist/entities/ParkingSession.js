@@ -81,6 +81,18 @@ __decorate([
     (0, core_1.Property)({ nullable: true }),
     __metadata("design:type", String)
 ], ParkingSession.prototype, "notes", void 0);
+__decorate([
+    (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], ParkingSession.prototype, "discount", void 0);
+__decorate([
+    (0, core_1.Property)({ nullable: true }),
+    __metadata("design:type", String)
+], ParkingSession.prototype, "discountReason", void 0);
+__decorate([
+    (0, core_1.ManyToOne)(() => 'Agreement', { nullable: true }),
+    __metadata("design:type", Object)
+], ParkingSession.prototype, "agreement", void 0);
 exports.ParkingSession = ParkingSession = __decorate([
     (0, core_1.Entity)()
 ], ParkingSession);

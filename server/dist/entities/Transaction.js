@@ -59,6 +59,18 @@ __decorate([
     (0, core_1.Property)({ onCreate: () => new Date() }),
     __metadata("design:type", Date)
 ], Transaction.prototype, "timestamp", void 0);
+__decorate([
+    (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Transaction.prototype, "discount", void 0);
+__decorate([
+    (0, core_1.Property)({ nullable: true }),
+    __metadata("design:type", String)
+], Transaction.prototype, "discountReason", void 0);
+__decorate([
+    (0, core_1.ManyToOne)(() => 'Agreement', { nullable: true }),
+    __metadata("design:type", Object)
+], Transaction.prototype, "agreement", void 0);
 exports.Transaction = Transaction = __decorate([
     (0, core_1.Entity)()
 ], Transaction);

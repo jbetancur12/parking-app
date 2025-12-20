@@ -37,22 +37,10 @@ const startServer = async () => {
         console.log('✅ Database connected successfully and schema updated');
 
         // Seed Admin User
-        const em = orm.em.fork();
-        const count = await em.count(User);
-        if (count === 0) {
-            console.log('🌱 Seeding super admin user...');
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            const admin = em.create(User, {
-                username: 'admin',
-                password: hashedPassword,
-                role: UserRole.SUPER_ADMIN,
-                isActive: true,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            });
-            await em.persistAndFlush(admin);
-            console.log('✅ Super Admin user created: admin / admin123');
-        }
+        // REMOVED: Custom seeding logic moved to First Run Setup flow
+        // const em = orm.em.fork();
+        // const count = await em.count(User);
+        // ...
 
         // Fork the entity manager for each request
         app.use((req, res, next) => {

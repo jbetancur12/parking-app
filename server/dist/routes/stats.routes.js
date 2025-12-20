@@ -6,4 +6,5 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_1.authenticateToken);
 router.get('/dashboard', stats_controller_1.getDashboardStats);
+router.get('/occupancy', stats_controller_1.getOccupancy);
 exports.default = router;

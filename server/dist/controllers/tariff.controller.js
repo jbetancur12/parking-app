@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TariffController = void 0;
 const core_1 = require("@mikro-orm/core");
 const Tariff_1 = require("../entities/Tariff");
+const AuditService_1 = require("../services/AuditService");
 class TariffController {
     // Get all tariffs
     async getAll(req, res) {
@@ -45,6 +46,10 @@ class TariffController {
                 }
             }
             await em.flush();
+            // Audit
+            await AuditService_1.AuditService.logAction(em, req.user, // Type casting or use AuthRequest if available
+            'UPDATE_TARIFFS', 'Tariff', undefined, // Batch update
+            items);
             res.json({ message: 'Tariffs updated' });
         }
         catch (error) {

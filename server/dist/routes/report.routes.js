@@ -6,6 +6,7 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 const controller = new report_controller_1.ReportController();
 router.use(auth_middleware_1.authenticateToken);
+router.use((0, auth_middleware_1.requireRole)(['ADMIN', 'SUPER_ADMIN']));
 router.get('/shift/:shiftId', controller.getShiftReport);
 router.get('/daily', controller.getDailyStats);
 exports.default = router;

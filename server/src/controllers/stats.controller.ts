@@ -111,18 +111,26 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         })).filter(s => s.name !== 'Gastos'); // Filter out expenses for income focus
 
         // 3. Peak Hours (Entry times)
-        // This is complex without "Entry Time" stored separately in Transaction (Transaction is usually exit/payment).
-        // If Transaction timestamp is exit time, it shows when people LEAVE.
-        // Let's use Transaction timestamp as "Activity Hour".
+        // Use SQLite-compatible date functions
+        const isSqlite = process.env.DB_TYPE === 'sqlite';
 
-        const hourStats = await em.getConnection().execute(`
-            SELECT EXTRACT(HOUR FROM timestamp) as hour, COUNT(*) as count
-            FROM transaction
-            WHERE timestamp >= NOW() - INTERVAL '30 days'
-            AND type = '${TransactionType.PARKING_REVENUE}'
-            GROUP BY hour
-            ORDER BY hour ASC
-        `);
+        const hourStats = isSqlite
+            ? await em.getConnection().execute(`
+                SELECT CAST(strftime('%H', timestamp) AS INTEGER) as hour, COUNT(*) as count
+                FROM \`transaction\`
+                WHERE timestamp >= datetime('now', '-30 days')
+                AND type = '${TransactionType.PARKING_REVENUE}'
+                GROUP BY hour
+                ORDER BY hour ASC
+            `)
+            : await em.getConnection().execute(`
+                SELECT EXTRACT(HOUR FROM timestamp) as hour, COUNT(*) as count
+                FROM transaction
+                WHERE timestamp >= NOW() - INTERVAL '30 days'
+                AND type = '${TransactionType.PARKING_REVENUE}'
+                GROUP BY hour
+                ORDER BY hour ASC
+            `);
 
         // Format for Recharts
         const hourlyData = Array.from({ length: 24 }, (_, i) => {

@@ -1,8 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDashboardStats = void 0;
+exports.getDashboardStats = exports.getOccupancy = void 0;
 const core_1 = require("@mikro-orm/core");
 const Transaction_1 = require("../entities/Transaction");
+const Tariff_1 = require("../entities/Tariff");
+const ParkingSession_1 = require("../entities/ParkingSession");
+const SystemSetting_1 = require("../entities/SystemSetting");
+const getOccupancy = async (req, res) => {
+    const em = core_1.RequestContext.getEntityManager();
+    if (!em)
+        return res.status(500).json({ message: 'Internal Server Error' });
+    try {
+        // Get Settings
+        const settingsList = await em.find(SystemSetting_1.SystemSetting, {});
+        const settings = {};
+        settingsList.forEach(s => settings[s.key] = s.value);
+        const capCar = Number(settings['capacity_car'] || 50);
+        const capMoto = Number(settings['capacity_motorcycle'] || 30);
+        const checkEnabled = settings['check_capacity'] === 'true';
+        // Get Counts
+        const countCar = await em.count(ParkingSession_1.ParkingSession, {
+            status: ParkingSession_1.ParkingStatus.ACTIVE,
+            vehicleType: Tariff_1.VehicleType.CAR
+        });
+        const countMoto = await em.count(ParkingSession_1.ParkingSession, {
+            status: ParkingSession_1.ParkingStatus.ACTIVE,
+            vehicleType: Tariff_1.VehicleType.MOTORCYCLE
+        });
+        res.json({
+            car: { current: countCar, capacity: capCar },
+            motorcycle: { current: countMoto, capacity: capMoto },
+            checkEnabled
+        });
+    }
+    catch (error) {
+        console.error('Error fetching occupancy:', error);
+        res.status(500).json({ message: 'Error fetching occupancy' });
+    }
+};
+exports.getOccupancy = getOccupancy;
 const getDashboardStats = async (req, res) => {
     const em = core_1.RequestContext.getEntityManager();
     if (!em)
@@ -60,17 +96,25 @@ const getDashboardStats = async (req, res) => {
             value: count
         })).filter(s => s.name !== 'Gastos'); // Filter out expenses for income focus
         // 3. Peak Hours (Entry times)
-        // This is complex without "Entry Time" stored separately in Transaction (Transaction is usually exit/payment).
-        // If Transaction timestamp is exit time, it shows when people LEAVE.
-        // Let's use Transaction timestamp as "Activity Hour".
-        const hourStats = await em.getConnection().execute(`
-            SELECT EXTRACT(HOUR FROM timestamp) as hour, COUNT(*) as count
-            FROM transaction
-            WHERE timestamp >= NOW() - INTERVAL '30 days'
-            AND type = '${Transaction_1.TransactionType.PARKING_REVENUE}'
-            GROUP BY hour
-            ORDER BY hour ASC
-        `);
+        // Use SQLite-compatible date functions
+        const isSqlite = process.env.DB_TYPE === 'sqlite';
+        const hourStats = isSqlite
+            ? await em.getConnection().execute(`
+                SELECT CAST(strftime('%H', timestamp) AS INTEGER) as hour, COUNT(*) as count
+                FROM \`transaction\`
+                WHERE timestamp >= datetime('now', '-30 days')
+                AND type = '${Transaction_1.TransactionType.PARKING_REVENUE}'
+                GROUP BY hour
+                ORDER BY hour ASC
+            `)
+            : await em.getConnection().execute(`
+                SELECT EXTRACT(HOUR FROM timestamp) as hour, COUNT(*) as count
+                FROM transaction
+                WHERE timestamp >= NOW() - INTERVAL '30 days'
+                AND type = '${Transaction_1.TransactionType.PARKING_REVENUE}'
+                GROUP BY hour
+                ORDER BY hour ASC
+            `);
         // Format for Recharts
         const hourlyData = Array.from({ length: 24 }, (_, i) => {
             const found = hourStats.find((h) => Number(h.hour) === i);

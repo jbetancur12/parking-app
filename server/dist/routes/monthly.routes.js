@@ -10,4 +10,5 @@ router.get('/', controller.getAll);
 router.post('/', controller.create);
 router.post('/:id/renew', controller.renew);
 router.get('/:id/history', controller.getHistory);
+router.patch('/:id/status', controller.toggleStatus);
 exports.default = router;

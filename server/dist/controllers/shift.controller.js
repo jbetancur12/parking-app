@@ -24,6 +24,8 @@ const openShift = async (req, res) => {
         baseAmount: baseAmount || 0,
         totalIncome: 0,
         totalExpenses: 0,
+        cashIncome: 0,
+        transferIncome: 0,
         declaredAmount: 0,
         isActive: true,
     });
@@ -86,6 +88,8 @@ const closeShift = async (req, res) => {
     });
     shift.totalIncome = totalIncome;
     shift.totalExpenses = totalExpenses;
+    shift.cashIncome = cashIncome;
+    shift.transferIncome = transferIncome;
     shift.isActive = false;
     shift.endTime = new Date();
     shift.declaredAmount = declaredAmount || 0;
@@ -122,7 +126,14 @@ const getAllClosed = async (req, res) => {
         });
         // Calculate summary for each shift
         const shiftsWithSummary = closedShifts.map(shift => {
-            const expectedCash = shift.baseAmount + shift.totalIncome - shift.totalExpenses;
+            // Use stored cashIncome if available (new records), otherwise fallback or assume all is cash
+            // For backward compatibility, if cashIncome is 0 and transferIncome is 0 but totalIncome > 0,
+            // we might assume it was all cash (old logic) or leave it. 
+            // Better to rely on the fact we just added columns so old ones are 0.
+            // But old `shift.totalIncome` was calculated.
+            // Re-calculating correctly:
+            const effectiveCashIncome = shift.cashIncome || (shift.totalIncome - (shift.transferIncome || 0));
+            const expectedCash = shift.baseAmount + effectiveCashIncome - shift.totalExpenses;
             const difference = shift.declaredAmount - expectedCash;
             return {
                 id: shift.id,
@@ -134,6 +145,8 @@ const getAllClosed = async (req, res) => {
                 endTime: shift.endTime,
                 baseAmount: shift.baseAmount,
                 totalIncome: shift.totalIncome,
+                cashIncome: shift.cashIncome,
+                transferIncome: shift.transferIncome,
                 totalExpenses: shift.totalExpenses,
                 declaredAmount: shift.declaredAmount,
                 expectedCash,

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
-import { User } from '../entities/User';
+import { User, UserRole } from '../entities/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -44,4 +44,42 @@ export const login = async (req: Request, res: Response) => {
             role: user.role,
         },
     });
+};
+
+export const setupStatus = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    const count = await em?.count(User);
+    return res.json({ isConfigured: count && count > 0 });
+};
+
+export const setupAdmin = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    const count = await em?.count(User);
+
+    if (count && count > 0) {
+        return res.status(403).json({ message: 'System is already configured' });
+    }
+
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const admin = em?.create(User, {
+        username,
+        password: hashedPassword,
+        role: UserRole.SUPER_ADMIN,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    if (admin) {
+        await em?.persistAndFlush(admin);
+        return res.json({ message: 'Super Admin created successfully' });
+    } else {
+        return res.status(500).json({ message: 'Error creating admin' });
+    }
 };

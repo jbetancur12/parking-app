@@ -22,8 +22,8 @@ const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
 const stats_routes_1 = __importDefault(require("./routes/stats.routes"));
 const backup_routes_1 = __importDefault(require("./routes/backup.routes"));
-const User_1 = require("./entities/User");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const audit_routes_1 = __importDefault(require("./routes/audit.routes"));
+const agreement_routes_1 = __importDefault(require("./routes/agreement.routes"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 app.use((0, cors_1.default)());
@@ -34,22 +34,10 @@ const startServer = async () => {
         await orm.getSchemaGenerator().updateSchema();
         console.log('✅ Database connected successfully and schema updated');
         // Seed Admin User
-        const em = orm.em.fork();
-        const count = await em.count(User_1.User);
-        if (count === 0) {
-            console.log('🌱 Seeding super admin user...');
-            const hashedPassword = await bcryptjs_1.default.hash('admin123', 10);
-            const admin = em.create(User_1.User, {
-                username: 'admin',
-                password: hashedPassword,
-                role: User_1.UserRole.SUPER_ADMIN,
-                isActive: true,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            });
-            await em.persistAndFlush(admin);
-            console.log('✅ Super Admin user created: admin / admin123');
-        }
+        // REMOVED: Custom seeding logic moved to First Run Setup flow
+        // const em = orm.em.fork();
+        // const count = await em.count(User);
+        // ...
         // Fork the entity manager for each request
         app.use((req, res, next) => {
             core_1.RequestContext.create(orm.em, next);
@@ -69,6 +57,8 @@ const startServer = async () => {
         app.use('/api/transactions', transaction_routes_1.default);
         app.use('/api/stats', stats_routes_1.default);
         app.use('/api/backup', backup_routes_1.default);
+        app.use('/api/audit', audit_routes_1.default);
+        app.use('/api/agreements', agreement_routes_1.default);
         app.get('/', (req, res) => {
             res.send('Parking App API is running');
         });

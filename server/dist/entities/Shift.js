@@ -18,6 +18,8 @@ let Shift = class Shift {
         this.baseAmount = 0; // Base/Starting cash
         this.totalIncome = 0; // Calculated at close
         this.totalExpenses = 0; // Calculated at close
+        this.cashIncome = 0;
+        this.transferIncome = 0;
         this.declaredAmount = 0; // Cash physically counted
         // Status linked to whether endTime is set, but explicit status helps
         this.isActive = true;
@@ -52,6 +54,14 @@ __decorate([
     (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
     __metadata("design:type", Number)
 ], Shift.prototype, "totalExpenses", void 0);
+__decorate([
+    (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], Shift.prototype, "cashIncome", void 0);
+__decorate([
+    (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], Shift.prototype, "transferIncome", void 0);
 __decorate([
     (0, core_1.Property)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
     __metadata("design:type", Number)

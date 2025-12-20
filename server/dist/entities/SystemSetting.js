@@ -19,7 +19,7 @@ __decorate([
     __metadata("design:type", String)
 ], SystemSetting.prototype, "key", void 0);
 __decorate([
-    (0, core_1.Property)(),
+    (0, core_1.Property)({ type: 'text' }),
     __metadata("design:type", String)
 ], SystemSetting.prototype, "value", void 0);
 __decorate([
