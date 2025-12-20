@@ -17,6 +17,7 @@ export default function DashboardLayout() {
         { name: 'Ingresos', href: '/incomes', icon: DollarSign },
         { name: 'Lavadero', href: '/wash', icon: Droplets },
         { name: 'Mensualidades', href: '/monthly-clients', icon: Users },
+        { name: 'Transacciones', href: '/transactions', icon: Receipt },
         { name: 'Reportes', href: '/reports', icon: FileText },
         { name: 'Marcas', href: '/brands', icon: Tag },
         { name: 'Ajustes', href: '/settings', icon: Settings },
