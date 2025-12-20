@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Users, Plus, RefreshCw, Search, X, Download } from 'lucide-react';
+import { Users, Plus, RefreshCw, Search, X, Download, AlertTriangle } from 'lucide-react';
 import { exportToExcel } from '../utils/excelExport';
+import { useReactToPrint } from 'react-to-print';
+import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { toast } from 'sonner';
 
 interface Client {
     id: number;
@@ -14,11 +18,6 @@ interface Client {
     monthlyRate: number;
     isActive: boolean;
 }
-
-
-
-import { useReactToPrint } from 'react-to-print';
-import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
 
 export default function MonthlyClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
@@ -34,15 +33,34 @@ export default function MonthlyClientsPage() {
     const [monthlyRate, setMonthlyRate] = useState('50000');
     const [vehicleType, setVehicleType] = useState('CAR');
 
+    // Renewal Modal State
+    const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
+    const [renewClientData, setRenewClientData] = useState<{ id: number; rate: number } | null>(null);
+    const [renewAmount, setRenewAmount] = useState('');
+    const [renewPaymentMethod, setRenewPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [history, setHistory] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        type?: 'primary' | 'danger' | 'warning';
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { },
+    });
 
     // Printing
     const componentRef = React.useRef<HTMLDivElement>(null);
     const [printData, setPrintData] = useState<any>(null);
 
-    // Using contentRef pattern consistent with ParkingPage
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
         documentTitle: 'Recibo_Mensualidad',
@@ -51,16 +69,10 @@ export default function MonthlyClientsPage() {
 
     const triggerPrint = (data: any) => {
         setPrintData(data);
-        // Small timeout to ensure render before printing, same as ParkingPage
         setTimeout(() => {
             handlePrint();
         }, 100);
     };
-
-
-    useEffect(() => {
-        fetchClients();
-    }, [searchTerm]);
 
     const fetchClients = async () => {
         try {
@@ -68,8 +80,13 @@ export default function MonthlyClientsPage() {
             setClients(response.data);
         } catch (err) {
             console.error(err);
+            toast.error('Error al cargar clientes');
         }
     };
+
+    useEffect(() => {
+        fetchClients();
+    }, [searchTerm]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,81 +102,84 @@ export default function MonthlyClientsPage() {
             setIsModalOpen(false);
             resetForm();
             fetchClients();
+            toast.success('Cliente creado exitosamente');
 
-            // Trigger print
+            // Print Receipt Confirmation
             const { client, payment } = response.data;
-            console.log('Create Response:', response.data);
-
             if (client && payment) {
-                if (confirm('¿Desea imprimir el recibo de la nueva mensualidad?')) {
-                    triggerPrint({
-                        paymentId: payment.id,
-                        plate: client.plate,
-                        clientName: client.name,
-                        vehicleType: client.vehicleType,
-                        amount: payment.amount,
-                        periodStart: payment.periodStart,
-                        periodEnd: payment.periodEnd,
-                        paymentDate: payment.paymentDate,
-                        concept: 'NUEVA MENSUALIDAD'
-                    });
-                }
+                setConfirmModal({
+                    isOpen: true,
+                    title: 'Imprimir Recibo',
+                    message: '¿Desea imprimir el recibo de la nueva mensualidad?',
+                    type: 'primary',
+                    onConfirm: () => {
+                        triggerPrint({
+                            paymentId: payment.id,
+                            plate: client.plate,
+                            clientName: client.name,
+                            vehicleType: client.vehicleType,
+                            amount: payment.amount,
+                            periodStart: payment.periodStart,
+                            periodEnd: payment.periodEnd,
+                            paymentDate: payment.paymentDate,
+                            concept: 'NUEVA MENSUALIDAD'
+                        });
+                        closeConfirmModal();
+                    }
+                });
             }
-
         } catch (err: any) {
-            console.error('Create Error:', err);
-            setError(err.response?.data?.message || 'Failed to create client');
+            toast.error(err.response?.data?.message || 'Error al crear cliente');
         }
     };
 
-    const handleRenew = async (clientId: number) => {
-        const amountStr = prompt('Ingrese el monto a pagar (dejar vacío para usar tarifa mensual):');
-        if (amountStr === null) return; // User cancelled
+    const openRenewModal = (client: Client) => {
+        setRenewClientData({ id: client.id, rate: client.monthlyRate });
+        setRenewAmount(client.monthlyRate.toString());
+        setRenewPaymentMethod('CASH');
+        setIsRenewModalOpen(true);
+    };
 
-        const amount = Number(amountStr);
-        if (isNaN(amount) || amount < 0) {
-            alert('Invalid amount');
-            return;
-        }
-
-        // Ask for payment method
-        const paymentMethod = confirm('¿El pago es en EFECTIVO?\n\nOK = Efectivo\nCancelar = Transferencia')
-            ? 'CASH'
-            : 'TRANSFER';
+    const handleRenewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!renewClientData) return;
 
         try {
-            const res = await api.post(`/monthly/${clientId}/renew`, {
-                amount: amount || undefined,
-                paymentMethod
+            const res = await api.post(`/monthly/${renewClientData.id}/renew`, {
+                amount: Number(renewAmount),
+                paymentMethod: renewPaymentMethod
             });
             fetchClients();
+            setIsRenewModalOpen(false);
+            toast.success(`Renovado exitosamente (${renewPaymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'})`);
 
-            alert(`Renovado exitosamente!\nMétodo de pago: ${paymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'}`);
-
-            // Trigger print
+            // Print Receipt Confirmation
             const { client, payment } = res.data;
-            console.log('Renew Response:', res.data);
-
             if (client && payment) {
-                if (confirm('¿Desea imprimir el recibo de renovación?')) {
-                    triggerPrint({
-                        paymentId: payment.id,
-                        plate: client.plate,
-                        clientName: client.name,
-                        vehicleType: client.vehicleType,
-                        amount: payment.amount,
-                        periodStart: payment.periodStart,
-                        periodEnd: payment.periodEnd,
-                        paymentDate: payment.paymentDate,
-                        concept: 'RENOVACIÓN'
-                    });
-                }
+                setConfirmModal({
+                    isOpen: true,
+                    title: 'Imprimir Recibp',
+                    message: '¿Desea imprimir el recibo de renovación?',
+                    type: 'primary',
+                    onConfirm: () => {
+                        triggerPrint({
+                            paymentId: payment.id,
+                            plate: client.plate,
+                            clientName: client.name,
+                            vehicleType: client.vehicleType,
+                            amount: payment.amount,
+                            periodStart: payment.periodStart,
+                            periodEnd: payment.periodEnd,
+                            paymentDate: payment.paymentDate,
+                            concept: 'RENOVACIÓN'
+                        });
+                        closeConfirmModal();
+                    }
+                });
             }
 
         } catch (err: any) {
-            // Handle generic or specific errors
-            const msg = err.response?.data?.message || 'Error en renovación';
-            alert(msg);
+            toast.error(err.response?.data?.message || 'Error en renovación');
         }
     };
 
@@ -170,7 +190,7 @@ export default function MonthlyClientsPage() {
             setHistory(res.data);
             setHistoryModalOpen(true);
         } catch (err) {
-            alert('Failed to fetch history');
+            toast.error('Error al obtener historial');
         }
     };
 
@@ -189,14 +209,27 @@ export default function MonthlyClientsPage() {
         });
     };
 
-    const handleToggleStatus = async (clientId: number) => {
-        if (!confirm('¿Está seguro de cambiar el estado de este cliente?')) return;
-        try {
-            await api.patch(`/monthly/${clientId}/status`);
-            fetchClients();
-        } catch (err) {
-            alert('Error updating status');
-        }
+    const handleToggleStatus = (clientId: number) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Cambiar Estado',
+            message: '¿Está seguro de cambiar el estado de este cliente?',
+            type: 'warning',
+            onConfirm: async () => {
+                try {
+                    await api.patch(`/monthly/${clientId}/status`);
+                    fetchClients();
+                    toast.success('Estado actualizado correctamente');
+                } catch (err) {
+                    toast.error('Error al actualizar estado');
+                }
+                closeConfirmModal();
+            }
+        });
+    };
+
+    const closeConfirmModal = () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
     };
 
     const resetForm = () => {
@@ -247,6 +280,16 @@ export default function MonthlyClientsPage() {
 
     return (
         <div>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={closeConfirmModal}
+                type={confirmModal.type}
+            />
+
             {/* Print Component mimicking ParkingPage structure */}
             <div style={{ display: 'none' }}>
                 {printData && (
@@ -263,7 +306,7 @@ export default function MonthlyClientsPage() {
                 </h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <Plus className="mr-2" size={20} />
                     Nuevo Cliente
@@ -274,25 +317,25 @@ export default function MonthlyClientsPage() {
             <div className="mb-4 flex gap-2">
                 <button
                     onClick={() => setFilterStatus('ALL')}
-                    className={`px-4 py-2 rounded-md ${filterStatus === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
                     Todos
                 </button>
                 <button
                     onClick={() => setFilterStatus('ACTIVE')}
-                    className={`px-4 py-2 rounded-md ${filterStatus === 'ACTIVE' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'ACTIVE' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
                     Activos
                 </button>
                 <button
                     onClick={() => setFilterStatus('EXPIRED')}
-                    className={`px-4 py-2 rounded-md ${filterStatus === 'EXPIRED' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'EXPIRED' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
                     Vencidos
                 </button>
                 <button
                     onClick={handleExport}
-                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     <Download size={18} />
                     Exportar
@@ -305,7 +348,7 @@ export default function MonthlyClientsPage() {
                 <input
                     type="text"
                     placeholder="Buscar por nombre o placa (incluso desactivados)..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -314,14 +357,12 @@ export default function MonthlyClientsPage() {
             {/* Create Client Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl animate-fade-in-up">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Nuevo Cliente Mensual</h2>
-                            <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+                            <h2 className="text-lg font-semibold text-gray-800">Nuevo Cliente Mensual</h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
-
-                        {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</div>}
-
+                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm flex items-center"><AlertTriangle size={16} className="mr-2" />{error}</div>}
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Placa</label>
@@ -329,7 +370,7 @@ export default function MonthlyClientsPage() {
                                     type="text"
                                     value={plate}
                                     onChange={(e) => setPlate(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 uppercase"
+                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 uppercase focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -339,7 +380,7 @@ export default function MonthlyClientsPage() {
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -349,33 +390,35 @@ export default function MonthlyClientsPage() {
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Tarifa Mensual</label>
-                                <input
-                                    type="number"
-                                    value={monthlyRate}
-                                    onChange={(e) => setMonthlyRate(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                                <select
-                                    value={vehicleType}
-                                    onChange={(e) => setVehicleType(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                                >
-                                    <option value="CAR">Carro</option>
-                                    <option value="MOTORCYCLE">Moto</option>
-                                    <option value="OTHER">Otro</option>
-                                </select>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Tarifa Mensual</label>
+                                    <input
+                                        type="number"
+                                        value={monthlyRate}
+                                        onChange={(e) => setMonthlyRate(e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Tipo</label>
+                                    <select
+                                        value={vehicleType}
+                                        onChange={(e) => setVehicleType(e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    >
+                                        <option value="CAR">Carro</option>
+                                        <option value="MOTORCYCLE">Moto</option>
+                                        <option value="OTHER">Otro</option>
+                                    </select>
+                                </div>
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors mt-2"
                             >
                                 Crear Cliente
                             </button>
@@ -384,13 +427,79 @@ export default function MonthlyClientsPage() {
                 </div>
             )}
 
+            {/* Renew Client Modal */}
+            {isRenewModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-sm shadow-xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+                                <RefreshCw className="mr-2 text-green-600" size={20} />
+                                Renovar Suscripción
+                            </h2>
+                            <button onClick={() => setIsRenewModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleRenewSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Monto a Pagar</label>
+                                <input
+                                    type="number"
+                                    value={renewAmount}
+                                    onChange={(e) => setRenewAmount(e.target.value)}
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg font-semibold text-gray-900 focus:ring-2 focus:ring-green-500 outline-none"
+                                    required
+                                    min="0"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Tarifa actual del cliente: ${renewClientData?.rate.toLocaleString()}</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRenewPaymentMethod('CASH')}
+                                        className={`py-2 px-4 rounded-lg border font-medium text-sm transition-all ${renewPaymentMethod === 'CASH'
+                                            ? 'bg-green-50 border-green-500 text-green-700 ring-1 ring-green-500'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        💵 Efectivo
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRenewPaymentMethod('TRANSFER')}
+                                        className={`py-2 px-4 rounded-lg border font-medium text-sm transition-all ${renewPaymentMethod === 'TRANSFER'
+                                            ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        🏦 Transferencia
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition-colors mt-2"
+                            >
+                                Confirmar Renovación
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+
             {/* History Modal */}
             {historyModalOpen && selectedClient && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Historial: {selectedClient.name} ({selectedClient.plate})</h2>
-                            <button onClick={() => setHistoryModalOpen(false)}><X size={20} /></button>
+                    <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-xl">
+                        <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2 border-b">
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-800">Historial de Pagos</h2>
+                                <p className="text-sm text-gray-500">{selectedClient.name} - {selectedClient.plate}</p>
+                            </div>
+                            <button onClick={() => setHistoryModalOpen(false)} className="p-1 rounded-full hover:bg-gray-100 transition-colors"><X size={20} /></button>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -404,7 +513,7 @@ export default function MonthlyClientsPage() {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {history.map((payment: any) => (
-                                        <tr key={payment.id}>
+                                        <tr key={payment.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {new Date(payment.paymentDate).toLocaleDateString()}
                                             </td>
@@ -418,13 +527,13 @@ export default function MonthlyClientsPage() {
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                                                 ${Number(payment.amount).toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <button
                                                     onClick={() => handleReprintHistory(payment)}
-                                                    className="text-blue-600 hover:text-blue-900 text-xs font-medium bg-blue-50 px-2 py-1 rounded"
+                                                    className="text-blue-600 hover:text-blue-900 text-xs font-medium bg-blue-50 px-3 py-1 rounded-full transition-colors hover:bg-blue-100"
                                                 >
                                                     Imprimir
                                                 </button>
@@ -432,7 +541,7 @@ export default function MonthlyClientsPage() {
                                         </tr>
                                     ))}
                                     {history.length === 0 && (
-                                        <tr><td colSpan={4} className="text-center py-4 text-gray-500">No se encontró historial</td></tr>
+                                        <tr><td colSpan={4} className="text-center py-8 text-gray-500 italic">No se encontró historial de pagos</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -456,7 +565,7 @@ export default function MonthlyClientsPage() {
                         {filteredClients.map((client) => {
                             const isExpired = new Date(client.endDate) < new Date();
                             return (
-                                <tr key={client.id}>
+                                <tr key={client.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">{client.name}</div>
                                         <div className="text-sm text-gray-500 font-mono">{client.plate}</div>
@@ -483,15 +592,14 @@ export default function MonthlyClientsPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <button
                                             onClick={() => handleHistory(client)}
-                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium"
+                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
                                         >
                                             Historial
                                         </button>
 
-                                        {/* Renewal is always available */}
                                         <button
-                                            onClick={() => handleRenew(client.id)}
-                                            className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium"
+                                            onClick={() => openRenewModal(client)}
+                                            className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
                                             title="Renovar y Activar"
                                         >
                                             <RefreshCw size={14} className="inline mr-1" />
@@ -503,7 +611,7 @@ export default function MonthlyClientsPage() {
                                             isExpired && (
                                                 <button
                                                     onClick={() => handleToggleStatus(client.id)}
-                                                    className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium"
+                                                    className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
                                                 >
                                                     Desactivar
                                                 </button>
@@ -511,7 +619,7 @@ export default function MonthlyClientsPage() {
                                         ) : (
                                             <button
                                                 onClick={() => handleToggleStatus(client.id)}
-                                                className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium"
+                                                className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
                                             >
                                                 Activar
                                             </button>
