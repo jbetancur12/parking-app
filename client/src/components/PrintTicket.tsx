@@ -1,5 +1,5 @@
 import React from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface PrintTicketProps {
     session: {
@@ -54,7 +54,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                 </div>
 
                 <div className="flex justify-center my-4">
-                    <QRCode value={`PARKING-${session.id}`} size={128} />
+                    <QRCodeSVG value={`PARKING-${session.id}`} size={128} />
                 </div>
 
                 <div className="text-center text-xs mt-4">

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Plus, Car, Bike, Truck, X, Search } from 'lucide-react';
+import { Plus, Car, Bike, Truck, X, Search, Printer } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import { PrintTicket } from '../components/PrintTicket';
+import { PrintReceipt } from '../components/PrintReceipt';
 
 interface ParkingSession {
     id: number;
@@ -24,6 +27,19 @@ export default function ParkingPage() {
     // Exit State
     const [exitResult, setExitResult] = useState<any>(null);
     const [previewData, setPreviewData] = useState<any>(null);
+
+    // Print refs
+    const ticketRef = React.useRef<HTMLDivElement>(null);
+    const receiptRef = React.useRef<HTMLDivElement>(null);
+    const [printData, setPrintData] = useState<any>(null);
+
+    const handlePrintTicket = useReactToPrint({
+        contentRef: ticketRef,
+    });
+
+    const handlePrintReceipt = useReactToPrint({
+        contentRef: receiptRef,
+    });
 
     useEffect(() => {
         fetchSessions();
