@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Parking App',
-        short_name: 'Parking',
+        name: 'Aparca',
+        short_name: 'Aparca',
         description: 'Gestión de Parqueadero Offline-First',
         theme_color: '#ffffff',
         icons: [

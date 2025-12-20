@@ -87,7 +87,7 @@ export default function DashboardLayout() {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
                 <div className="flex h-16 items-center justify-between px-6 border-b flex-shrink-0">
-                    <span className="text-xl font-bold text-gray-800">ParkingSof</span>
+                    <span className="text-xl font-bold text-gray-800">Aparca</span>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-gray-500">
                         <X size={24} />
                     </button>
@@ -157,7 +157,7 @@ export default function DashboardLayout() {
                     <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
                         <Menu size={24} />
                     </button>
-                    <span className="font-semibold text-gray-800">ParkingSof</span>
+                    <span className="font-semibold text-gray-800">Aparca</span>
                     <div className="flex items-center">
                         <OfflineIndicator />
                     </div>
