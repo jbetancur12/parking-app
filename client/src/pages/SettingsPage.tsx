@@ -3,13 +3,26 @@ import { Settings, Save, RefreshCw } from 'lucide-react';
 import { tariffService } from '../services/tariff.service';
 import { settingService } from '../services/setting.service';
 import type { Tariff } from '../services/tariff.service';
+import { useAuth } from '../context/AuthContext';
 
 export default function SettingsPage() {
+    const { user } = useAuth();
     const [tariffs, setTariffs] = useState<Tariff[]>([]);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
 
     const [gracePeriod, setGracePeriod] = useState('5');
+
+    // Check permissions
+    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+        return (
+            <div className="p-8">
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                    No tienes permisos para acceder a esta página.
+                </div>
+            </div>
+        );
+    }
 
     useEffect(() => {
         fetchTariffs();

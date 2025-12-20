@@ -1,11 +1,24 @@
 import { useState, useEffect } from 'react';
 import { brandService, type Brand } from '../services/brand.service';
 import { Plus, Trash2, Tag } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function BrandsPage() {
+    const { user } = useAuth();
     const [brands, setBrands] = useState<Brand[]>([]);
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(true);
+
+    // Check permissions
+    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+        return (
+            <div className="p-8">
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                    No tienes permisos para acceder a esta página.
+                </div>
+            </div>
+        );
+    }
 
     useEffect(() => {
         loadBrands();
