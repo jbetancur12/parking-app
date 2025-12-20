@@ -1,9 +1,10 @@
+```typescript
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { User } from '../entities/User';
 import { AuthRequest } from '../middleware/auth.middleware';
-import { Transaction, TransactionType } from '../entities/Transaction';
+import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 
 export const openShift = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -77,12 +78,23 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
 
     let totalIncome = 0;
     let totalExpenses = 0;
+    let cashIncome = 0;
+    let transferIncome = 0;
 
     transactions.forEach(t => {
         if (t.type === TransactionType.EXPENSE) {
             totalExpenses += Math.abs(t.amount);
         } else {
             totalIncome += t.amount;
+            // Separate by payment method
+            if (t.paymentMethod === PaymentMethod.CASH) {
+                cashIncome += t.amount;
+            } else if (t.paymentMethod === PaymentMethod.TRANSFER) {
+                transferIncome += t.amount;
+            } else {
+                // For old transactions without payment method, count as cash
+                cashIncome += t.amount;
+            }
         }
     });
 
@@ -96,7 +108,7 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
     await em.flush();
 
     // Return summary
-    const expectedCash = shift.baseAmount + totalIncome - totalExpenses;
+    const expectedCash = shift.baseAmount + cashIncome - totalExpenses; // Only cash income counts for expected cash
     const difference = shift.declaredAmount - expectedCash;
 
     return res.json({
@@ -105,6 +117,8 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
         summary: {
             baseAmount: shift.baseAmount,
             totalIncome,
+            cashIncome,
+            transferIncome,
             totalExpenses,
             expectedCash,
             declaredAmount: shift.declaredAmount,

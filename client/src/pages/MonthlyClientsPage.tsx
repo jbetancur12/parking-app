@@ -64,20 +64,28 @@ export default function MonthlyClientsPage() {
         }
     };
 
-    const handleRenew = async (client: Client) => {
-        const amountStr = prompt(`Renovar suscripción para ${client.plate}? Ingrese monto:`, client.monthlyRate.toString());
-        if (amountStr === null) return; // Cancelled
+    const handleRenew = async (clientId: number) => {
+        const amountStr = prompt('Ingrese el monto a pagar (dejar vacío para usar tarifa mensual):');
+        if (amountStr === null) return; // User cancelled
 
         const amount = Number(amountStr);
-        if (isNaN(amount) || amount <= 0) {
+        if (isNaN(amount) || amount < 0) {
             alert('Invalid amount');
             return;
         }
 
+        // Ask for payment method
+        const paymentMethod = confirm('¿El pago es en EFECTIVO?\n\nOK = Efectivo\nCancelar = Transferencia')
+            ? 'CASH'
+            : 'TRANSFER';
+
         try {
-            await api.post(`/monthly/${client.id}/renew`, { amount });
+            await api.post(`/monthly/${clientId}/renew`, {
+                amount: amount || undefined,
+                paymentMethod
+            });
             fetchClients();
-            alert('Renovado exitosamente!');
+            alert(`Renovado exitosamente!\nMétodo de pago: ${paymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'}`);
         } catch (err: any) {
             alert(err.response?.data?.message || 'Error en renovación');
         }
