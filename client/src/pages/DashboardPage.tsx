@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Play, Square, AlertCircle, X } from 'lucide-react';
+import { Play, Square, AlertCircle, X, Printer } from 'lucide-react';
+import React from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { PrintShiftSummary } from '../components/PrintShiftSummary';
 
 interface Shift {
     id: number;
@@ -19,6 +22,14 @@ export default function DashboardPage() {
     const [showCloseModal, setShowCloseModal] = useState(false);
     const [declaredAmount, setDeclaredAmount] = useState('');
     const [notes, setNotes] = useState('');
+    const [closedShiftData, setClosedShiftData] = useState<any>(null);
+
+    // Print ref for shift summary
+    const shiftSummaryRef = React.useRef<HTMLDivElement>(null);
+
+    const handlePrintShiftSummary = useReactToPrint({
+        contentRef: shiftSummaryRef,
+    });
 
     useEffect(() => {
         fetchActiveShift();
@@ -56,6 +67,16 @@ export default function DashboardPage() {
 
             const { summary } = response.data;
 
+            // Save data for printing
+            setClosedShiftData({
+                summary,
+                shift: {
+                    startTime: activeShift.startTime,
+                    endTime: new Date().toISOString()
+                },
+                user: { username: user?.username || 'Usuario' }
+            });
+
             // Show summary alert
             const summaryText = `
 RESUMEN DE CIERRE DE TURNO
@@ -72,6 +93,12 @@ Transacciones: ${summary.transactionCount}
             `;
 
             alert(summaryText);
+
+            // Ask if user wants to print
+            if (confirm('¿Desea imprimir el resumen del turno?')) {
+                setTimeout(() => handlePrintShiftSummary(), 100);
+            }
+
             setActiveShift(null);
             setShowCloseModal(false);
             setDeclaredAmount('');
@@ -199,6 +226,18 @@ Transacciones: ${summary.transactionCount}
                     </div>
                 </div>
             )}
+
+            {/* Hidden Print Component */}
+            <div style={{ display: 'none' }}>
+                {closedShiftData && (
+                    <PrintShiftSummary
+                        ref={shiftSummaryRef}
+                        summary={closedShiftData.summary}
+                        shift={closedShiftData.shift}
+                        user={closedShiftData.user}
+                    />
+                )}
+            </div>
         </div>
     );
 }
