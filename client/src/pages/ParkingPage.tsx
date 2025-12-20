@@ -136,6 +136,23 @@ export default function ParkingPage() {
         }
     };
 
+    const handleReprintTicket = (session: ParkingSession) => {
+        // Set print data for the selected session
+        setPrintData({
+            type: 'ticket',
+            session: {
+                id: session.id,
+                plate: session.plate,
+                vehicleType: session.vehicleType,
+                entryTime: session.entryTime,
+                planType: session.planType
+            }
+        });
+
+        // Print after a short delay to ensure state is updated
+        setTimeout(() => handlePrintTicket(), 100);
+    };
+
     const filteredSessions = sessions.filter(session =>
         session.plate.includes(searchTerm.toUpperCase())
     );
@@ -335,12 +352,22 @@ export default function ParkingPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button
-                                            onClick={() => handleExitClick(session.plate)}
-                                            className="text-red-600 hover:text-red-900 bg-red-50 text-xs px-3 py-1 rounded-full font-medium"
-                                        >
-                                            Salida
-                                        </button>
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => handleReprintTicket(session)}
+                                                className="text-blue-600 hover:text-blue-900 bg-blue-50 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                                                title="Reimprimir ticket"
+                                            >
+                                                <Printer size={14} />
+                                                Ticket
+                                            </button>
+                                            <button
+                                                onClick={() => handleExitClick(session.plate)}
+                                                className="text-red-600 hover:text-red-900 bg-red-50 text-xs px-3 py-1 rounded-full font-medium"
+                                            >
+                                                Salida
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
