@@ -21,4 +21,22 @@ api.interceptors.request.use(
     }
 );
 
+// Add response interceptor to handle auth errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Only clear session if it's a 401/403 from a protected endpoint (not login)
+        if ((error.response?.status === 401 || error.response?.status === 403) &&
+            !error.config?.url?.includes('/auth/login')) {
+            // Clear auth data and redirect to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;
