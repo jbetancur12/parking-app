@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { User } from '../entities/User';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { Transaction, TransactionType } from '../entities/Transaction';
 
 export const openShift = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -71,13 +72,44 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
 
     const { declaredAmount, notes } = req.body;
 
-    // Logic to calculate totals (parking + transactions) would go here
-    // For now, simple close
+    // Calculate totals from transactions
+    const transactions = await em.find(Transaction, { shift: shift.id });
+
+    let totalIncome = 0;
+    let totalExpenses = 0;
+
+    transactions.forEach(t => {
+        if (t.type === TransactionType.EXPENSE) {
+            totalExpenses += Math.abs(t.amount);
+        } else {
+            totalIncome += t.amount;
+        }
+    });
+
+    shift.totalIncome = totalIncome;
+    shift.totalExpenses = totalExpenses;
     shift.isActive = false;
     shift.endTime = new Date();
     shift.declaredAmount = declaredAmount || 0;
     shift.notes = notes;
 
     await em.flush();
-    return res.json({ message: 'Shift closed successfully', shift });
+
+    // Return summary
+    const expectedCash = shift.baseAmount + totalIncome - totalExpenses;
+    const difference = shift.declaredAmount - expectedCash;
+
+    return res.json({
+        message: 'Shift closed successfully',
+        shift,
+        summary: {
+            baseAmount: shift.baseAmount,
+            totalIncome,
+            totalExpenses,
+            expectedCash,
+            declaredAmount: shift.declaredAmount,
+            difference,
+            transactionCount: transactions.length
+        }
+    });
 };
