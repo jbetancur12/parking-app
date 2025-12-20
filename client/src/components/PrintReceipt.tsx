@@ -35,7 +35,7 @@ export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
                 <div className="mb-4">
                     <div className="flex justify-between mb-1">
                         <span className="font-semibold">RECIBO #:</span>
-                        <span>{session.id.toString().padStart(6, '0')}</span>
+                        <span>{session.id ? session.id.toString().padStart(6, '0') : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                         <span className="font-semibold">PLACA:</span>

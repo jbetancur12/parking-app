@@ -176,7 +176,18 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     em.persist(transaction);
 
     await em.flush();
-    return res.json({ session, cost, durationMinutes });
+
+    // Return all data needed for printing
+    return res.json({
+        id: session.id,
+        plate: session.plate,
+        vehicleType: session.vehicleType,
+        entryTime: session.entryTime,
+        exitTime: session.exitTime,
+        planType: session.planType,
+        cost,
+        durationMinutes
+    });
 };
 
 export const getActiveSessions = async (req: Request, res: Response) => {
