@@ -113,3 +113,46 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
         }
     });
 };
+
+export const getAllClosed = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal Server Error' });
+
+    try {
+        const closedShifts = await em.find(Shift,
+            { isActive: false },
+            {
+                populate: ['user'],
+                orderBy: { endTime: 'DESC' }
+            }
+        );
+
+        // Calculate summary for each shift
+        const shiftsWithSummary = closedShifts.map(shift => {
+            const expectedCash = shift.baseAmount + shift.totalIncome - shift.totalExpenses;
+            const difference = shift.declaredAmount - expectedCash;
+
+            return {
+                id: shift.id,
+                user: {
+                    id: shift.user.id,
+                    username: shift.user.username
+                },
+                startTime: shift.startTime,
+                endTime: shift.endTime,
+                baseAmount: shift.baseAmount,
+                totalIncome: shift.totalIncome,
+                totalExpenses: shift.totalExpenses,
+                declaredAmount: shift.declaredAmount,
+                expectedCash,
+                difference,
+                notes: shift.notes
+            };
+        });
+
+        res.json(shiftsWithSummary);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching closed shifts' });
+    }
+};

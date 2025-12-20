@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardLayout() {
@@ -24,7 +24,11 @@ export default function DashboardLayout() {
 
     // Add Users link for SUPER_ADMIN and ADMIN
     const allNavigation = (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN')
-        ? [...navigation, { name: 'Usuarios', href: '/users', icon: UserCog }]
+        ? [
+            ...navigation,
+            { name: 'Historial Turnos', href: '/shift-history', icon: History },
+            { name: 'Usuarios', href: '/users', icon: UserCog }
+        ]
         : navigation;
 
     return (
