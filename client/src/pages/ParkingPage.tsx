@@ -57,10 +57,29 @@ export default function ParkingPage() {
     const handleEntrySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType });
+            const response = await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType });
+            const newSession = response.data;
+
+            // Save for printing
+            setPrintData({
+                type: 'ticket',
+                session: {
+                    id: newSession.id,
+                    plate: newSession.plate,
+                    vehicleType: newSession.vehicleType,
+                    entryTime: newSession.entryTime,
+                    planType: newSession.planType
+                }
+            });
+
             setIsEntryModalOpen(false);
             setPlate('');
             fetchSessions();
+
+            // Show print option
+            if (confirm(`Vehículo registrado: ${newSession.plate}\n\n¿Desea imprimir el ticket?`)) {
+                setTimeout(() => handlePrintTicket(), 100);
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al registrar entrada');
         }
@@ -79,9 +98,39 @@ export default function ParkingPage() {
         if (!previewData) return;
         try {
             const response = await api.post('/parking/exit', { plate: previewData.plate });
-            setExitResult(response.data);
+            const exitData = response.data;
+
+            // Calculate duration for display
+            const entry = new Date(exitData.entryTime);
+            const exit = new Date(exitData.exitTime);
+            const diffMs = exit.getTime() - entry.getTime();
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const duration = `${hours}h ${minutes}m`;
+
+            // Save for printing
+            setPrintData({
+                type: 'receipt',
+                session: {
+                    id: exitData.id,
+                    plate: exitData.plate,
+                    vehicleType: exitData.vehicleType,
+                    entryTime: exitData.entryTime,
+                    exitTime: exitData.exitTime,
+                    planType: exitData.planType,
+                    cost: exitData.cost,
+                    duration
+                }
+            });
+
+            setExitResult(exitData);
             setPreviewData(null);
             fetchSessions();
+
+            // Show print option
+            if (confirm(`Salida registrada\nTotal: $${exitData.cost.toLocaleString()}\n\n¿Desea imprimir el recibo?`)) {
+                setTimeout(() => handlePrintReceipt(), 100);
+            }
         } catch (err: any) {
             alert(err.response?.data?.message || 'Error al registrar salida');
         }
@@ -305,6 +354,16 @@ export default function ParkingPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Hidden Print Components */}
+            <div style={{ display: 'none' }}>
+                {printData && printData.type === 'ticket' && (
+                    <PrintTicket ref={ticketRef} session={printData.session} />
+                )}
+                {printData && printData.type === 'receipt' && (
+                    <PrintReceipt ref={receiptRef} session={printData.session} />
+                )}
             </div>
         </div>
     );
