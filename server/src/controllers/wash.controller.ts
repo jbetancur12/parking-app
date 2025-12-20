@@ -24,7 +24,7 @@ export class WashController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            const { plate, serviceTypeId, operatorName, shiftId } = req.body;
+            const { plate, serviceTypeId, operatorName, shiftId, price } = req.body;
 
             const shift = await em.findOne(Shift, { id: Number(shiftId) });
             if (!shift || !shift.isActive) return res.status(400).json({ message: 'Shift closed or invalid' });
@@ -32,12 +32,15 @@ export class WashController {
             const serviceType = await em.findOne(WashServiceType, { id: Number(serviceTypeId) });
             if (!serviceType) return res.status(404).json({ message: 'Service type not found' });
 
+            // Use provided price (override) or default to serviceType price
+            const finalPrice = price ? Number(price) : serviceType.price;
+
             const washEntry = em.create(WashEntry, {
                 plate: plate.toUpperCase(),
                 serviceType,
                 shift,
                 operatorName,
-                cost: serviceType.price,
+                cost: finalPrice,
                 status: 'Completed',
                 createdAt: new Date()
             });
@@ -46,7 +49,7 @@ export class WashController {
             const transaction = em.create(Transaction, {
                 shift,
                 type: TransactionType.WASH_SERVICE, // Wash service
-                amount: serviceType.price,
+                amount: finalPrice,
                 description: `Lavado: ${serviceType.name} (${plate})`,
                 timestamp: new Date()
             });

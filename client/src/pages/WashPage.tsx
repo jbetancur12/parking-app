@@ -8,6 +8,7 @@ export default function WashPage() {
     const [entries, setEntries] = useState<WashEntry[]>([]);
     const [plate, setPlate] = useState('');
     const [selectedType, setSelectedType] = useState<number | ''>('');
+    const [price, setPrice] = useState('');
     const [operator, setOperator] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -23,6 +24,17 @@ export default function WashPage() {
             fetchHistory();
         }
     }, [activeShift]);
+
+    useEffect(() => {
+        if (selectedType) {
+            const type = types.find(t => t.id === selectedType);
+            if (type) {
+                setPrice(type.price.toString());
+            }
+        } else {
+            setPrice('');
+        }
+    }, [selectedType, types]);
 
     const fetchActiveShift = async () => {
         try {
@@ -65,7 +77,8 @@ export default function WashPage() {
             await washService.createEntry(activeShift.id, {
                 plate,
                 serviceTypeId: Number(selectedType),
-                operatorName: operator
+                operatorName: operator,
+                price: price ? Number(price) : undefined
             });
             setMessage('Lavado registrado!');
             setPlate('');
@@ -99,7 +112,7 @@ export default function WashPage() {
             {/* Form */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-cyan-500">
                 <h2 className="text-lg font-semibold mb-4 text-gray-700">Nuevo Servicio</h2>
-                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Placa</label>
                         <input
@@ -122,10 +135,20 @@ export default function WashPage() {
                             <option value="">Seleccione Servicio...</option>
                             {types.map(t => (
                                 <option key={t.id} value={t.id}>
-                                    {t.name} - ${t.price}
+                                    {t.name} - ${t.price} (Sugerido)
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Precio (Opcional)</label>
+                        <input
+                            type="number"
+                            value={price}
+                            onChange={e => setPrice(e.target.value)}
+                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none font-semibold text-gray-700"
+                            placeholder="Sugerido..."
+                        />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Operario (Opcional)</label>
@@ -143,7 +166,7 @@ export default function WashPage() {
                         className="bg-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan-700 flex items-center justify-center h-10"
                     >
                         <Plus size={18} className="mr-2" />
-                        Registrar Lavado
+                        Registrar
                     </button>
                 </form>
             </div>

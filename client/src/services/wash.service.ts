@@ -21,7 +21,7 @@ export const washService = {
         return response.data;
     },
 
-    createEntry: async (shiftId: number, data: { plate: string; serviceTypeId: number; operatorName?: string }) => {
+    createEntry: async (shiftId: number, data: { plate: string; serviceTypeId: number; operatorName?: string; price?: number }) => {
         const response = await api.post('/wash/entries', { ...data, shiftId });
         return response.data;
     },
