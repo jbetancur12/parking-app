@@ -1,0 +1,49 @@
+import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
+import { Shift } from './Shift';
+
+export enum VehicleType {
+    CAR = 'CAR',
+    MOTORCYCLE = 'MOTORCYCLE',
+    OTHER = 'OTHER',
+}
+
+export enum ParkingStatus {
+    ACTIVE = 'ACTIVE',
+    COMPLETED = 'COMPLETED',
+    CANCELLED = 'CANCELLED',
+}
+
+@Entity()
+export class ParkingSession {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    plate!: string;
+
+    @Enum(() => VehicleType)
+    vehicleType!: VehicleType;
+
+    @Property()
+    entryTime: Date = new Date();
+
+    @Property({ nullable: true })
+    exitTime?: Date;
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    cost?: number;
+
+    @Enum(() => ParkingStatus)
+    status: ParkingStatus = ParkingStatus.ACTIVE;
+
+    // Link to the shift that opened this session
+    @ManyToOne(() => Shift)
+    entryShift!: Shift;
+
+    // Link to the shift that closed this session
+    @ManyToOne(() => Shift, { nullable: true })
+    exitShift?: Shift;
+
+    @Property({ nullable: true })
+    notes?: string;
+}
