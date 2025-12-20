@@ -346,7 +346,7 @@ export default function MonthlyClientsPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <button
-                                            onClick={() => viewHistory(client)}
+                                            onClick={() => handleHistory(client)}
                                             className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium"
                                         >
                                             Historial

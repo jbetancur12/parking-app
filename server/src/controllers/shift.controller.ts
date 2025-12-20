@@ -2,7 +2,6 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
-import { User } from '../entities/User';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 
