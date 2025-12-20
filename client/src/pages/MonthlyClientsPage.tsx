@@ -216,22 +216,29 @@ export default function MonthlyClientsPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Pago</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {history.map((t: any) => (
-                                        <tr key={t.id}>
+                                    {history.map((payment: any) => (
+                                        <tr key={payment.id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(t.timestamp).toLocaleDateString()}
+                                                {new Date(payment.paymentDate).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {t.description}
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">
+                                                        {new Date(payment.periodStart).toLocaleDateString()} - {new Date(payment.periodEnd).toLocaleDateString()}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        ({Math.round((new Date(payment.periodEnd).getTime() - new Date(payment.periodStart).getTime()) / (1000 * 60 * 60 * 24))} días)
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                ${Number(t.amount).toLocaleString()}
+                                                ${Number(payment.amount).toLocaleString()}
                                             </td>
                                         </tr>
                                     ))}

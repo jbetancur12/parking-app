@@ -3,6 +3,7 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { MonthlyClient } from '../entities/MonthlyClient';
 import { Transaction, TransactionType } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
+import { MonthlyPayment } from '../entities/MonthlyPayment';
 
 export class MonthlyClientController {
 
@@ -39,10 +40,17 @@ export class MonthlyClientController {
 
             const { plate, name, phone, vehicleType, monthlyRate } = req.body;
 
-            const existing = await em.findOne(MonthlyClient, { plate });
-            if (existing) {
-                return res.status(400).json({ message: 'Client with this plate already exists' });
+            // Check if there's already an active client with this plate
+            const existingActive = await em.findOne(MonthlyClient, {
+                plate,
+                isActive: true
+            });
+            if (existingActive) {
+                return res.status(400).json({ message: 'Ya existe un cliente activo con esta placa' });
             }
+
+            const startDate = new Date();
+            const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
 
             const client = em.create(MonthlyClient, {
                 plate,
@@ -50,14 +58,24 @@ export class MonthlyClientController {
                 phone,
                 vehicleType,
                 monthlyRate: monthlyRate || 0,
-                startDate: new Date(), // Today
-                endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // +1 Month default
+                startDate,
+                endDate,
                 isActive: true,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
 
-            await em.persistAndFlush(client);
+            // Create initial payment record
+            const payment = em.create(MonthlyPayment, {
+                client,
+                periodStart: startDate,
+                periodEnd: endDate,
+                amount: monthlyRate || 0,
+                paymentDate: new Date()
+            });
+
+            em.persist([client, payment]);
+            await em.flush();
             res.status(201).json(client);
         } catch (error) {
             console.error(error);
@@ -85,8 +103,19 @@ export class MonthlyClientController {
             const newEndDate = new Date(baseDate);
             newEndDate.setMonth(newEndDate.getMonth() + 1);
 
+            const oldEndDate = client.endDate;
             client.endDate = newEndDate;
             client.isActive = true;
+
+            // Create payment record
+            const payment = em.create(MonthlyPayment, {
+                client,
+                periodStart: baseDate,
+                periodEnd: newEndDate,
+                amount: amount || client.monthlyRate,
+                paymentDate: new Date()
+            });
+            em.persist(payment);
 
             // Create Transaction
             // Need active shift to link transaction
@@ -131,11 +160,11 @@ export class MonthlyClientController {
                 return res.status(404).json({ message: 'Client not found' });
             }
 
-            const transactions = await em.find(Transaction, {
-                description: { $like: `%${client.plate}%` }
-            }, { orderBy: { timestamp: 'DESC' } });
+            const payments = await em.find(MonthlyPayment, {
+                client: client.id
+            }, { orderBy: { paymentDate: 'DESC' } });
 
-            res.json(transactions);
+            res.json(payments);
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error fetching history' });
