@@ -40,15 +40,59 @@ export class MonthlyClientController {
 
             const { plate, name, phone, vehicleType, monthlyRate } = req.body;
 
-            // Check if there's already an active client with this plate
-            const existingActive = await em.findOne(MonthlyClient, {
-                plate,
-                isActive: true
-            });
-            if (existingActive) {
-                return res.status(400).json({ message: 'Ya existe un cliente activo con esta placa' });
+            // 1. Check if ANY client exists with this plate (active or inactive)
+            const existingClient = await em.findOne(MonthlyClient, { plate });
+
+            if (existingClient) {
+                if (existingClient.isActive) {
+                    return res.status(400).json({ message: 'Ya existe un cliente activo con esta placa' });
+                }
+
+                // REACTIVATE LOGIC for inactive client
+                existingClient.name = name;
+                existingClient.phone = phone;
+                existingClient.vehicleType = vehicleType;
+                existingClient.monthlyRate = monthlyRate || 0;
+
+                // Set new period starting today
+                const startDate = new Date();
+                const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+
+                existingClient.startDate = startDate;
+                existingClient.endDate = endDate;
+                existingClient.isActive = true;
+                existingClient.updatedAt = new Date();
+
+                // Create payment record for reactivation
+                const payment = em.create(MonthlyPayment, {
+                    client: existingClient,
+                    periodStart: startDate,
+                    periodEnd: endDate,
+                    amount: monthlyRate || 0,
+                    paymentDate: new Date()
+                });
+
+                // Transaction Logic
+                const activeShift = await em.findOne(Shift, { endTime: null });
+                if (activeShift) {
+                    const transaction = em.create(Transaction, {
+                        shift: activeShift,
+                        type: TransactionType.MONTHLY_PAYMENT,
+                        description: `Reactivación Mensualidad: ${name} (${plate})`,
+                        amount: monthlyRate || 0,
+                        paymentMethod: PaymentMethod.CASH,
+                        timestamp: new Date()
+                    });
+                    em.persist(transaction);
+                }
+
+                em.persist(payment);
+                await em.flush();
+
+                return res.status(200).json({ client: existingClient, payment, message: 'Cliente reactivado exitosamente' });
             }
 
+            // 2. New Client Creation (Original Logic)
             const startDate = new Date();
             const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
 
@@ -75,7 +119,6 @@ export class MonthlyClientController {
             });
 
             // Need to create a Transaction for the initial payment as well if there's an active shift
-            // This fixes the issue where new clients didn't register income
             const activeShift = await em.findOne(Shift, { endTime: null });
             if (activeShift) {
                 const transaction = em.create(Transaction, {
