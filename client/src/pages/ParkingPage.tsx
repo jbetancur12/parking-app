@@ -16,6 +16,7 @@ export default function ParkingPage() {
     // Entry Form State
     const [plate, setPlate] = useState('');
     const [vehicleType, setVehicleType] = useState('CAR');
+    const [planType, setPlanType] = useState('HOUR');
     const [error, setError] = useState('');
 
     // Exit State
@@ -37,7 +38,7 @@ export default function ParkingPage() {
     const handleEntrySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType });
+            await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType });
             setIsEntryModalOpen(false);
             setPlate('');
             fetchSessions();
@@ -136,6 +137,31 @@ export default function ParkingPage() {
                                             {type}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Billing Plan</label>
+                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlanType('HOUR')}
+                                        className={`py-2 text-sm rounded-md border ${planType === 'HOUR'
+                                            ? 'bg-blue-50 border-blue-500 text-blue-700'
+                                            : 'bg-white border-gray-300 text-gray-700'
+                                            }`}
+                                    >
+                                        Per Hour
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlanType('DAY')}
+                                        className={`py-2 text-sm rounded-md border ${planType === 'DAY'
+                                            ? 'bg-blue-50 border-blue-500 text-blue-700'
+                                            : 'bg-white border-gray-300 text-gray-700'
+                                            }`}
+                                    >
+                                        Per Day
+                                    </button>
                                 </div>
                             </div>
                             <button

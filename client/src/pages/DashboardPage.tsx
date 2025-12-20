@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { Play, Square, AlertCircle } from 'lucide-react';
+import { ExpensesSection } from '../components/dashboard/ExpensesSection';
+import { WashSection } from '../components/dashboard/WashSection';
+import SalesSection from '../components/dashboard/SalesSection';
 
 interface Shift {
     id: number;
@@ -110,7 +113,25 @@ export default function DashboardPage() {
                             <a href="/parking" className="block w-full text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
                                 View Parking
                             </a>
+                            <a href="/reports" className="block w-full text-center bg-gray-100 text-gray-700 py-2 rounded hover:bg-gray-200">
+                                View Reports
+                            </a>
                         </div>
+                    </div>
+
+                    {/* Expenses Section */}
+                    <div className="bg-white p-6 rounded-lg shadow-md md:col-span-1">
+                        <ExpensesSection shiftId={activeShift.id} />
+                    </div>
+
+                    {/* Sales Section */}
+                    <div className="bg-white p-6 rounded-lg shadow-md md:col-span-1">
+                        <SalesSection />
+                    </div>
+
+                    {/* Wash Section */}
+                    <div className="bg-white p-6 rounded-lg shadow-md md:col-span-3">
+                        <WashSection shiftId={activeShift.id} />
                     </div>
                 </div>
             )}

@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardLayout() {
@@ -13,7 +13,9 @@ export default function DashboardLayout() {
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard },
         { name: 'Parking', href: '/parking', icon: Car },
+        { name: 'Clients', href: '/monthly-clients', icon: Users },
         { name: 'Reports', href: '/reports', icon: FileText },
+        { name: 'Brands', href: '/brands', icon: Tag },
         { name: 'Settings', href: '/settings', icon: Settings },
     ];
 

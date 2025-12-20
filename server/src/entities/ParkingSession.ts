@@ -13,6 +13,11 @@ export enum ParkingStatus {
     CANCELLED = 'CANCELLED',
 }
 
+export enum PlanType {
+    HOUR = 'HOUR',
+    DAY = 'DAY'
+}
+
 @Entity()
 export class ParkingSession {
     @PrimaryKey()
@@ -23,6 +28,9 @@ export class ParkingSession {
 
     @Enum(() => VehicleType)
     vehicleType!: VehicleType;
+
+    @Enum(() => PlanType)
+    planType: PlanType = PlanType.HOUR; // Default to HOUR
 
     @Property()
     entryTime: Date = new Date();

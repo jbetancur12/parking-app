@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
-import { ParkingSession, ParkingStatus, VehicleType } from '../entities/ParkingSession';
+import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entities/ParkingSession';
 import { Shift } from '../entities/Shift';
+import { Tariff, TariffType } from '../entities/Tariff';
+import { SystemSetting } from '../entities/SystemSetting';
+import { Transaction, TransactionType } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 export const entryVehicle = async (req: AuthRequest, res: Response) => {
@@ -10,11 +13,14 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    const { plate, vehicleType, notes } = req.body;
+    const { plate, vehicleType, planType, notes } = req.body;
 
     if (!plate || !vehicleType) {
         return res.status(400).json({ message: 'Plate and Vehicle Type are required' });
     }
+
+    // Default plan to HOUR if not provided
+    const selectedPlan = planType || PlanType.HOUR;
 
     // Find active shift for user
     const shift = await em.findOne(Shift, {
@@ -39,6 +45,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
     const session = em.create(ParkingSession, {
         plate,
         vehicleType: vehicleType as VehicleType,
+        planType: selectedPlan,
         entryTime: new Date(),
         status: ParkingStatus.ACTIVE,
         entryShift: shift,
@@ -81,25 +88,64 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ message: 'No active parking session found for this plate' });
     }
 
-    // Calculate duration and cost (simplified logic for now)
+    // Load Tariffs for this vehicle type
+    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
+
+    // Load Settings (Grace Period)
+    const settingsList = await em.find(SystemSetting, {});
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+    const gracePeriod = Number(settings['grace_period'] || 5);
+
+    // Map tariffs for easy access
+    const rateMap: Record<string, number> = {};
+    tariffs.forEach(t => rateMap[t.tariffType] = Number(t.cost));
+
     const exitTime = new Date();
     const durationMs = exitTime.getTime() - session.entryTime.getTime();
     const durationMinutes = Math.ceil(durationMs / (1000 * 60));
 
-    // Dummy rate: $100 per minute
-    const rate = 100;
-    const cost = durationMinutes * rate;
+    let cost = 0;
+
+    // Calculation Logic
+    if (session.planType === PlanType.DAY) {
+        // Day Plan: Charge per Day
+        const days = Math.ceil(durationMinutes / 1440);
+        cost = days * (rateMap['DAY'] || 15000);
+    } else {
+        // Hourly Plan
+        const hourRate = rateMap['HOUR'] || 3000;
+
+        const fullHours = Math.floor(durationMinutes / 60);
+        const remainderMinutes = durationMinutes % 60;
+
+        let chargeableHours = fullHours;
+
+        if (remainderMinutes > gracePeriod) {
+            chargeableHours += 1;
+        }
+
+        if (chargeableHours === 0) {
+            chargeableHours = 1;
+        }
+
+        cost = chargeableHours * hourRate;
+    }
 
     session.exitTime = exitTime;
     session.cost = cost;
     session.status = ParkingStatus.COMPLETED;
     session.exitShift = shift;
 
-    // Update shift income? Ideally yes, but depends on payment flow.
-    // We'll update shift.totalIncome later properly or via Transaction entity.
-    // For now, let's create a Transaction.
-
-    // Actually, let's keep it simple for this phase: Just close the session.
+    // Create Revenue Transaction
+    const transaction = em.create(Transaction, {
+        shift: shift,
+        type: TransactionType.PARKING_REVENUE,
+        description: `Parking: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
+        amount: cost,
+        timestamp: new Date()
+    });
+    em.persist(transaction);
 
     await em.flush();
     return res.json({ session, cost, durationMinutes });

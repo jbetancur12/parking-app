@@ -1,11 +1,20 @@
 import express from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
-import config from '../mikro-orm.config';
+import config from './mikro-orm.config';
 import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import shiftRoutes from './routes/shift.routes';
 import parkingRoutes from './routes/parking.routes';
 import monthlyRoutes from './routes/monthly.routes';
+import reportRoutes from './routes/report.routes';
+import expenseRoutes from './routes/expense.routes';
+import washRoutes from './routes/wash.routes';
+import brandRoutes from './routes/brand.routes';
+import saleRoutes from './routes/sale.routes';
+import tariffRoutes from './routes/tariff.routes';
+import settingRoutes from './routes/setting.routes';
+import { Tariff } from './entities/Tariff';
+import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
 import bcrypt from 'bcryptjs';
 
@@ -48,6 +57,13 @@ const startServer = async () => {
         app.use('/api/shifts', shiftRoutes);
         app.use('/api/parking', parkingRoutes);
         app.use('/api/monthly', monthlyRoutes);
+        app.use('/api/reports', reportRoutes);
+        app.use('/api/expenses', expenseRoutes);
+        app.use('/api/wash', washRoutes);
+        app.use('/api/brands', brandRoutes);
+        app.use('/api/sales', saleRoutes);
+        app.use('/api/tariffs', tariffRoutes);
+        app.use('/api/settings', settingRoutes);
 
         app.get('/', (req, res) => {
             res.send('Parking App API is running');
@@ -57,4 +73,9 @@ const startServer = async () => {
             console.log(`🚀 Server running on http://localhost:${port}`);
         });
     } catch (error) {
-        conso
+        console.error('❌ Error starting server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
