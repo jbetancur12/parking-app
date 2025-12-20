@@ -31,6 +31,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/ticket/:id" element={<TicketStatusPage />} />
+          <Route path="/ticket/:id" element={<TicketStatusPage />} />
           <Route
             path="/"
             element={

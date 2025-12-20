@@ -10,27 +10,31 @@ export default function DashboardLayout() {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    const navigation = [
+    // Base navigation (Everyone)
+    const baseNavigation = [
         { name: 'Inicio', href: '/', icon: LayoutDashboard },
         { name: 'Parqueo', href: '/parking', icon: Car },
         { name: 'Egresos', href: '/expenses', icon: TrendingDown },
         { name: 'Ingresos', href: '/incomes', icon: DollarSign },
         { name: 'Lavadero', href: '/wash', icon: Droplets },
         { name: 'Mensualidades', href: '/monthly-clients', icon: Users },
+    ];
+
+    // Admin/SuperAdmin only
+    const adminNavigation = [
         { name: 'Transacciones', href: '/transactions', icon: Receipt },
         { name: 'Reportes', href: '/reports', icon: FileText },
         { name: 'Marcas', href: '/brands', icon: Tag },
         { name: 'Ajustes', href: '/settings', icon: Settings },
+        { name: 'Historial Turnos', href: '/shift-history', icon: History },
+        { name: 'Usuarios', href: '/users', icon: UserCog }
     ];
 
-    // Add Users link for SUPER_ADMIN and ADMIN
-    const allNavigation = (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN')
-        ? [
-            ...navigation,
-            { name: 'Historial Turnos', href: '/shift-history', icon: History },
-            { name: 'Usuarios', href: '/users', icon: UserCog }
-        ]
-        : navigation;
+    let navigationItems = [...baseNavigation];
+
+    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+        navigationItems = [...baseNavigation, ...adminNavigation];
+    }
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -51,7 +55,7 @@ export default function DashboardLayout() {
                     </button>
                 </div>
                 <nav className="mt-6 px-4 space-y-2">
-                    {allNavigation.map((item) => {
+                    {navigationItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.href;
                         return (

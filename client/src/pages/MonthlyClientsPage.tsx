@@ -15,6 +15,11 @@ interface Client {
     isActive: boolean;
 }
 
+
+
+import { useReactToPrint } from 'react-to-print';
+import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
+
 export default function MonthlyClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +38,26 @@ export default function MonthlyClientsPage() {
     const [history, setHistory] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
+    // Printing
+    const componentRef = React.useRef<HTMLDivElement>(null);
+    const [printData, setPrintData] = useState<any>(null);
+
+    // Using contentRef pattern consistent with ParkingPage
+    const handlePrint = useReactToPrint({
+        contentRef: componentRef,
+        documentTitle: 'Recibo_Mensualidad',
+        onAfterPrint: () => setPrintData(null),
+    });
+
+    const triggerPrint = (data: any) => {
+        setPrintData(data);
+        // Small timeout to ensure render before printing, same as ParkingPage
+        setTimeout(() => {
+            handlePrint();
+        }, 100);
+    };
+
+
     useEffect(() => {
         fetchClients();
     }, [searchTerm]);
@@ -49,17 +74,40 @@ export default function MonthlyClientsPage() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/monthly', {
+            const response = await api.post('/monthly', {
                 plate: plate.toUpperCase(),
                 name,
                 phone,
                 vehicleType,
                 monthlyRate: Number(monthlyRate)
             });
+
             setIsModalOpen(false);
             resetForm();
             fetchClients();
+
+            // Trigger print
+            const { client, payment } = response.data;
+            console.log('Create Response:', response.data);
+
+            if (client && payment) {
+                if (confirm('¿Desea imprimir el recibo de la nueva mensualidad?')) {
+                    triggerPrint({
+                        paymentId: payment.id,
+                        plate: client.plate,
+                        clientName: client.name,
+                        vehicleType: client.vehicleType,
+                        amount: payment.amount,
+                        periodStart: payment.periodStart,
+                        periodEnd: payment.periodEnd,
+                        paymentDate: payment.paymentDate,
+                        concept: 'NUEVA MENSUALIDAD'
+                    });
+                }
+            }
+
         } catch (err: any) {
+            console.error('Create Error:', err);
             setError(err.response?.data?.message || 'Failed to create client');
         }
     };
@@ -80,14 +128,38 @@ export default function MonthlyClientsPage() {
             : 'TRANSFER';
 
         try {
-            await api.post(`/monthly/${clientId}/renew`, {
+            const res = await api.post(`/monthly/${clientId}/renew`, {
                 amount: amount || undefined,
                 paymentMethod
             });
             fetchClients();
+
             alert(`Renovado exitosamente!\nMétodo de pago: ${paymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'}`);
+
+            // Trigger print
+            const { client, payment } = res.data;
+            console.log('Renew Response:', res.data);
+
+            if (client && payment) {
+                if (confirm('¿Desea imprimir el recibo de renovación?')) {
+                    triggerPrint({
+                        paymentId: payment.id,
+                        plate: client.plate,
+                        clientName: client.name,
+                        vehicleType: client.vehicleType,
+                        amount: payment.amount,
+                        periodStart: payment.periodStart,
+                        periodEnd: payment.periodEnd,
+                        paymentDate: payment.paymentDate,
+                        concept: 'RENOVACIÓN'
+                    });
+                }
+            }
+
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error en renovación');
+            // Handle generic or specific errors
+            const msg = err.response?.data?.message || 'Error en renovación';
+            alert(msg);
         }
     };
 
@@ -100,6 +172,21 @@ export default function MonthlyClientsPage() {
         } catch (err) {
             alert('Failed to fetch history');
         }
+    };
+
+    const handleReprintHistory = (payment: any) => {
+        if (!selectedClient) return;
+        triggerPrint({
+            paymentId: payment.id,
+            plate: selectedClient.plate,
+            clientName: selectedClient.name,
+            vehicleType: selectedClient.vehicleType,
+            amount: payment.amount,
+            periodStart: payment.periodStart,
+            periodEnd: payment.periodEnd,
+            paymentDate: payment.paymentDate,
+            concept: 'COPIA DE RECIBO'
+        });
     };
 
     const resetForm = () => {
@@ -138,6 +225,16 @@ export default function MonthlyClientsPage() {
 
     return (
         <div>
+            {/* Print Component mimicking ParkingPage structure */}
+            <div style={{ display: 'none' }}>
+                {printData && (
+                    <PrintMonthlyReceipt
+                        ref={componentRef}
+                        data={printData}
+                    />
+                )}
+            </div>
+
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 flex items-center">
                     <Users className="mr-3" /> Clientes Mensuales
@@ -280,6 +377,7 @@ export default function MonthlyClientsPage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Pago</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -301,10 +399,18 @@ export default function MonthlyClientsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                                                 ${Number(payment.amount).toLocaleString()}
                                             </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <button
+                                                    onClick={() => handleReprintHistory(payment)}
+                                                    className="text-blue-600 hover:text-blue-900 text-xs font-medium bg-blue-50 px-2 py-1 rounded"
+                                                >
+                                                    Imprimir
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                     {history.length === 0 && (
-                                        <tr><td colSpan={3} className="text-center py-4 text-gray-500">No se encontró historial</td></tr>
+                                        <tr><td colSpan={4} className="text-center py-4 text-gray-500">No se encontró historial</td></tr>
                                     )}
                                 </tbody>
                             </table>

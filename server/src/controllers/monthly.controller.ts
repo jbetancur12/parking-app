@@ -74,9 +74,26 @@ export class MonthlyClientController {
                 paymentDate: new Date()
             });
 
+            // Need to create a Transaction for the initial payment as well if there's an active shift
+            // This fixes the issue where new clients didn't register income
+            const activeShift = await em.findOne(Shift, { endTime: null });
+            if (activeShift) {
+                const transaction = em.create(Transaction, {
+                    shift: activeShift,
+                    type: TransactionType.MONTHLY_PAYMENT,
+                    description: `Nueva Mensualidad: ${name} (${plate})`,
+                    amount: monthlyRate || 0,
+                    paymentMethod: PaymentMethod.CASH, // Default to CASH for now
+                    timestamp: new Date()
+                });
+                em.persist(transaction);
+            }
+
             em.persist([client, payment]);
             await em.flush();
-            res.status(201).json(client);
+
+            // Return both client and payment for receipt
+            res.status(201).json({ client, payment });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error creating client' });
@@ -99,7 +116,11 @@ export class MonthlyClientController {
             }
 
             // Logic: Add 1 month to the current end date (or today if expired)
-            const baseDate = client.endDate > new Date() ? client.endDate : new Date();
+            // If expired, start from today. If active, extend from current end date.
+            const now = new Date();
+            const baseDate = client.endDate > now ? client.endDate : now;
+
+            // Calculate new end date properly
             const newEndDate = new Date(baseDate);
             newEndDate.setMonth(newEndDate.getMonth() + 1);
 
@@ -119,7 +140,6 @@ export class MonthlyClientController {
 
             // Create Transaction
             // Need active shift to link transaction
-
             const activeShift = await em.findOne(Shift, { endTime: null });
 
             // Create transaction
@@ -127,7 +147,7 @@ export class MonthlyClientController {
                 const transaction = em.create(Transaction, {
                     shift: activeShift,
                     type: TransactionType.MONTHLY_PAYMENT,
-                    description: `Mensualidad: ${client.name} (${client.plate})`,
+                    description: `Renovación: ${client.name} (${client.plate})`,
                     amount: amount || client.monthlyRate,
                     paymentMethod: paymentMethod || PaymentMethod.CASH, // Default to CASH
                     timestamp: new Date()
@@ -135,14 +155,14 @@ export class MonthlyClientController {
                 em.persist(transaction);
             } else {
                 console.warn('Renewing monthly without active shift');
-                // We must have a shift
-                if (!activeShift) {
-                    return res.status(400).json({ message: 'No active shift found. Please start a shift to renew.' });
-                }
+                // We allow it but warn, or block? 
+                // Better to block to ensure money is tracked, unless explictly allowed.
+                // For now, allow it but money won't be in a shift box strictly.
+                return res.status(400).json({ message: 'No active shift found. Please start a shift to renew.' });
             }
 
             await em.flush();
-            res.json(client);
+            res.json({ client, payment });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error renewing subscription' });
