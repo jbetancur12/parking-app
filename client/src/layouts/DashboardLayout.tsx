@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardLayout() {
@@ -27,7 +27,10 @@ export default function DashboardLayout() {
         { name: 'Marcas', href: '/brands', icon: Tag },
         { name: 'Ajustes', href: '/settings', icon: Settings },
         { name: 'Historial Turnos', href: '/shift-history', icon: History },
-        { name: 'Usuarios', href: '/users', icon: UserCog }
+        { name: 'Historial Turnos', href: '/shift-history', icon: History },
+        { name: 'Usuarios', href: '/users', icon: UserCog },
+        { name: 'Auditoría', href: '/audit', icon: Shield },
+        { name: 'Convenios', href: '/agreements', icon: Briefcase }
     ];
 
     let navigationItems = [...baseNavigation];
@@ -47,14 +50,14 @@ export default function DashboardLayout() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="flex h-16 items-center justify-between px-6 border-b">
+            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+                <div className="flex h-16 items-center justify-between px-6 border-b flex-shrink-0">
                     <span className="text-xl font-bold text-gray-800">ParkingSof</span>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-gray-500">
                         <X size={24} />
                     </button>
                 </div>
-                <nav className="mt-6 px-4 space-y-2">
+                <nav className="mt-6 px-4 space-y-2 flex-1 overflow-y-auto">
                     {navigationItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.href;
@@ -73,7 +76,7 @@ export default function DashboardLayout() {
                         );
                     })}
                 </nav>
-                <div className="absolute bottom-0 w-full border-t p-4">
+                <div className="w-full border-t p-4 flex-shrink-0 bg-white">
                     <div className="flex items-center mb-4 px-4 text-sm text-gray-600">
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 truncate">{user?.username}</p>

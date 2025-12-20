@@ -80,6 +80,17 @@ const seed = async () => {
         });
         await em.persistAndFlush(shift);
 
+        console.log('⚙️ Creating System Settings...');
+        const systemSettingsData = [
+            { key: 'capacity_car', value: '50' },
+            { key: 'capacity_motorcycle', value: '30' },
+            { key: 'check_capacity', value: 'false' }, // Disabled by default
+            { key: 'ticket_header', value: 'PARQUEADERO EJEMPLO' },
+        ];
+
+        const systemSettingEntities = systemSettingsData.map(data => em.create(SystemSetting, data));
+        await em.persistAndFlush(systemSettingEntities);
+
         console.log('💰 Creating Tariffs...');
         const tariffEntities = [];
         const tariffs = [

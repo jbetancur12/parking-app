@@ -29,6 +29,10 @@ export default function ParkingPage() {
     const [exitResult, setExitResult] = useState<any>(null);
     const [previewData, setPreviewData] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+    const [discount, setDiscount] = useState('');
+    const [discountReason, setDiscountReason] = useState('');
+    const [agreements, setAgreements] = useState<any[]>([]);
+    const [selectedAgreementId, setSelectedAgreementId] = useState('');
     const [showPrintConfirm, setShowPrintConfirm] = useState(false);
     const [pendingPrintSession, setPendingPrintSession] = useState<any>(null);
 
@@ -47,6 +51,11 @@ export default function ParkingPage() {
 
     useEffect(() => {
         fetchSessions();
+
+        // Fetch active agreements
+        api.get('/agreements/active')
+            .then(res => setAgreements(res.data))
+            .catch(err => console.error('Error fetching agreements', err));
     }, []);
 
     const fetchSessions = async () => {
@@ -106,6 +115,8 @@ export default function ParkingPage() {
         try {
             const response = await api.get(`/parking/preview/${plate}`);
             setPreviewData(response.data);
+            setDiscount('');
+            setDiscountReason('');
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al obtener vista previa');
         }
@@ -116,7 +127,10 @@ export default function ParkingPage() {
         try {
             const response = await api.post('/parking/exit', {
                 plate: previewData.plate,
-                paymentMethod // Include payment method
+                paymentMethod,
+                discount: discount ? Number(discount) : 0,
+                discountReason,
+                agreementId: selectedAgreementId
             });
             const exitData = response.data;
 
@@ -257,10 +271,116 @@ export default function ParkingPage() {
                                 </div>
                             </div>
 
-                            <div className="border-t pt-2 mt-2">
-                                <p className="text-sm text-gray-500">Total a Pagar</p>
-                                <p className="text-3xl font-bold text-green-600">${previewData.cost}</p>
+                            {/* Agreements Selector */}
+                            {agreements.length > 0 && (
+                                <div className="border-t pt-3 mt-3">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Convenio / Descuento Predefinido</label>
+                                    <select
+                                        value={selectedAgreementId}
+                                        onChange={(e) => {
+                                            setSelectedAgreementId(e.target.value);
+                                            // Reset manual details if agreement selected? Or keep them?
+                                            // Let's reset manual discount to avoid confusion
+                                            if (e.target.value) {
+                                                setDiscount('');
+                                                setDiscountReason('');
+                                            }
+                                        }}
+                                        className="w-full border rounded-md px-2 py-2"
+                                    >
+                                        <option value="">-- Seleccionar Convenio --</option>
+                                        {agreements.map(a => (
+                                            <option key={a.id} value={a.id}>
+                                                {a.name} ({a.type === 'FREE_HOURS' ? `${a.value}h Gratis` : a.type === 'PERCENTAGE' ? `${a.value}%` : `$${a.value}`})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Manual Discount Section */}
+                            <div className="border-t pt-3 mt-3">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Manual (Opcional)</label>
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="number"
+                                        value={discount}
+                                        onChange={(e) => {
+                                            setDiscount(e.target.value);
+                                            if (e.target.value) setSelectedAgreementId(''); // Deselect agreement if manual entry
+                                        }}
+                                        placeholder="Monto ($)"
+                                        disabled={!!selectedAgreementId}
+                                        className="w-1/3 border rounded-md px-2 py-1 text-right disabled:bg-gray-100"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={discountReason}
+                                        onChange={(e) => setDiscountReason(e.target.value)}
+                                        placeholder="Razón (ej. Convenio)"
+                                        disabled={!!selectedAgreementId}
+                                        className="w-2/3 border rounded-md px-2 py-1 disabled:bg-gray-100"
+                                    />
+                                </div>
                             </div>
+
+                            <div className="border-t pt-2 mt-2">
+                                <div className="flex justify-between text-sm text-gray-500 mb-1">
+                                    <span>Subtotal:</span>
+                                    <span>${previewData.cost}</span>
+                                </div>
+                                {discount && Number(discount) > 0 && (
+                                    <div className="flex justify-between text-sm text-red-500 mb-1">
+                                        <span>Descuento:</span>
+                                        <span>-${discount}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center">
+                                    <span className="font-bold text-gray-700">Total a Pagar</span>
+                                    <span className="text-3xl font-bold text-green-600">
+                                        {/* Dynamic Calculation */}
+                                        {(() => {
+                                            const originalCost = previewData.cost;
+                                            let finalDiscount = 0;
+
+                                            if (selectedAgreementId) {
+                                                const agreement = agreements.find(a => a.id.toString() === selectedAgreementId);
+                                                if (agreement) {
+                                                    if (agreement.type === 'FREE_HOURS') {
+                                                        const hourlyRate = previewData.hourlyRate || 0;
+                                                        finalDiscount = hourlyRate * agreement.value;
+                                                    } else if (agreement.type === 'PERCENTAGE') {
+                                                        finalDiscount = (originalCost * agreement.value) / 100;
+                                                    } else if (agreement.type === 'FLAT_DISCOUNT') {
+                                                        finalDiscount = agreement.value;
+                                                    }
+                                                }
+                                            } else if (discount) {
+                                                finalDiscount = Number(discount) || 0;
+                                            }
+
+                                            // Cap discount to cost
+                                            finalDiscount = Math.min(originalCost, finalDiscount);
+                                            const finalTotal = Math.max(0, originalCost - finalDiscount);
+
+                                            return `$${finalTotal.toLocaleString()}`;
+                                        })()}
+                                    </span>
+                                </div>
+                            </div>
+                            {/* Visual breakdown of applied discount */}
+                            {(selectedAgreementId || (discount && Number(discount) > 0)) && (
+                                <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200 text-xs text-yellow-800">
+                                    <span className="font-bold">Descuento aplicado: </span>
+                                    {selectedAgreementId
+                                        ? (() => {
+                                            const a = agreements.find(a => a.id.toString() === selectedAgreementId);
+                                            return a ? `${a.name} (${a.type === 'FREE_HOURS' ? `${a.value}h` : a.type === 'PERCENTAGE' ? `${a.value}%` : `$${a.value}`})` : '';
+                                        })()
+                                        : `Manual ($${discount})`
+                                    }
+                                </div>
+                            )}
                         </div>
                         <div className="flex space-x-3">
                             <button
@@ -307,116 +427,121 @@ export default function ParkingPage() {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Exit Receipt Modal/Overlay */}
-            {exitResult && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                        <h2 className="text-xl font-bold mb-4 text-green-600">Salida Exitosa</h2>
-                        <div className="space-y-2 mb-6">
-                            <p><strong>Placa:</strong> {exitResult.plate}</p>
-                            <p><strong>Duración:</strong> {exitResult.durationMinutes} min</p>
-                            <p className="text-2xl font-bold text-gray-800 mt-2">Total: ${exitResult.cost}</p>
+            {
+                exitResult && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded-lg w-full max-w-sm">
+                            <h2 className="text-xl font-bold mb-4 text-green-600">Salida Exitosa</h2>
+                            <div className="space-y-2 mb-6">
+                                <p><strong>Placa:</strong> {exitResult.plate}</p>
+                                <p><strong>Duración:</strong> {exitResult.durationMinutes} min</p>
+                                <p className="text-2xl font-bold text-gray-800 mt-2">Total: ${exitResult.cost}</p>
+                            </div>
+                            <button
+                                onClick={() => setExitResult(null)}
+                                className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300"
+                            >
+                                Cerrar
+                            </button>
+                            {/* Print Button Placeholder */}
+                            <button
+                                onClick={() => window.print()}
+                                className="w-full mt-2 border border-gray-300 text-gray-600 py-2 rounded hover:bg-gray-50"
+                            >
+                                Imprimir Recibo
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setExitResult(null)}
-                            className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300"
-                        >
-                            Cerrar
-                        </button>
-                        {/* Print Button Placeholder */}
-                        <button
-                            onClick={() => window.print()}
-                            className="w-full mt-2 border border-gray-300 text-gray-600 py-2 rounded hover:bg-gray-50"
-                        >
-                            Imprimir Recibo
-                        </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Entry Modal */}
-            {isEntryModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Ingreso de Vehículo</h2>
-                            <button onClick={() => setIsEntryModalOpen(false)}><X size={20} /></button>
-                        </div>
-
-                        <form onSubmit={handleEntrySubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Placa</label>
-                                <input
-                                    type="text"
-                                    value={plate}
-                                    onChange={(e) => setPlate(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 uppercase"
-                                    placeholder="ABC-123"
-                                    required
-                                />
+            {
+                isEntryModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-semibold">Ingreso de Vehículo</h2>
+                                <button onClick={() => setIsEntryModalOpen(false)}><X size={20} /></button>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Vehículo</label>
-                                <div className="grid grid-cols-3 gap-3">
-                                    {[
-                                        { type: 'CAR', icon: Car, label: 'Carro' },
-                                        { type: 'MOTORCYCLE', icon: Bike, label: 'Moto' },
-                                        { type: 'OTHER', icon: Truck, label: 'Otro' }
-                                    ].map(({ type, icon: Icon, label }) => (
+
+                            <form onSubmit={handleEntrySubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Placa</label>
+                                    <input
+                                        type="text"
+                                        value={plate}
+                                        onChange={(e) => setPlate(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 uppercase"
+                                        placeholder="ABC-123"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Vehículo</label>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[
+                                            { type: 'CAR', icon: Car, label: 'Carro' },
+                                            { type: 'MOTORCYCLE', icon: Bike, label: 'Moto' },
+                                            { type: 'OTHER', icon: Truck, label: 'Otro' }
+                                        ].map(({ type, icon: Icon, label }) => (
+                                            <button
+                                                type="button"
+                                                key={type}
+                                                onClick={() => setVehicleType(type)}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${vehicleType === type
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm transform scale-[1.02]'
+                                                    : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                <Icon size={28} className="mb-1" />
+                                                <span className="text-xs font-bold">{label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Plan de Facturación</label>
+                                    <div className="grid grid-cols-2 gap-3">
                                         <button
                                             type="button"
-                                            key={type}
-                                            onClick={() => setVehicleType(type)}
-                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${vehicleType === type
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm transform scale-[1.02]'
+                                            onClick={() => setPlanType('HOUR')}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                                                 : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
                                                 }`}
                                         >
-                                            <Icon size={28} className="mb-1" />
-                                            <span className="text-xs font-bold">{label}</span>
+                                            <Clock size={24} className="mb-1" />
+                                            <span className="text-xs font-bold">Por Hora</span>
                                         </button>
-                                    ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => setPlanType('DAY')}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
+                                                ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm'
+                                                : 'border-gray-200 bg-white text-gray-500 hover:border-purple-200 hover:bg-purple-50'
+                                                }`}
+                                        >
+                                            <Calendar size={24} className="mb-1" />
+                                            <span className="text-xs font-bold">Por Día</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Plan de Facturación</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPlanType('HOUR')}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
-                                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                                            : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <Clock size={24} className="mb-1" />
-                                        <span className="text-xs font-bold">Por Hora</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPlanType('DAY')}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
-                                            ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm'
-                                            : 'border-gray-200 bg-white text-gray-500 hover:border-purple-200 hover:bg-purple-50'
-                                            }`}
-                                    >
-                                        <Calendar size={24} className="mb-1" />
-                                        <span className="text-xs font-bold">Por Día</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
-                            >
-                                Registrar Entrada
-                            </button>
-                        </form>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                                >
+                                    Registrar Entrada
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Desktop Table View */}
             <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
@@ -543,6 +668,6 @@ export default function ParkingPage() {
                     <PrintReceipt ref={receiptRef} session={printData.session} />
                 )}
             </div>
-        </div>
+        </div >
     );
 }

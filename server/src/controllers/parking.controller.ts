@@ -1,8 +1,10 @@
+
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entities/ParkingSession';
 import { Shift } from '../entities/Shift';
 import { Tariff, TariffType } from '../entities/Tariff';
+import { Agreement, AgreementType } from '../entities/Agreement';
 import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
@@ -81,6 +83,31 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(400).json({ message: 'Vehicle already parked', session: existingSession });
     }
 
+    // Check Capacity Logic
+    const settingsList = await em.find(SystemSetting, {});
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+
+    // Default to disabled ("false") if not set. User requested "infinite option" which is basically check_capacity = false
+    const checkCapacity = settings['check_capacity'] === 'true';
+
+    if (checkCapacity) {
+        const capacityKey = vehicleType === VehicleType.CAR ? 'capacity_car' : 'capacity_motorcycle';
+        // Default caps if missing
+        const maxCapacity = Number(settings[capacityKey] || (vehicleType === VehicleType.CAR ? 50 : 30));
+
+        const currentCount = await em.count(ParkingSession, {
+            status: ParkingStatus.ACTIVE,
+            vehicleType: vehicleType as VehicleType
+        });
+
+        if (currentCount >= maxCapacity) {
+            return res.status(400).json({
+                message: `No hay cupos disponibles para ${vehicleType === VehicleType.CAR ? 'Carros' : 'Motos'}. Capacidad máxima: ${maxCapacity} `
+            });
+        }
+    }
+
     const session = em.create(ParkingSession, {
         plate,
         vehicleType: vehicleType as VehicleType,
@@ -122,7 +149,8 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
         plate: session.plate,
         entryTime: session.entryTime,
         planType: session.planType,
-        ...result
+        ...result,
+        hourlyRate: tariffs.find(t => t.tariffType === 'HOUR')?.cost || 0
     });
 };
 
@@ -132,7 +160,7 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    const { plate, paymentMethod } = req.body;
+    const { plate, paymentMethod, discount, discountReason, agreementId } = req.body;
 
     if (!plate) {
         return res.status(400).json({ message: 'Plate is required' });
@@ -162,21 +190,80 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     settingsList.forEach(s => settings[s.key] = s.value);
     const gracePeriod = Number(settings['grace_period'] || 5);
 
-    const { cost, durationMinutes, exitTime } = calculateParkingCost(session, tariffs, gracePeriod);
+    let { cost: calculatedCost, durationMinutes, exitTime } = calculateParkingCost(session, tariffs, gracePeriod);
+
+    // Apply Discount Strategy
+    let finalCost = calculatedCost;
+    let appliedDiscount = 0;
+    let finalDiscountReason = discountReason || '';
+    let appliedAgreement: Agreement | undefined;
+
+    // Priority: Manual Discount OVERRIDES Agreement if both present? Or Agreement first?
+    // Let's say: If Agreement is passed, use it. If Manual Discount is passed, use it.
+    // If both.. Manual wins for specific override? Or additive? 
+    // Logic: If agreementId is present, calculate discount from it. 
+    // If manual discount is present, use that instead (override).
+
+    if (agreementId) {
+        const agreement = await em.findOne(Agreement, { id: Number(agreementId), isActive: true });
+        if (agreement) {
+            appliedAgreement = agreement;
+            finalDiscountReason = agreement.name; // Set reason to agreement name automatically
+
+            if (agreement.type === AgreementType.FREE_HOURS) {
+                // Recalculate cost subtracting usage time? 
+                // Or easier: Calculate cost of X hours and subtract?
+                // Better: Modify calculation. 
+                // Simple approach: Subtract value * hour_tariff from cost? 
+                // Accurate approach: Subtract hours from duration and recalculate?
+                // Let's try: Subtract hours from duration.
+                const freeMinutes = agreement.value * 60;
+                const paidMinutes = Math.max(0, durationMinutes - freeMinutes);
+
+                // Hacky recalculation or just rough estimate?
+                // Let's use the tariff for HOUR * value as the discount amount.
+                // Assuming hour tariff exists.
+                const hourTariff = tariffs.find(t => t.tariffType === 'HOUR');
+                if (hourTariff) {
+                    const discountAmount = hourTariff.cost * agreement.value;
+                    appliedDiscount = Math.min(calculatedCost, discountAmount);
+                    finalCost = calculatedCost - appliedDiscount;
+                }
+            } else if (agreement.type === AgreementType.PERCENTAGE) {
+                appliedDiscount = (calculatedCost * agreement.value) / 100;
+                finalCost = calculatedCost - appliedDiscount;
+            } else if (agreement.type === AgreementType.FLAT_DISCOUNT) {
+                appliedDiscount = Math.min(calculatedCost, Number(agreement.value));
+                finalCost = calculatedCost - appliedDiscount;
+            }
+        }
+    } else if (discount && Number(discount) > 0) {
+        // Manual override
+        appliedDiscount = Number(discount);
+        finalCost = Math.max(0, calculatedCost - appliedDiscount);
+    }
 
     session.exitTime = exitTime;
-    session.cost = cost;
+    session.cost = finalCost;
     session.status = ParkingStatus.COMPLETED;
     session.exitShift = shift;
+    session.discount = appliedDiscount > 0 ? appliedDiscount : undefined;
+    session.discountReason = finalDiscountReason;
+    if (appliedAgreement) {
+        session.agreement = appliedAgreement;
+    }
 
     // Create Revenue Transaction
     const transaction = em.create(Transaction, {
         shift: shift,
         type: TransactionType.PARKING_REVENUE,
-        description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
-        amount: cost,
-        paymentMethod: paymentMethod || PaymentMethod.CASH, // Default to CASH if not provided
-        timestamp: new Date()
+        description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)${appliedDiscount > 0 ? ` - DESC: $${appliedDiscount} (${finalDiscountReason})` : ''} `,
+        amount: finalCost,
+        paymentMethod: paymentMethod || PaymentMethod.CASH,
+        timestamp: new Date(),
+        discount: appliedDiscount > 0 ? appliedDiscount : undefined,
+        discountReason: finalDiscountReason,
+        agreement: appliedAgreement
     });
     em.persist(transaction);
 
@@ -190,8 +277,11 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         entryTime: session.entryTime,
         exitTime: session.exitTime,
         planType: session.planType,
-        cost,
-        durationMinutes
+        cost: finalCost,
+        originalCost: calculatedCost,
+        discount: appliedDiscount,
+        durationMinutes,
+        agreementName: appliedAgreement?.name
     });
 };
 

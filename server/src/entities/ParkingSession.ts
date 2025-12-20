@@ -54,4 +54,13 @@ export class ParkingSession {
 
     @Property({ nullable: true })
     notes?: string;
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    discount?: number;
+
+    @Property({ nullable: true })
+    discountReason?: string;
+
+    @ManyToOne(() => 'Agreement', { nullable: true })
+    agreement?: any; // Avoiding circular dependency import for now or use require
 }

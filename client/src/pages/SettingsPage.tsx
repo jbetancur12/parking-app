@@ -12,6 +12,9 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
     const [gracePeriod, setGracePeriod] = useState('5');
+    const [checkCapacity, setCheckCapacity] = useState(false);
+    const [capacityCar, setCapacityCar] = useState('50');
+    const [capacityMoto, setCapacityMoto] = useState('30');
 
     // Check permissions
     if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
@@ -32,9 +35,10 @@ export default function SettingsPage() {
     const fetchSettings = async () => {
         try {
             const settings = await settingService.getAll();
-            if (settings['grace_period']) {
-                setGracePeriod(settings['grace_period']);
-            }
+            if (settings['grace_period']) setGracePeriod(settings['grace_period']);
+            if (settings['check_capacity']) setCheckCapacity(settings['check_capacity'] === 'true');
+            if (settings['capacity_car']) setCapacityCar(settings['capacity_car']);
+            if (settings['capacity_motorcycle']) setCapacityMoto(settings['capacity_motorcycle']);
         } catch (error) {
             console.error('Error fetching settings:', error);
         }
@@ -54,8 +58,13 @@ export default function SettingsPage() {
     const handleSaveSettings = async () => {
         setLoading(true);
         try {
-            await settingService.update({ grace_period: gracePeriod });
-            setMsg('Tiempo de gracia guardado');
+            await settingService.update({
+                grace_period: gracePeriod,
+                check_capacity: String(checkCapacity),
+                capacity_car: capacityCar,
+                capacity_motorcycle: capacityMoto
+            });
+            setMsg('Configuración guardada correctamente');
             setTimeout(() => setMsg(''), 3000);
         } catch (error) {
             setMsg('Error guardando ajustes');
@@ -203,7 +212,7 @@ export default function SettingsPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">Otras Configuraciones</h2>
 
-                <div className="flex items-center mb-4">
+                <div className="flex items-center mb-6 border-b pb-4">
                     <label className="text-gray-700 w-48 font-medium">Tiempo de Gracia (Minutos):</label>
                     <input
                         type="number"
@@ -212,6 +221,40 @@ export default function SettingsPage() {
                         className="w-24 border rounded px-2 py-1"
                     />
                     <span className="ml-3 text-gray-500 text-sm">Aplica después de la primera hora.</span>
+                </div>
+
+                <div className="mb-6">
+                    <h3 className="text-lg font-medium text-gray-800 mb-3">Gestión de Cupos</h3>
+                    <div className="flex items-center mb-4">
+                        <input
+                            type="checkbox"
+                            checked={checkCapacity}
+                            onChange={(e) => setCheckCapacity(e.target.checked)}
+                            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                        />
+                        <label className="text-gray-700 font-medium">Limitar entrada (verificar cupo disponible)</label>
+                    </div>
+
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!checkCapacity ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div className="flex items-center">
+                            <label className="text-gray-700 w-32">Cupo Carros:</label>
+                            <input
+                                type="number"
+                                value={capacityCar}
+                                onChange={(e) => setCapacityCar(e.target.value)}
+                                className="w-24 border rounded px-2 py-1"
+                            />
+                        </div>
+                        <div className="flex items-center">
+                            <label className="text-gray-700 w-32">Cupo Motos:</label>
+                            <input
+                                type="number"
+                                value={capacityMoto}
+                                onChange={(e) => setCapacityMoto(e.target.value)}
+                                className="w-24 border rounded px-2 py-1"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-end">

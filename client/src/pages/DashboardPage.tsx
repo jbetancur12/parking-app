@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Play, Square, AlertCircle, X, Printer, TrendingUp, Users, Clock } from 'lucide-react';
+import { Play, Square, AlertCircle, X, TrendingUp, Users, Clock } from 'lucide-react';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';
@@ -27,6 +27,7 @@ export default function DashboardPage() {
     const [showSummaryModal, setShowSummaryModal] = useState(false);
     const [summaryData, setSummaryData] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
+    const [occupancy, setOccupancy] = useState<any>(null);
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
     // Print ref for shift summary
@@ -38,10 +39,22 @@ export default function DashboardPage() {
 
     useEffect(() => {
         checkActiveShift();
+        fetchOccupancy();
+        const interval = setInterval(fetchOccupancy, 30000); // Poll every 30s
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
             fetchStats();
         }
+        return () => clearInterval(interval);
     }, [user]);
+
+    const fetchOccupancy = async () => {
+        try {
+            const response = await api.get('/stats/occupancy');
+            setOccupancy(response.data);
+        } catch (error) {
+            console.error('Error fetching occupancy:', error);
+        }
+    };
 
     const fetchStats = async () => {
         try {
@@ -113,6 +126,57 @@ export default function DashboardPage() {
         <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Bienvenido, {user?.username}</h1>
 
+            {/* Occupancy Widget */}
+            {occupancy && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {/* Cars */}
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-lg font-semibold text-gray-700">Ocupación Carros</h3>
+                            <span className="text-2xl font-bold text-blue-600">{occupancy.car.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.car.capacity : '∞'}</span></span>
+                        </div>
+                        {occupancy.checkEnabled && (
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div
+                                    className={`h-2.5 rounded-full ${(occupancy.car.current / occupancy.car.capacity) > 0.9 ? 'bg-red-500' :
+                                        (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-yellow-500' : 'bg-blue-500'
+                                        }`}
+                                    style={{ width: `${Math.min((occupancy.car.current / occupancy.car.capacity) * 100, 100)}%` }}
+                                ></div>
+                            </div>
+                        )}
+                        <p className="text-xs text-gray-500 mt-2">
+                            {occupancy.checkEnabled
+                                ? `${occupancy.car.capacity - occupancy.car.current} cupos disponibles`
+                                : 'Sin límite de capacidad'}
+                        </p>
+                    </div>
+
+                    {/* Motorcycles */}
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-lg font-semibold text-gray-700">Ocupación Motos</h3>
+                            <span className="text-2xl font-bold text-orange-600">{occupancy.motorcycle.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.motorcycle.capacity : '∞'}</span></span>
+                        </div>
+                        {occupancy.checkEnabled && (
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div
+                                    className={`h-2.5 rounded-full ${(occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.9 ? 'bg-red-500' :
+                                        (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-yellow-500' : 'bg-orange-500'
+                                        }`}
+                                    style={{ width: `${Math.min((occupancy.motorcycle.current / occupancy.motorcycle.capacity) * 100, 100)}%` }}
+                                ></div>
+                            </div>
+                        )}
+                        <p className="text-xs text-gray-500 mt-2">
+                            {occupancy.checkEnabled
+                                ? `${occupancy.motorcycle.capacity - occupancy.motorcycle.current} cupos disponibles`
+                                : 'Sin límite de capacidad'}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Dashboard Charts for Admin */}
             {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && stats && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -131,7 +195,7 @@ export default function DashboardPage() {
                                     <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
                                     <Tooltip
-                                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ingresos']}
+                                        formatter={(value: any) => [`$${value.toLocaleString()}`, 'Ingresos']}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     />
                                     <Area type="monotone" dataKey="amount" stroke="#10B981" fill="#D1FAE5" strokeWidth={2} />
@@ -161,7 +225,7 @@ export default function DashboardPage() {
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {stats.pieData.map((entry: any, index: number) => (
+                                        {stats.pieData.map((_: any, index: number) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>

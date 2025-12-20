@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Tariff, VehicleType, TariffType } from '../entities/Tariff';
+import { AuditService } from '../services/AuditService';
 
 export class TariffController {
 
@@ -46,6 +47,17 @@ export class TariffController {
             }
 
             await em.flush();
+
+            // Audit
+            await AuditService.logAction(
+                em,
+                (req as any).user, // Type casting or use AuthRequest if available
+                'UPDATE_TARIFFS',
+                'Tariff',
+                undefined, // Batch update
+                items
+            );
+
             res.json({ message: 'Tariffs updated' });
         } catch (error) {
             console.error(error);

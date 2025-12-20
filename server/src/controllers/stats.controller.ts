@@ -4,6 +4,44 @@ import { Transaction, TransactionType } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { Tariff, VehicleType } from '../entities/Tariff';
 import { User, UserRole } from '../entities/User';
+import { ParkingSession, ParkingStatus } from '../entities/ParkingSession';
+import { SystemSetting } from '../entities/SystemSetting';
+
+export const getOccupancy = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal Server Error' });
+
+    try {
+        // Get Settings
+        const settingsList = await em.find(SystemSetting, {});
+        const settings: Record<string, string> = {};
+        settingsList.forEach(s => settings[s.key] = s.value);
+
+        const capCar = Number(settings['capacity_car'] || 50);
+        const capMoto = Number(settings['capacity_motorcycle'] || 30);
+        const checkEnabled = settings['check_capacity'] === 'true';
+
+        // Get Counts
+        const countCar = await em.count(ParkingSession, {
+            status: ParkingStatus.ACTIVE,
+            vehicleType: VehicleType.CAR
+        });
+
+        const countMoto = await em.count(ParkingSession, {
+            status: ParkingStatus.ACTIVE,
+            vehicleType: VehicleType.MOTORCYCLE
+        });
+
+        res.json({
+            car: { current: countCar, capacity: capCar },
+            motorcycle: { current: countMoto, capacity: capMoto },
+            checkEnabled
+        });
+    } catch (error) {
+        console.error('Error fetching occupancy:', error);
+        res.status(500).json({ message: 'Error fetching occupancy' });
+    }
+};
 
 export const getDashboardStats = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();

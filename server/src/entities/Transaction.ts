@@ -36,4 +36,13 @@ export class Transaction {
 
     @Property({ onCreate: () => new Date() })
     timestamp: Date = new Date();
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    discount?: number;
+
+    @Property({ nullable: true })
+    discountReason?: string;
+
+    @ManyToOne(() => 'Agreement', { nullable: true })
+    agreement?: any;
 }

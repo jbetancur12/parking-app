@@ -17,6 +17,8 @@ import userRoutes from './routes/user.routes';
 import transactionRoutes from './routes/transaction.routes';
 import statsRoutes from './routes/stats.routes';
 import backupRoutes from './routes/backup.routes';
+import auditRoutes from './routes/audit.routes';
+import agreementRoutes from './routes/agreement.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
@@ -72,6 +74,8 @@ const startServer = async () => {
         app.use('/api/transactions', transactionRoutes);
         app.use('/api/stats', statsRoutes);
         app.use('/api/backup', backupRoutes);
+        app.use('/api/audit', auditRoutes);
+        app.use('/api/agreements', agreementRoutes);
 
         app.get('/', (req, res) => {
             res.send('Parking App API is running');

@@ -9,11 +9,13 @@ import ParkingPage from './pages/ParkingPage';
 import MonthlyClientsPage from './pages/MonthlyClientsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
+import AuditPage from './pages/AuditPage';
 import BrandsPage from './pages/BrandsPage';
 import ExpensesPage from './pages/ExpensesPage';
 import IncomesPage from './pages/IncomesPage';
 import WashPage from './pages/WashPage';
 import UsersPage from './pages/UsersPage';
+import AgreementsPage from './pages/AgreementsPage';
 import ShiftHistoryPage from './pages/ShiftHistoryPage';
 import TransactionsPage from './pages/TransactionsPage';
 import TicketStatusPage from './pages/TicketStatusPage';
@@ -50,6 +52,8 @@ function App() {
             <Route path="incomes" element={<IncomesPage />} />
             <Route path="wash" element={<WashPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="audit" element={<AuditPage />} />
+            <Route path="agreements" element={<AgreementsPage />} />
             <Route path="shift-history" element={<ShiftHistoryPage />} />
             <Route path="transactions" element={<TransactionsPage />} />
             {/* Add other nested routes here */}
