@@ -80,6 +80,7 @@ export default function ShiftHistoryPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duración</th>
@@ -100,6 +101,9 @@ export default function ShiftHistoryPage() {
 
                             return (
                                 <tr key={shift.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className="text-sm font-bold text-blue-600">#{shift.id}</span>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <User size={16} className="mr-2 text-gray-400" />
@@ -156,7 +160,7 @@ export default function ShiftHistoryPage() {
                         })}
                         {shifts.length === 0 && (
                             <tr>
-                                <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
+                                <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                                     No hay turnos cerrados
                                 </td>
                             </tr>
