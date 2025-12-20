@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { OfflineProvider } from './context/OfflineContext';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
@@ -27,40 +28,41 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Toaster richColors position="top-center" />
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/ticket/:id" element={<TicketStatusPage />} />
-          <Route path="/ticket/:id" element={<TicketStatusPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="parking" element={<ParkingPage />} />
-            <Route path="monthly-clients" element={<MonthlyClientsPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="brands" element={<BrandsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="expenses" element={<ExpensesPage />} />
-            <Route path="incomes" element={<IncomesPage />} />
-            <Route path="wash" element={<WashPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="audit" element={<AuditPage />} />
-            <Route path="agreements" element={<AgreementsPage />} />
-            <Route path="shift-history" element={<ShiftHistoryPage />} />
-            <Route path="transactions" element={<TransactionsPage />} />
-            {/* Add other nested routes here */}
-          </Route>
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <OfflineProvider>
+      <AuthProvider>
+        <Toaster richColors position="top-center" />
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/ticket/:id" element={<TicketStatusPage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardPage />} />
+              <Route path="parking" element={<ParkingPage />} />
+              <Route path="monthly-clients" element={<MonthlyClientsPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="brands" element={<BrandsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="expenses" element={<ExpensesPage />} />
+              <Route path="incomes" element={<IncomesPage />} />
+              <Route path="wash" element={<WashPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="audit" element={<AuditPage />} />
+              <Route path="agreements" element={<AgreementsPage />} />
+              <Route path="shift-history" element={<ShiftHistoryPage />} />
+              <Route path="transactions" element={<TransactionsPage />} />
+              {/* Add other nested routes here */}
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </OfflineProvider>
   );
 }
 

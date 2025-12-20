@@ -5,6 +5,7 @@ import { useReactToPrint } from 'react-to-print';
 import { PrintTicket } from '../components/PrintTicket';
 import { PrintReceipt } from '../components/PrintReceipt';
 import { toast } from 'sonner';
+import { useOffline } from '../context/OfflineContext';
 
 interface ParkingSession {
     id: number;
@@ -18,6 +19,7 @@ export default function ParkingPage() {
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+    const { isOnline, addOfflineItem, queue, isSyncing } = useOffline();
 
     // Entry Form State
     const [plate, setPlate] = useState('');
@@ -69,6 +71,46 @@ export default function ParkingPage() {
 
     const handleEntrySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Offline Handling
+        if (!isOnline) {
+            const entryDate = new Date(); // To ensure both payload and mock display use same time
+            addOfflineItem({
+                type: 'ENTRY',
+                payload: {
+                    plate: plate.toUpperCase(),
+                    vehicleType,
+                    planType,
+                    entryTime: entryDate.toISOString()
+                }
+            });
+
+            // Mock session for printing
+            setPrintData({
+                type: 'ticket',
+                session: {
+                    id: 0, // Placeholder
+                    plate: plate.toUpperCase(),
+                    vehicleType,
+                    entryTime: entryDate.toISOString(),
+                    planType
+                }
+            });
+
+            setPendingPrintSession({
+                plate: plate.toUpperCase(),
+                vehicleType,
+                planType,
+                entryTime: entryDate.toISOString()
+            });
+
+            setIsEntryModalOpen(false);
+            setPlate('');
+            setShowPrintConfirm(true);
+            toast.warning('Guardado en Modo Offline. Se sincronizará al volver la conexión.');
+            return;
+        }
+
         try {
             const response = await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType });
             const newSession = response.data;
@@ -112,6 +154,20 @@ export default function ParkingPage() {
     };
 
     const handleExitClick = async (plate: string) => {
+        // Offline Handling
+        if (!isOnline) {
+            setPreviewData({
+                plate: plate,
+                cost: 0, // Unknown when offline
+                entryTime: new Date().toISOString(), // Mock
+                durationMinutes: 0,
+                isOffline: true
+            });
+            setDiscount('');
+            setDiscountReason('');
+            return;
+        }
+
         try {
             const response = await api.get(`/parking/preview/${plate}`);
             setPreviewData(response.data);
@@ -124,6 +180,32 @@ export default function ParkingPage() {
 
     const confirmExit = async () => {
         if (!previewData) return;
+
+        // Offline Handling
+        if (!isOnline) {
+            addOfflineItem({
+                type: 'EXIT',
+                payload: {
+                    plate: previewData.plate,
+                    paymentMethod,
+                    discount: discount ? Number(discount) : 0,
+                    discountReason,
+                    agreementId: selectedAgreementId
+                }
+            });
+
+            setExitResult({
+                plate: previewData.plate,
+                cost: 0,
+                durationMinutes: 0,
+                isOffline: true
+            });
+
+            setPreviewData(null);
+            toast.warning('Salida guardada en Modo Offline.');
+            return;
+        }
+
         try {
             const response = await api.post('/parking/exit', {
                 plate: previewData.plate,
@@ -140,6 +222,7 @@ export default function ParkingPage() {
             const diffMs = exit.getTime() - entry.getTime();
             const hours = Math.floor(diffMs / (1000 * 60 * 60));
             const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
             const duration = `${hours}h ${minutes}m`;
 
             // Save for printing
@@ -195,7 +278,25 @@ export default function ParkingPage() {
         setTimeout(() => handlePrintTicket(), 100);
     };
 
-    const filteredSessions = sessions.filter(session =>
+    useEffect(() => {
+        if (isOnline && !isSyncing && queue.length === 0) {
+            fetchSessions();
+        }
+    }, [isOnline, isSyncing, queue.length]);
+
+    const formattedOfflineSessions: ParkingSession[] = queue
+        .filter(item => item.type === 'ENTRY')
+        .map(item => ({
+            id: -1, // Temporary ID for display
+            plate: item.payload?.plate || '???',
+            vehicleType: item.payload?.vehicleType || 'CAR',
+            entryTime: new Date(item.timestamp).toISOString(),
+            planType: item.payload?.planType
+        }));
+
+    const allSessions = [...formattedOfflineSessions, ...sessions];
+
+    const filteredSessions = allSessions.filter(session =>
         session.plate.includes(searchTerm.toUpperCase())
     );
 
@@ -567,7 +668,9 @@ export default function ParkingPage() {
                                             {session.vehicleType === 'CAR' ? 'CARRO' : session.vehicleType === 'MOTORCYCLE' ? 'MOTO' : 'OTRO'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{session.plate}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                                        {session.plate} {session.id === -1 ? <span className="text-red-500 text-xs">(Offline)</span> : ''}
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                         {new Date(session.entryTime).toLocaleTimeString()}
                                     </td>
@@ -619,7 +722,10 @@ export default function ParkingPage() {
                                         <Truck className="text-gray-500" size={24} />}
 
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900">{session.plate}</h3>
+                                    <h3 className="text-xl font-bold text-gray-900">
+                                        {session.plate}
+                                        {session.id === -1 && <span className="ml-2 text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">Offline</span>}
+                                    </h3>
                                     <span className="text-xs text-gray-500 uppercase">{session.vehicleType === 'CAR' ? 'Carro' : session.vehicleType === 'MOTORCYCLE' ? 'Moto' : 'Otro'}</span>
                                 </div>
                             </div>

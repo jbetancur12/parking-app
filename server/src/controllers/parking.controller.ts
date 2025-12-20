@@ -54,7 +54,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    const { plate, vehicleType, planType, notes } = req.body;
+    const { plate, vehicleType, planType, notes, entryTime } = req.body;
 
     if (!plate || !vehicleType) {
         return res.status(400).json({ message: 'Plate and Vehicle Type are required' });
@@ -112,7 +112,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         plate,
         vehicleType: vehicleType as VehicleType,
         planType: selectedPlan,
-        entryTime: new Date(),
+        entryTime: entryTime ? new Date(entryTime) : new Date(),
         status: ParkingStatus.ACTIVE,
         entryShift: shift,
         notes,
