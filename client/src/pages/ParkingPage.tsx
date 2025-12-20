@@ -203,7 +203,7 @@ export default function ParkingPage() {
                     <div className="bg-white p-6 rounded-lg w-full max-w-sm">
                         <h2 className="text-xl font-bold mb-4 text-green-600">Salida Exitosa</h2>
                         <div className="space-y-2 mb-6">
-                            <p><strong>Placa:</strong> {exitResult.session.plate}</p>
+                            <p><strong>Placa:</strong> {exitResult.plate}</p>
                             <p><strong>Duración:</strong> {exitResult.durationMinutes} min</p>
                             <p className="text-2xl font-bold text-gray-800 mt-2">Total: ${exitResult.cost}</p>
                         </div>
