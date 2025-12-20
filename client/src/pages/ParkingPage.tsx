@@ -28,6 +28,8 @@ export default function ParkingPage() {
     const [exitResult, setExitResult] = useState<any>(null);
     const [previewData, setPreviewData] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+    const [showPrintConfirm, setShowPrintConfirm] = useState(false);
+    const [pendingPrintSession, setPendingPrintSession] = useState<any>(null);
 
     // Print refs
     const ticketRef = React.useRef<HTMLDivElement>(null);
@@ -77,13 +79,25 @@ export default function ParkingPage() {
             setPlate('');
             fetchSessions();
 
-            // Show print option
-            if (confirm(`Vehículo registrado: ${newSession.plate}\n\n¿Desea imprimir el ticket?`)) {
-                setTimeout(() => handlePrintTicket(), 100);
-            }
+            // Show print confirmation modal
+            setPendingPrintSession(newSession);
+            setShowPrintConfirm(true);
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al registrar entrada');
         }
+    };
+
+    const handleConfirmPrint = () => {
+        setShowPrintConfirm(false);
+        if (pendingPrintSession) {
+            setTimeout(() => handlePrintTicket(), 100);
+        }
+        setPendingPrintSession(null);
+    };
+
+    const handleCancelPrint = () => {
+        setShowPrintConfirm(false);
+        setPendingPrintSession(null);
     };
 
     const handleExitClick = async (plate: string) => {
@@ -240,6 +254,35 @@ export default function ParkingPage() {
                                 className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
                             >
                                 Confirmar Salida
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Print Confirmation Modal */}
+            {showPrintConfirm && pendingPrintSession && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
+                        <h2 className="text-xl font-bold mb-4 text-green-600">✅ Vehículo Registrado</h2>
+                        <div className="space-y-2 mb-6">
+                            <p><strong>Placa:</strong> {pendingPrintSession.plate}</p>
+                            <p><strong>Tipo:</strong> {pendingPrintSession.vehicleType === 'CAR' ? 'Carro' : 'Moto'}</p>
+                            <p><strong>Plan:</strong> {pendingPrintSession.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
+                        </div>
+                        <p className="text-gray-600 mb-6">¿Desea imprimir el ticket de entrada?</p>
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={handleCancelPrint}
+                                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                            >
+                                No, gracias
+                            </button>
+                            <button
+                                onClick={handleConfirmPrint}
+                                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
+                            >
+                                🖨️ Sí, Imprimir
                             </button>
                         </div>
                     </div>
