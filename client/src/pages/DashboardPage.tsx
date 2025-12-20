@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { settingService } from '../services/setting.service';
 import { Play, Square, AlertCircle, X, TrendingUp, Users, Clock } from 'lucide-react';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -17,6 +18,7 @@ interface Shift {
 export default function DashboardPage() {
     const { user } = useAuth();
     const [activeShift, setActiveShift] = useState<Shift | null>(null);
+    const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [baseAmount, setBaseAmount] = useState('');
     const [error, setError] = useState('');
@@ -40,12 +42,22 @@ export default function DashboardPage() {
     useEffect(() => {
         checkActiveShift();
         fetchOccupancy();
+        fetchSettings();
         const interval = setInterval(fetchOccupancy, 30000); // Poll every 30s
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
             fetchStats();
         }
         return () => clearInterval(interval);
     }, [user]);
+
+    const fetchSettings = async () => {
+        try {
+            const data = await settingService.getAll();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error loading settings', error);
+        }
+    };
 
     const fetchOccupancy = async () => {
         try {
@@ -382,6 +394,7 @@ export default function DashboardPage() {
                         summary={closedShiftData.summary}
                         shift={closedShiftData.shift}
                         user={closedShiftData.user}
+                        settings={settings}
                     />
                 )}
             </div>

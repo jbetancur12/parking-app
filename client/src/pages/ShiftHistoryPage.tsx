@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { settingService } from '../services/setting.service';
 import { Clock, User, Printer } from 'lucide-react';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -21,11 +22,14 @@ interface ClosedShift {
     expectedCash: number;
     difference: number;
     notes?: string;
+    cashIncome?: number;
+    transferIncome?: number;
 }
 
 export default function ShiftHistoryPage() {
     const { user: currentUser } = useAuth();
     const [shifts, setShifts] = useState<ClosedShift[]>([]);
+    const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [selectedShift, setSelectedShift] = useState<ClosedShift | null>(null);
 
@@ -38,7 +42,17 @@ export default function ShiftHistoryPage() {
 
     useEffect(() => {
         fetchClosedShifts();
+        fetchSettings();
     }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const data = await settingService.getAll();
+            setSettings(data);
+        } catch (error) {
+            console.error('Error loading settings', error);
+        }
+    };
 
     const fetchClosedShifts = async () => {
         try {
@@ -181,7 +195,9 @@ export default function ShiftHistoryPage() {
                             expectedCash: selectedShift.expectedCash,
                             declaredAmount: selectedShift.declaredAmount,
                             difference: selectedShift.difference,
-                            transactionCount: 0 // Not available in history
+                            transactionCount: 0, // Not available in history
+                            cashIncome: selectedShift.cashIncome,
+                            transferIncome: selectedShift.transferIncome
                         }}
                         shift={{
                             startTime: selectedShift.startTime,
@@ -190,6 +206,7 @@ export default function ShiftHistoryPage() {
                         user={{
                             username: selectedShift.user.username
                         }}
+                        settings={settings}
                     />
                 )}
             </div>

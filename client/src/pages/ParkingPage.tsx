@@ -265,12 +265,7 @@ export default function ParkingPage() {
             // Show print option
             // Changed from confirm() to using the modal UI we already have (PrintReceipt Modal)
             // But if we want instant print query:
-            toast('¿Desea imprimir recibo?', {
-                action: {
-                    label: 'Imprimir',
-                    onClick: () => setTimeout(() => handlePrintReceipt(), 100)
-                }
-            });
+
 
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al registrar salida');
@@ -566,9 +561,10 @@ export default function ParkingPage() {
                             </button>
                             {/* Print Button Placeholder */}
                             <button
-                                onClick={() => window.print()}
-                                className="w-full mt-2 border border-gray-300 text-gray-600 py-2 rounded hover:bg-gray-50"
+                                onClick={() => setTimeout(() => handlePrintReceipt(), 100)}
+                                className="w-full mt-2 border border-gray-300 text-gray-600 py-2 rounded hover:bg-gray-50 flex items-center justify-center gap-2"
                             >
+                                <Printer size={16} />
                                 Imprimir Recibo
                             </button>
                         </div>

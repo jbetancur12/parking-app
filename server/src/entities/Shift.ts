@@ -25,6 +25,12 @@ export class Shift {
     totalExpenses: number = 0; // Calculated at close
 
     @Property({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    cashIncome: number = 0;
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    transferIncome: number = 0;
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     declaredAmount: number = 0; // Cash physically counted
 
     @Property({ nullable: true })
