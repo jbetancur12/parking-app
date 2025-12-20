@@ -14,6 +14,7 @@ import IncomesPage from './pages/IncomesPage';
 import WashPage from './pages/WashPage';
 import UsersPage from './pages/UsersPage';
 import ShiftHistoryPage from './pages/ShiftHistoryPage';
+import TransactionsPage from './pages/TransactionsPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuth();
@@ -45,6 +46,7 @@ function App() {
             <Route path="wash" element={<WashPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="shift-history" element={<ShiftHistoryPage />} />
+            <Route path="transactions" element={<TransactionsPage />} />
             {/* Add other nested routes here */}
           </Route>
         </Routes>

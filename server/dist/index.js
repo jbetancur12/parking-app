@@ -19,6 +19,7 @@ const sale_routes_1 = __importDefault(require("./routes/sale.routes"));
 const tariff_routes_1 = __importDefault(require("./routes/tariff.routes"));
 const setting_routes_1 = __importDefault(require("./routes/setting.routes"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
+const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
 const User_1 = require("./entities/User");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const app = (0, express_1.default)();
@@ -63,6 +64,7 @@ const startServer = async () => {
         app.use('/api/tariffs', tariff_routes_1.default);
         app.use('/api/settings', setting_routes_1.default);
         app.use('/api/users', user_routes_1.default);
+        app.use('/api/transactions', transaction_routes_1.default);
         app.get('/', (req, res) => {
             res.send('Parking App API is running');
         });
