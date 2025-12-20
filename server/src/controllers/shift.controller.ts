@@ -1,4 +1,3 @@
-```typescript
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
