@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Edit2, Trash2, Key, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
 
 interface User {
     id: number;

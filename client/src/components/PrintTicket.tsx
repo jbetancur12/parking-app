@@ -54,7 +54,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                 </div>
 
                 <div className="flex justify-center my-4">
-                    <QRCodeSVG value={`PARKING-${session.id}`} size={128} />
+                    <QRCodeSVG value={`${window.location.origin}/ticket/${session.id}`} size={128} />
                 </div>
 
                 <div className="text-center text-xs mt-4">

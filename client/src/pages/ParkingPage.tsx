@@ -193,10 +193,20 @@ export default function ParkingPage() {
                 <Search className="absolute left-3 top-3 text-gray-400" size={20} />
                 <input
                     type="text"
-                    placeholder="Buscar vehículo por placa..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    placeholder="Buscar por placa o escanear ticket..."
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none uppercase"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && searchTerm) {
+                            const exactMatch = sessions.find(s => s.plate === searchTerm);
+                            if (exactMatch) {
+                                handleExitClick(exactMatch.plate);
+                                setSearchTerm('');
+                            }
+                        }
+                    }}
+                    autoFocus
                 />
             </div>
 

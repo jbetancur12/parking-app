@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Clock, User, DollarSign, Printer } from 'lucide-react';
+import { Clock, User, Printer } from 'lucide-react';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';

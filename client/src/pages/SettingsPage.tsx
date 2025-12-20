@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
-import { Settings, Save, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Save, RefreshCw, Shield, Download } from 'lucide-react';
+import api from '../services/api';
 import { tariffService } from '../services/tariff.service';
 import { settingService } from '../services/setting.service';
 import type { Tariff } from '../services/tariff.service';
 import { useAuth } from '../context/AuthContext';
 
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user: currentUser } = useAuth();
     const [tariffs, setTariffs] = useState<Tariff[]>([]);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
-
     const [gracePeriod, setGracePeriod] = useState('5');
 
     // Check permissions
-    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+    if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
         return (
             <div className="p-8">
                 <div className="bg-red-100 text-red-700 p-4 rounded-lg">
@@ -36,7 +36,18 @@ export default function SettingsPage() {
                 setGracePeriod(settings['grace_period']);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching settings:', error);
+        }
+    };
+
+    const fetchTariffs = async () => {
+        try {
+            const data = await tariffService.getAll();
+            console.log('Tariffs fetched:', data);
+            setTariffs(data || []);
+        } catch (error) {
+            console.error('Error fetching tariffs:', error);
+            setMsg('Error cargando tarifas');
         }
     };
 
@@ -50,15 +61,6 @@ export default function SettingsPage() {
             setMsg('Error guardando ajustes');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const fetchTariffs = async () => {
-        try {
-            const data = await tariffService.getAll();
-            setTariffs(data);
-        } catch (error) {
-            console.error(error);
         }
     };
 
@@ -90,6 +92,33 @@ export default function SettingsPage() {
         setTariffs(prev => prev.map(t => t.id === id ? { ...t, cost: Number(val) } : t));
     };
 
+    const handleDownloadBackup = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/backup/export', { responseType: 'blob' });
+
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `backup-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+
+            setMsg('Copia de seguridad descargada correctamente');
+            setTimeout(() => setMsg(''), 3000);
+        } catch (err) {
+            console.error('Error downloading backup:', err);
+            setMsg('Error al descargar la copia de seguridad.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const carTariffs = tariffs.filter(t => t.vehicleType === 'CAR' && t.tariffType !== 'MINUTE');
+    const motoTariffs = tariffs.filter(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType !== 'MINUTE');
+
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-6">
@@ -115,9 +144,12 @@ export default function SettingsPage() {
                     <div>
                         <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Carros</h3>
                         {tariffs.length === 0 && (
-                            <p className="text-sm text-red-500 mb-2">No se encontraron tarifas. Haga clic en "Restablecer Valores" arriba.</p>
+                            <p className="text-sm text-red-500 mb-2">Cargando o no hay tarifas...</p>
                         )}
-                        {tariffs.filter(t => t.vehicleType === 'CAR' && t.tariffType !== 'MINUTE').map(t => (
+                        {carTariffs.length === 0 && tariffs.length > 0 && (
+                            <p className="text-sm text-gray-500">No hay tarifas de carro visibles.</p>
+                        )}
+                        {carTariffs.map(t => (
                             <div key={t.id} className="flex justify-between items-center mb-3">
                                 <label className="text-gray-600 capitalize">{t.tariffType.toLowerCase()}</label>
                                 <div className="flex items-center">
@@ -136,10 +168,10 @@ export default function SettingsPage() {
                     {/* Motorcycles */}
                     <div>
                         <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Motos</h3>
-                        {tariffs.length === 0 && (
-                            <p className="text-sm text-red-500 mb-2">No se encontraron tarifas.</p>
+                        {motoTariffs.length === 0 && tariffs.length > 0 && (
+                            <p className="text-sm text-gray-500">No hay tarifas de moto visibles.</p>
                         )}
-                        {tariffs.filter(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType !== 'MINUTE').map(t => (
+                        {motoTariffs.map(t => (
                             <div key={t.id} className="flex justify-between items-center mb-3">
                                 <label className="text-gray-600 capitalize">{t.tariffType.toLowerCase()}</label>
                                 <div className="flex items-center">
@@ -192,6 +224,34 @@ export default function SettingsPage() {
                         Guardar Ajustes
                     </button>
                 </div>
+
+                {/* Security & Backup Section - Only for Admin/SuperAdmin */}
+                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold mb-6 flex items-center text-gray-800 border-b pb-2">
+                            <Shield className="mr-2 text-purple-600" size={24} />
+                            Seguridad y Datos
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                <h3 className="font-medium text-gray-900 mb-2">Copia de Seguridad (Backup)</h3>
+                                <p className="text-sm text-gray-500 mb-4">
+                                    Descarga una copia completa de la base de datos en formato JSON.
+                                    Guarda este archivo en un lugar seguro.
+                                </p>
+                                <button
+                                    onClick={handleDownloadBackup}
+                                    disabled={loading}
+                                    className="flex items-center justify-center w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                                >
+                                    <Download size={16} className="mr-2" />
+                                    {loading ? 'Generando...' : 'Descargar Copia de Seguridad'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -19,6 +19,10 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
     let cost = 0;
 
     if (session.planType === PlanType.DAY) {
+        // Simple day calculation: 1 day = 24 hours (1440 mins)
+        // Adjust logic if "Day" means calendar day vs 24h block
+        // Assuming 24h blocks for simplicity given current rate map usage
+        // But if 'days' calculation logic is strictly ceil(duration / 1440), it's 24h blocks.
         const days = Math.ceil(durationMinutes / 1440);
         cost = days * (rateMap['DAY'] || 15000);
     } else {
@@ -197,4 +201,42 @@ export const getActiveSessions = async (req: Request, res: Response) => {
 
     const sessions = await em.find(ParkingSession, { status: ParkingStatus.ACTIVE }, { orderBy: { entryTime: 'DESC' } });
     return res.json(sessions);
+};
+
+export const publicStatus = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal error' });
+
+    const { id } = req.params;
+
+    // Support ID or Plate? QR usually uses ID for uniqueness. ID is safer for simple lookup.
+    const session = await em.findOne(ParkingSession, {
+        id: Number(id),
+        status: ParkingStatus.ACTIVE
+    });
+
+    if (!session) {
+        // If not active, maybe it's completed? Check history?
+        // For now, only show active session status.
+        return res.status(404).json({ message: 'No active session found or ticket invalid.' });
+    }
+
+    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
+    const settingsList = await em.find(SystemSetting, {});
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+    const gracePeriod = Number(settings['grace_period'] || 5);
+
+    const { cost, durationMinutes } = calculateParkingCost(session, tariffs, gracePeriod);
+
+    return res.json({
+        id: session.id,
+        plate: session.plate, // Mask partially? e.g. ***123
+        vehicleType: session.vehicleType,
+        entryTime: session.entryTime,
+        planType: session.planType,
+        cost,
+        durationMinutes,
+        currentTime: new Date()
+    });
 };

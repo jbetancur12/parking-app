@@ -15,6 +15,7 @@ import WashPage from './pages/WashPage';
 import UsersPage from './pages/UsersPage';
 import ShiftHistoryPage from './pages/ShiftHistoryPage';
 import TransactionsPage from './pages/TransactionsPage';
+import TicketStatusPage from './pages/TicketStatusPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuth();
@@ -27,6 +28,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/ticket/:id" element={<TicketStatusPage />} />
           <Route
             path="/"
             element={
