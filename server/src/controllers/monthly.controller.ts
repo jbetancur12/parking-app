@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { MonthlyClient } from '../entities/MonthlyClient';
-import { Transaction, TransactionType } from '../entities/Transaction';
+import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { MonthlyPayment } from '../entities/MonthlyPayment';
 
@@ -90,7 +90,7 @@ export class MonthlyClientController {
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
             const { id } = req.params;
-            const { amount } = req.body; // Allow overriding amount
+            const { amount, paymentMethod } = req.body; // Allow overriding amount and payment method
 
             const client = await em.findOne(MonthlyClient, { id: Number(id) });
 
@@ -122,12 +122,14 @@ export class MonthlyClientController {
 
             const activeShift = await em.findOne(Shift, { endTime: null });
 
+            // Create transaction
             if (activeShift) {
                 const transaction = em.create(Transaction, {
                     shift: activeShift,
                     type: TransactionType.MONTHLY_PAYMENT,
-                    description: `Monthly Renewal: ${client.plate} - ${client.name}`,
+                    description: `Mensualidad: ${client.name} (${client.plate})`,
                     amount: amount || client.monthlyRate,
+                    paymentMethod: paymentMethod || PaymentMethod.CASH, // Default to CASH
                     timestamp: new Date()
                 });
                 em.persist(transaction);

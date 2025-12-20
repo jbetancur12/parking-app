@@ -9,11 +9,11 @@ const router = (0, express_1.Router)();
 const controller = new user_controller_1.UserController();
 // All routes require authentication
 router.use(auth_middleware_1.authenticateToken);
-// SUPER_ADMIN only routes
-router.get('/', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN]), controller.getAll);
-router.post('/', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN]), controller.create);
-router.put('/:id', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN]), controller.update);
-router.delete('/:id', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN]), controller.delete);
+// SUPER_ADMIN and ADMIN routes
+router.get('/', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN, User_1.UserRole.ADMIN]), controller.getAll);
+router.post('/', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN, User_1.UserRole.ADMIN]), controller.create);
+router.put('/:id', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN, User_1.UserRole.ADMIN]), controller.update);
+router.delete('/:id', (0, permission_middleware_1.requireRole)([User_1.UserRole.SUPER_ADMIN, User_1.UserRole.ADMIN]), controller.delete);
 // Any authenticated user can change their own password
 router.post('/change-password', controller.changePassword);
 exports.default = router;

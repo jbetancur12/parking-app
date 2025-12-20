@@ -9,6 +9,11 @@ export enum TransactionType {
     WASH_SERVICE = 'WASH_SERVICE', // Car wash service
 }
 
+export enum PaymentMethod {
+    CASH = 'CASH',
+    TRANSFER = 'TRANSFER'
+}
+
 @Entity()
 export class Transaction {
     @PrimaryKey()
@@ -25,6 +30,9 @@ export class Transaction {
 
     @Property()
     description!: string;
+
+    @Enum(() => PaymentMethod)
+    paymentMethod?: PaymentMethod; // Optional: only for income transactions
 
     @Property({ onCreate: () => new Date() })
     timestamp: Date = new Date();

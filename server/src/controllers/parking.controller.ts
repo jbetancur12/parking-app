@@ -4,7 +4,7 @@ import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entitie
 import { Shift } from '../entities/Shift';
 import { Tariff, TariffType } from '../entities/Tariff';
 import { SystemSetting } from '../entities/SystemSetting';
-import { Transaction, TransactionType } from '../entities/Transaction';
+import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
@@ -128,7 +128,7 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    const { plate } = req.body;
+    const { plate, paymentMethod } = req.body;
 
     if (!plate) {
         return res.status(400).json({ message: 'Plate is required' });
@@ -169,8 +169,9 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     const transaction = em.create(Transaction, {
         shift: shift,
         type: TransactionType.PARKING_REVENUE,
-        description: `Parking [${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
+        description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
         amount: cost,
+        paymentMethod: paymentMethod || PaymentMethod.CASH, // Default to CASH if not provided
         timestamp: new Date()
     });
     em.persist(transaction);

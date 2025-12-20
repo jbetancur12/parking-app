@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeShift = exports.getActiveShift = exports.openShift = void 0;
+exports.getAllClosed = exports.closeShift = exports.getActiveShift = exports.openShift = void 0;
 const core_1 = require("@mikro-orm/core");
 const Shift_1 = require("../entities/Shift");
 const Transaction_1 = require("../entities/Transaction");
@@ -96,3 +96,41 @@ const closeShift = async (req, res) => {
     });
 };
 exports.closeShift = closeShift;
+const getAllClosed = async (req, res) => {
+    const em = core_1.RequestContext.getEntityManager();
+    if (!em)
+        return res.status(500).json({ message: 'Internal Server Error' });
+    try {
+        const closedShifts = await em.find(Shift_1.Shift, { isActive: false }, {
+            populate: ['user'],
+            orderBy: { endTime: 'DESC' }
+        });
+        // Calculate summary for each shift
+        const shiftsWithSummary = closedShifts.map(shift => {
+            const expectedCash = shift.baseAmount + shift.totalIncome - shift.totalExpenses;
+            const difference = shift.declaredAmount - expectedCash;
+            return {
+                id: shift.id,
+                user: {
+                    id: shift.user.id,
+                    username: shift.user.username
+                },
+                startTime: shift.startTime,
+                endTime: shift.endTime,
+                baseAmount: shift.baseAmount,
+                totalIncome: shift.totalIncome,
+                totalExpenses: shift.totalExpenses,
+                declaredAmount: shift.declaredAmount,
+                expectedCash,
+                difference,
+                notes: shift.notes
+            };
+        });
+        res.json(shiftsWithSummary);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching closed shifts' });
+    }
+};
+exports.getAllClosed = getAllClosed;

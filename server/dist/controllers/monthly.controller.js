@@ -83,7 +83,7 @@ class MonthlyClientController {
             if (!em)
                 return res.status(500).json({ message: 'No EntityManager found' });
             const { id } = req.params;
-            const { amount } = req.body; // Allow overriding amount
+            const { amount, paymentMethod } = req.body; // Allow overriding amount and payment method
             const client = await em.findOne(MonthlyClient_1.MonthlyClient, { id: Number(id) });
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });
@@ -107,12 +107,14 @@ class MonthlyClientController {
             // Create Transaction
             // Need active shift to link transaction
             const activeShift = await em.findOne(Shift_1.Shift, { endTime: null });
+            // Create transaction
             if (activeShift) {
                 const transaction = em.create(Transaction_1.Transaction, {
                     shift: activeShift,
                     type: Transaction_1.TransactionType.MONTHLY_PAYMENT,
-                    description: `Monthly Renewal: ${client.plate} - ${client.name}`,
+                    description: `Mensualidad: ${client.name} (${client.plate})`,
                     amount: amount || client.monthlyRate,
+                    paymentMethod: paymentMethod || Transaction_1.PaymentMethod.CASH, // Default to CASH
                     timestamp: new Date()
                 });
                 em.persist(transaction);

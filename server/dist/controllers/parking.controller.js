@@ -105,7 +105,7 @@ const exitVehicle = async (req, res) => {
     if (!em || !req.user) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-    const { plate } = req.body;
+    const { plate, paymentMethod } = req.body;
     if (!plate) {
         return res.status(400).json({ message: 'Plate is required' });
     }
@@ -137,8 +137,9 @@ const exitVehicle = async (req, res) => {
     const transaction = em.create(Transaction_1.Transaction, {
         shift: shift,
         type: Transaction_1.TransactionType.PARKING_REVENUE,
-        description: `Parking [${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
+        description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)`,
         amount: cost,
+        paymentMethod: paymentMethod || Transaction_1.PaymentMethod.CASH, // Default to CASH if not provided
         timestamp: new Date()
     });
     em.persist(transaction);

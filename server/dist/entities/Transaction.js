@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = exports.TransactionType = void 0;
+exports.Transaction = exports.PaymentMethod = exports.TransactionType = void 0;
 const core_1 = require("@mikro-orm/core");
 const Shift_1 = require("./Shift");
 var TransactionType;
@@ -20,6 +20,11 @@ var TransactionType;
     TransactionType["MONTHLY_PAYMENT"] = "MONTHLY_PAYMENT";
     TransactionType["WASH_SERVICE"] = "WASH_SERVICE";
 })(TransactionType || (exports.TransactionType = TransactionType = {}));
+var PaymentMethod;
+(function (PaymentMethod) {
+    PaymentMethod["CASH"] = "CASH";
+    PaymentMethod["TRANSFER"] = "TRANSFER";
+})(PaymentMethod || (exports.PaymentMethod = PaymentMethod = {}));
 let Transaction = class Transaction {
     constructor() {
         this.timestamp = new Date();
@@ -46,6 +51,10 @@ __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", String)
 ], Transaction.prototype, "description", void 0);
+__decorate([
+    (0, core_1.Enum)(() => PaymentMethod),
+    __metadata("design:type", String)
+], Transaction.prototype, "paymentMethod", void 0);
 __decorate([
     (0, core_1.Property)({ onCreate: () => new Date() }),
     __metadata("design:type", Date)

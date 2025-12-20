@@ -27,6 +27,7 @@ export default function ParkingPage() {
     // Exit State
     const [exitResult, setExitResult] = useState<any>(null);
     const [previewData, setPreviewData] = useState<any>(null);
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
 
     // Print refs
     const ticketRef = React.useRef<HTMLDivElement>(null);
@@ -97,7 +98,10 @@ export default function ParkingPage() {
     const confirmExit = async () => {
         if (!previewData) return;
         try {
-            const response = await api.post('/parking/exit', { plate: previewData.plate });
+            const response = await api.post('/parking/exit', {
+                plate: previewData.plate,
+                paymentMethod // Include payment method
+            });
             const exitData = response.data;
 
             // Calculate duration for display
@@ -191,6 +195,34 @@ export default function ParkingPage() {
                             <p className="text-lg"><strong>Placa:</strong> {previewData.plate}</p>
                             <p className="text-lg"><strong>Plan:</strong> {previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
                             <p className="text-lg"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
+
+                            {/* Payment Method Selector */}
+                            <div className="border-t pt-3 mt-3">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('CASH')}
+                                        className={`py-2 text-sm rounded-md border ${paymentMethod === 'CASH'
+                                            ? 'bg-green-50 border-green-500 text-green-700 font-semibold'
+                                            : 'bg-white border-gray-300 text-gray-700'
+                                            }`}
+                                    >
+                                        💵 Efectivo
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('TRANSFER')}
+                                        className={`py-2 text-sm rounded-md border ${paymentMethod === 'TRANSFER'
+                                            ? 'bg-blue-50 border-blue-500 text-blue-700 font-semibold'
+                                            : 'bg-white border-gray-300 text-gray-700'
+                                            }`}
+                                    >
+                                        🏦 Transferencia
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="border-t pt-2 mt-2">
                                 <p className="text-sm text-gray-500">Total a Pagar</p>
                                 <p className="text-3xl font-bold text-green-600">${previewData.cost}</p>
