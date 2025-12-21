@@ -52,8 +52,15 @@ function startServer() {
 function createWindow() {
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC || '', 'electron-vite.svg'),
+        width: 1200,
+        height: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            // Enable web security but allow local resources
+            webSecurity: true,
         },
     })
 
