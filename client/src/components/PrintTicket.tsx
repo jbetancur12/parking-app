@@ -24,7 +24,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
             const line = settings?.[`regulation_text_${i}`];
             if (line) regulations.push(line);
         }
-
+        console.log("Aca")
         return (
             <div ref={ref} className="p-2 mx-auto bg-white text-black font-mono text-[10pt] leading-tight" style={{ width: width, maxWidth: width }}>
                 <style>

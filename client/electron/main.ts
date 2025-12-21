@@ -95,13 +95,57 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
-    // Handle print requests from renderer
-    ipcMain.handle('print-window', async () => {
-        if (win) {
-            win.webContents.print({}, (success, errorType) => {
-                if (!success) console.log('Print failed:', errorType);
-            });
+    // Handle print requests from renderer with worker window
+    ipcMain.handle('print-window', async (_, content) => {
+        const workerWindow = new BrowserWindow({
+            show: false,
+            width: 800, // Size matters for preview generation
+            height: 600,
+            opacity: 0, // Make it invisible but present implies show: true (done later)
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true
+            }
+        });
+
+        console.log('Main: Received print request. Content length:', content.length);
+
+        try {
+            await workerWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(content));
+            console.log('Main: Worker window loaded content');
+        } catch (e) {
+            console.error('Main: Failed to load content into worker window', e);
+            workerWindow.close();
+            throw e;
         }
+
+        return new Promise((resolve, reject) => {
+            // Esperar un momento para asegurar renderizado
+            setTimeout(() => {
+                // IMPORTANT: Show the window (with opacity 0) to enable Windows to generate print preview
+                // This "tricks" the OS into thinking it's a normal visible window print
+                workerWindow.show();
+
+                workerWindow.webContents.print({
+                    silent: false,
+                    printBackground: true,
+                    deviceName: ''
+                }, (success, errorType) => {
+                    if (!success) {
+                        console.error('Main: Print failed:', errorType);
+                        reject(errorType);
+                    } else {
+                        console.log('Main: Print initiated successfully');
+                        resolve(true);
+                    }
+                    // Cerrar después de un delay
+                    setTimeout(() => {
+                        console.log('Main: Closing worker window');
+                        workerWindow.close();
+                    }, 500);
+                });
+            }, 500);
+        });
     });
 
     startServer()
