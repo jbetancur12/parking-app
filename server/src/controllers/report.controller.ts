@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { Transaction } from '../entities/Transaction';
+import { SystemSetting } from '../entities/SystemSetting';
+import { fromZonedTime } from 'date-fns-tz';
 
 export class ReportController {
 
@@ -50,18 +52,44 @@ export class ReportController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
-            const dateParam = req.query.date as string || new Date().toISOString().split('T')[0];
-            const startOfDay = new Date(dateParam);
-            startOfDay.setHours(0, 0, 0, 0);
+            // 1. Get Timezone from settings
+            const timezoneSetting = await em.findOne(SystemSetting, { key: 'app_timezone' });
+            const timeZone = timezoneSetting?.value || 'America/Bogota'; // Default to Colombia
 
-            const endOfDay = new Date(dateParam);
-            endOfDay.setHours(23, 59, 59, 999);
+            // 2. Parse Date Params
+            const dateParam = req.query.date as string;
+            const dateFrom = req.query.dateFrom as string;
+            const dateTo = req.query.dateTo as string;
+
+            let startString: string;
+            let endString: string;
+
+            if (dateFrom && dateTo) {
+                // Range Mode
+                startString = `${dateFrom} 00:00:00`;
+                endString = `${dateTo} 23:59:59.999`;
+            } else {
+                // Single Date Mode (default to today if missing)
+                const targetDate = dateParam || new Date().toISOString().split('T')[0];
+                startString = `${targetDate} 00:00:00`;
+                endString = `${targetDate} 23:59:59.999`;
+            }
+
+            // 3. Construct Start/End in Target Timezone
+            // fromZonedTime takes a "Local" string (e.g. 2023-10-25 00:00:00) and the timezone
+            // and returns the UTC Date instant that corresponds to that local time.
+            const startDate = fromZonedTime(startString, timeZone);
+            const endDate = fromZonedTime(endString, timeZone);
+
+            console.log(`[Report Debug] Zone: ${timeZone}`);
+            console.log(`[Report Debug] Input: ${startString} to ${endString}`);
+            console.log(`[Report Debug] UTC: ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
             // Find transactions between these dates
             const transactions = await em.find(Transaction, {
                 timestamp: {
-                    $gte: startOfDay,
-                    $lte: endOfDay
+                    $gte: startDate,
+                    $lte: endDate
                 }
             }, {
                 orderBy: { timestamp: 'DESC' }
@@ -102,7 +130,12 @@ export class ReportController {
             });
 
             res.json({
-                date: dateParam,
+                date: dateParam || (dateFrom ? `${dateFrom} to ${dateTo}` : 'Unknown'),
+                timezone: timeZone,
+                debug: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString()
+                },
                 ...stats,
                 transactionCount: transactions.length,
                 transactions
