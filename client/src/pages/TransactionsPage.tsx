@@ -79,6 +79,30 @@ export default function TransactionsPage() {
 
     if (loading) return <div className="p-8">Cargando...</div>;
 
+    const formatDuration = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+    };
+
+    const formatDescription = (desc: string) => {
+        let formatted = desc
+            .replace('Parking[HOUR]', 'Parqueo [Hora]')
+            .replace('Parking[DAY]', 'Parqueo [Día]')
+            .replace('WASH_SERVICE', 'Lavado')
+            .replace('MONTHLY_PAYMENT', 'Mensualidad')
+            .replace('DESC:', 'Obs:');
+
+        // Regex to find duration in mins and convert to hh:mm:ss
+        const durationMatch = formatted.match(/\((\d+)\s*mins?\)/);
+        if (durationMatch) {
+            const minutes = parseInt(durationMatch[1]);
+            formatted = formatted.replace(durationMatch[0], `(${formatDuration(minutes)})`);
+        }
+
+        return formatted;
+    };
+
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
@@ -171,12 +195,12 @@ export default function TransactionsPage() {
                                         {getTypeLabel(transaction.type)}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.description}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">{formatDescription(transaction.description)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {transaction.paymentMethod ? (
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${transaction.paymentMethod === 'CASH'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-blue-100 text-blue-800'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-blue-100 text-blue-800'
                                             }`}>
                                             {transaction.paymentMethod === 'CASH' ? '💵 Efectivo' : '🏦 Transferencia'}
                                         </span>
