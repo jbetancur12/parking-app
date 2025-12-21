@@ -21,8 +21,6 @@ class ReportController {
             const transactions = await em.find(Transaction_1.Transaction, { shift: shift.id }, { orderBy: { timestamp: 'DESC' } });
             const totalIncome = transactions.reduce((acc, t) => acc + Number(t.amount), 0);
             const vehicleCounts = transactions.reduce((acc, t) => {
-                // Just a simple heuristic for now, assuming description contains vehicle type or added via metadata later
-                //Ideally Transaction should link to ParkingSession for better stats, but descriptions work for simple totals
                 return acc;
             }, {});
             res.json({
@@ -49,23 +47,26 @@ class ReportController {
             // 1. Get Timezone from settings
             const timezoneSetting = await em.findOne(SystemSetting_1.SystemSetting, { key: 'app_timezone' });
             const timeZone = timezoneSetting?.value || 'America/Bogota';
-            // 2. Parse Date Param (YYYY-MM-DD)
-            const dateParam = req.query.date || new Date().toISOString().split('T')[0];
+            // 2. Parse Date Params
+            const dateParam = req.query.date;
+            const dateFrom = req.query.dateFrom;
+            const dateTo = req.query.dateTo;
+            let startString;
+            let endString;
+            if (dateFrom && dateTo) {
+                // Range Mode
+                startString = `${dateFrom} 00:00:00`;
+                endString = `${dateTo} 23:59:59.999`;
+            }
+            else {
+                // Single Date Mode (default to today if missing)
+                const targetDate = dateParam || new Date().toISOString().split('T')[0];
+                startString = `${targetDate} 00:00:00`;
+                endString = `${targetDate} 23:59:59.999`;
+            }
             // 3. Construct Start/End in Target Timezone
-            // We want the range [dateParam 00:00:00 in TZ] to [dateParam 23:59:59.999 in TZ]
-            // converted to UTC for database comparison (assuming DB stores UTC or compatible timestamps)
-            // Create a string that represents the start of the day in the target timezone
-            const startString = `${dateParam} 00:00:00`;
-            const endString = `${dateParam} 23:59:59.999`;
             const startDate = (0, date_fns_tz_1.fromZonedTime)(startString, timeZone);
             const endDate = (0, date_fns_tz_1.fromZonedTime)(endString, timeZone);
-            console.log('--- DAILY STATS DEBUG ---');
-            console.log('TZ Setting:', timeZone);
-            console.log('Date Param:', dateParam);
-            console.log('Start String (Local):', startString);
-            console.log('Start Date (UTC):', startDate.toISOString());
-            console.log('End Date (UTC):', endDate.toISOString());
-            console.log('-------------------------');
             // Find transactions between these dates
             const transactions = await em.find(Transaction_1.Transaction, {
                 timestamp: {
@@ -112,7 +113,7 @@ class ReportController {
                 }
             });
             res.json({
-                date: dateParam,
+                date: dateParam || (dateFrom ? `${dateFrom} to ${dateTo}` : 'Unknown'),
                 timezone: timeZone,
                 range: {
                     start: startDate.toISOString(),

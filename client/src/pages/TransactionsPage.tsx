@@ -77,6 +77,30 @@ export default function TransactionsPage() {
         transfer: filteredTransactions.filter(t => t.paymentMethod === 'TRANSFER').reduce((sum, t) => sum + (t.type === 'EXPENSE' ? -t.amount : t.amount), 0)
     };
 
+    const formatDuration = (minutes: number) => {
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const secs = 0;
+        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const formatDescription = (desc: string) => {
+        let newDesc = desc
+            .replace('Parking[HOUR]', 'Parqueo[HORA]')
+            .replace('Parking[DAY]', 'Parqueo[DÍA]')
+            .replace('Nova Mensualidad', 'Nueva Mensualidad')
+            .replace('New Monthly', 'Nueva Mensualidad');
+
+        const durationMatch = newDesc.match(/\((\d+)\s*mins\)/);
+        if (durationMatch) {
+            const minutes = parseInt(durationMatch[1]);
+            const formattedTime = formatDuration(minutes);
+            newDesc = newDesc.replace(durationMatch[0], `(${formattedTime})`);
+        }
+
+        return newDesc;
+    };
+
     if (loading) return <div className="p-8">Cargando...</div>;
 
     return (
@@ -171,12 +195,12 @@ export default function TransactionsPage() {
                                         {getTypeLabel(transaction.type)}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.description}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">{formatDescription(transaction.description)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {transaction.paymentMethod ? (
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${transaction.paymentMethod === 'CASH'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-blue-100 text-blue-800'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-blue-100 text-blue-800'
                                             }`}>
                                             {transaction.paymentMethod === 'CASH' ? '💵 Efectivo' : '🏦 Transferencia'}
                                         </span>

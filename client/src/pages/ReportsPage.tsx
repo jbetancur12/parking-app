@@ -29,10 +29,44 @@ export default function ReportsPage() {
             }
         } catch (error) {
             console.error(error);
-            alert('Error fetching report');
+            alert('Error al obtener reporte');
         } finally {
             setLoading(false);
         }
+    };
+
+    const TRANSACTION_TYPES: Record<string, string> = {
+        'PARKING_REVENUE': 'Ingreso Parqueo',
+        'MONTHLY_PAYMENT': 'Pago Mensualidad',
+        'WASH_SERVICE': 'Servicio Lavado',
+        'EXPENSE': 'Egreso',
+        'INCOME': 'Otro Ingreso'
+    };
+
+    const formatDuration = (minutes: number) => {
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const secs = 0;
+        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const formatDescription = (desc: string) => {
+        let newDesc = desc
+            .replace('Parking[HOUR]', 'Parqueo[HORA]')
+            .replace('Parking[DAY]', 'Parqueo[DÍA]')
+            .replace('Nova Mensualidad', 'Nueva Mensualidad') // Correction if needed, usually 'Nueva'
+            .replace('New Monthly', 'Nueva Mensualidad'); // Cover base case if English
+
+        // Regex to find duration in mins and replace with hh:mm:ss
+        // Matches "(1239 mins)"
+        const durationMatch = newDesc.match(/\((\d+)\s*mins\)/);
+        if (durationMatch) {
+            const minutes = parseInt(durationMatch[1]);
+            const formattedTime = formatDuration(minutes);
+            newDesc = newDesc.replace(durationMatch[0], `(${formattedTime})`);
+        }
+
+        return newDesc;
     };
 
     const handleExport = () => {
@@ -223,12 +257,12 @@ export default function ReportsPage() {
                                                 {new Date(t.timestamp).toLocaleTimeString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {t.description}
+                                                {formatDescription(t.description)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${t.type === 'EXPENSE' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                                                     }`}>
-                                                    {t.type}
+                                                    {TRANSACTION_TYPES[t.type] || t.type}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">

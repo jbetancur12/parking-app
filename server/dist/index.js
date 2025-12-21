@@ -72,4 +72,3 @@ const startServer = async () => {
     }
 };
 startServer();
-// Force restart for timezone fix

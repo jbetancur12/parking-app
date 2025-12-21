@@ -133,7 +133,7 @@ export default function DashboardPage() {
         }
     }
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    if (loading) return <div className="p-8">Cargando...</div>;
 
     return (
         <div>
