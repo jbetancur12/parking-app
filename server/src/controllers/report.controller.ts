@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { Transaction } from '../entities/Transaction';
+import { SystemSetting } from '../entities/SystemSetting';
+import { startOfDay, endOfDay } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 
 export class ReportController {
 
@@ -50,18 +53,31 @@ export class ReportController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
-            const dateParam = req.query.date as string || new Date().toISOString().split('T')[0];
-            const startOfDay = new Date(dateParam);
-            startOfDay.setHours(0, 0, 0, 0);
+            // 1. Get Timezone from settings
+            const timezoneSetting = await em.findOne(SystemSetting, { key: 'app_timezone' });
+            const timeZone = timezoneSetting?.value || 'America/Bogota';
 
-            const endOfDay = new Date(dateParam);
-            endOfDay.setHours(23, 59, 59, 999);
+            // 2. Parse Date Param (YYYY-MM-DD)
+            const dateParam = req.query.date as string || new Date().toISOString().split('T')[0];
+
+            // 3. Construct Start/End in Target Timezone
+            // We want the range [dateParam 00:00:00 in TZ] to [dateParam 23:59:59.999 in TZ]
+            // converted to UTC for database comparison (assuming DB stores UTC or compatible timestamps)
+
+            // Create a string that represents the start of the day in the target timezone
+            const startString = `${dateParam} 00:00:00`;
+            const endString = `${dateParam} 23:59:59.999`;
+
+            const startDate = fromZonedTime(startString, timeZone);
+            const endDate = fromZonedTime(endString, timeZone);
+
+
 
             // Find transactions between these dates
             const transactions = await em.find(Transaction, {
                 timestamp: {
-                    $gte: startOfDay,
-                    $lte: endOfDay
+                    $gte: startDate,
+                    $lte: endDate
                 }
             }, {
                 orderBy: { timestamp: 'DESC' }
@@ -103,6 +119,11 @@ export class ReportController {
 
             res.json({
                 date: dateParam,
+                timezone: timeZone,
+                range: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString()
+                },
                 ...stats,
                 transactionCount: transactions.length,
                 transactions

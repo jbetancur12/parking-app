@@ -26,6 +26,7 @@ export default function SettingsPage() {
     const [companyNit, setCompanyNit] = useState('');
     const [companyAddress, setCompanyAddress] = useState('');
     const [companyPhone, setCompanyPhone] = useState('');
+    const [timezone, setTimezone] = useState('America/Bogota');
     const [ticketWidth, setTicketWidth] = useState('58mm'); // 58mm or 80mm
     const [enableQr, setEnableQr] = useState('true');
     const [showPrintDialog, setShowPrintDialog] = useState('true');
@@ -61,6 +62,7 @@ export default function SettingsPage() {
             if (settings['company_nit']) setCompanyNit(settings['company_nit']);
             if (settings['company_address']) setCompanyAddress(settings['company_address']);
             if (settings['company_phone']) setCompanyPhone(settings['company_phone']);
+            if (settings['app_timezone']) setTimezone(settings['app_timezone']);
             if (settings['ticket_width']) setTicketWidth(settings['ticket_width']);
             if (settings['enable_qr']) setEnableQr(settings['enable_qr']);
             if (settings['show_print_dialog']) setShowPrintDialog(settings['show_print_dialog']);
@@ -115,6 +117,7 @@ export default function SettingsPage() {
                 company_nit: companyNit,
                 company_address: companyAddress,
                 company_phone: companyPhone,
+                app_timezone: timezone,
                 ticket_width: ticketWidth,
                 enable_qr: enableQr,
                 show_print_dialog: showPrintDialog,
@@ -301,6 +304,19 @@ export default function SettingsPage() {
                                     <label className="text-gray-700 w-32">Cupo Motos:</label>
                                     <input type="number" value={capacityMoto} onChange={(e) => setCapacityMoto(e.target.value)} className="w-24 border rounded px-2 py-1" />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Zona Horaria (Reportes)</label>
+                                <select
+                                    value={timezone}
+                                    onChange={(e) => setTimezone(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                                >
+                                    <option value="America/Bogota">America/Bogota (Colombia)</option>
+                                    <option value="America/New_York">America/New_York (USA ET)</option>
+                                    <option value="Europe/Madrid">Europe/Madrid (España)</option>
+                                    <option value="UTC">UTC (Universal)</option>
+                                </select>
                             </div>
                         </div>
 
