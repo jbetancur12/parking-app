@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { OfflineProvider } from './context/OfflineContext';
@@ -22,6 +22,12 @@ import ShiftHistoryPage from './pages/ShiftHistoryPage';
 import TransactionsPage from './pages/TransactionsPage';
 import TicketStatusPage from './pages/TicketStatusPage';
 
+// Detect if running in Electron
+const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
+
+// Use HashRouter for Electron, BrowserRouter for Web
+const Router = isElectron ? HashRouter : BrowserRouter;
+
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -34,7 +40,9 @@ function App() {
         <Toaster richColors position="top-center" />
         <Router>
           <Routes>
-            <Route path="/setup" element={<SetupPage />} />
+            {/* Setup route only available in Electron */}
+            {isElectron && <Route path="/setup" element={<SetupPage />} />}
+
             <Route path="/login" element={<LoginPage />} />
             <Route path="/ticket/:id" element={<TicketStatusPage />} />
             <Route

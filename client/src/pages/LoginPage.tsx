@@ -4,6 +4,9 @@ import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
 
+// Detect if running in Electron
+const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
+
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -18,8 +21,10 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, navigate]);
 
-    // Check system setup status
+    // Check system setup status (Electron only)
     useEffect(() => {
+        if (!isElectron) return; // Skip setup check in web version
+
         const checkSetup = async () => {
             try {
                 const response = await api.get('/auth/setup-status');
