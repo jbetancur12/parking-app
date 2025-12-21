@@ -12,8 +12,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron:dev": "vite",
-    "electron:build": "npm run build --prefix ../server && tsc -b && vite build && electron-builder"
+    "electron:dev": "cross-env VITE_APP_MODE=electron vite",
+    "electron:build": "npm run build --prefix ../server && tsc -b && cross-env VITE_APP_MODE=electron vite build && electron-builder"
   },
   "dependencies": {
     "axios": "^1.13.2",
@@ -40,6 +40,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.23",
+    "cross-env": "^10.1.0",
     "electron": "^39.2.7",
     "electron-builder": "^26.0.12",
     "eslint": "^9.39.1",

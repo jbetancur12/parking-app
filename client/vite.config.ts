@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 
+// Detect if we're building for Electron
+const isElectronMode = process.env.VITE_APP_MODE === 'electron';
+
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
@@ -37,29 +40,32 @@ export default defineConfig({
         enabled: true
       }
     }),
-    electron([
-      {
-        // Main-Process entry point of the Electron App.
-        entry: 'electron/main.ts',
-      },
-      {
-        entry: 'electron/preload.ts',
-        onstart(options) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
-          // instead of restarting the entire Electron App.
-          options.reload()
+    // Only load Electron plugins when VITE_APP_MODE=electron
+    ...(isElectronMode ? [
+      electron([
+        {
+          // Main-Process entry point of the Electron App.
+          entry: 'electron/main.ts',
         },
-        vite: {
-          build: {
-            rollupOptions: {
-              output: {
-                format: 'cjs'
+        {
+          entry: 'electron/preload.ts',
+          onstart(options) {
+            // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
+            // instead of restarting the entire Electron App.
+            options.reload()
+          },
+          vite: {
+            build: {
+              rollupOptions: {
+                output: {
+                  format: 'cjs'
+                }
               }
             }
           }
-        }
-      },
-    ]),
-    renderer(),
+        },
+      ]),
+      renderer(),
+    ] : []),
   ],
 })
