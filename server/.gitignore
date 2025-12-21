@@ -1,4 +1,4 @@
 node_modules/
-dist
-dist-electron
-dist_electron
+dist/
+dist-electron/
+dist_electron/

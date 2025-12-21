@@ -38,8 +38,10 @@ export default function ParkingPage() {
     const [discountReason, setDiscountReason] = useState('');
     const [agreements, setAgreements] = useState<any[]>([]);
     const [selectedAgreementId, setSelectedAgreementId] = useState('');
+    const [redeem, setRedeem] = useState(false);
     const [showPrintConfirm, setShowPrintConfirm] = useState(false);
     const [pendingPrintSession, setPendingPrintSession] = useState<any>(null);
+    const [cashReceived, setCashReceived] = useState('');
 
     // Print refs
     const ticketRef = React.useRef<HTMLDivElement>(null);
@@ -187,8 +189,11 @@ export default function ParkingPage() {
         try {
             const response = await api.get(`/parking/preview/${plate}`);
             setPreviewData(response.data);
+            setPreviewData(response.data);
             setDiscount('');
             setDiscountReason('');
+            setRedeem(false);
+            setCashReceived('');
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al obtener vista previa');
         }
@@ -228,7 +233,8 @@ export default function ParkingPage() {
                 paymentMethod,
                 discount: discount ? Number(discount) : 0,
                 discountReason,
-                agreementId: selectedAgreementId
+                agreementId: selectedAgreementId,
+                redeem
             });
             const exitData = response.data;
 
@@ -356,6 +362,44 @@ export default function ParkingPage() {
                             <p className="text-lg"><strong>Plan:</strong> {previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
                             <p className="text-lg"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
 
+                            {/* Loyalty Badge */}
+                            {previewData.loyalty && (
+                                <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 mt-2">
+                                    <h3 className="font-bold text-purple-800 text-sm flex items-center">
+                                        <span className="mr-2">🎁</span> Puntos Fidelización
+                                    </h3>
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className="text-sm text-purple-700">
+                                            {previewData.loyalty.points} / {previewData.loyalty.target} Visitas
+                                        </span>
+                                        {previewData.canRedeem && (
+                                            <button
+                                                onClick={() => {
+                                                    setRedeem(!redeem);
+                                                    if (!redeem) {
+                                                        // Disable other discounts if redeeming
+                                                        setDiscount('');
+                                                        setSelectedAgreementId('');
+                                                    }
+                                                }}
+                                                className={`text-xs px-3 py-1 rounded-full font-bold transition-colors ${redeem
+                                                    ? 'bg-green-600 text-white shadow-inner'
+                                                    : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'
+                                                    }`}
+                                            >
+                                                {redeem ? '✓ CANJEADO' : '🌟 CANJEAR'}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="w-full bg-purple-200 rounded-full h-1.5 mt-2">
+                                        <div
+                                            className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
+                                            style={{ width: `${Math.min(100, (previewData.loyalty.points / previewData.loyalty.target) * 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Payment Method Selector */}
                             <div className="border-t pt-3 mt-3">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
@@ -410,31 +454,7 @@ export default function ParkingPage() {
                                 </div>
                             )}
 
-                            {/* Manual Discount Section */}
-                            <div className="border-t pt-3 mt-3">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Manual (Opcional)</label>
-                                <div className="flex gap-2 mb-2">
-                                    <input
-                                        type="number"
-                                        value={discount}
-                                        onChange={(e) => {
-                                            setDiscount(e.target.value);
-                                            if (e.target.value) setSelectedAgreementId(''); // Deselect agreement if manual entry
-                                        }}
-                                        placeholder="Monto ($)"
-                                        disabled={!!selectedAgreementId}
-                                        className="w-1/3 border rounded-md px-2 py-1 text-right disabled:bg-gray-100"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={discountReason}
-                                        onChange={(e) => setDiscountReason(e.target.value)}
-                                        placeholder="Razón (ej. Convenio)"
-                                        disabled={!!selectedAgreementId}
-                                        className="w-2/3 border rounded-md px-2 py-1 disabled:bg-gray-100"
-                                    />
-                                </div>
-                            </div>
+
 
                             <div className="border-t pt-2 mt-2">
                                 <div className="flex justify-between text-sm text-gray-500 mb-1">
@@ -453,6 +473,17 @@ export default function ParkingPage() {
                                         {/* Dynamic Calculation */}
                                         {(() => {
                                             const originalCost = previewData.cost;
+                                            // 1. Check for Redemption First (Highest Priority)
+                                            if (redeem && previewData.loyalty) {
+                                                if (previewData.loyalty.rewardType === 'HOURS') {
+                                                    const hourlyRate = previewData.hourlyRate || 0;
+                                                    const discountAmount = hourlyRate * (previewData.loyalty.rewardHours || 0);
+                                                    const finalVal = Math.max(0, originalCost - discountAmount);
+                                                    return `$${finalVal.toLocaleString()} (Desc. ${previewData.loyalty.rewardHours}h)`;
+                                                }
+                                                return `$0 (Canje Total)`;
+                                            }
+
                                             let finalDiscount = 0;
 
                                             if (selectedAgreementId) {
@@ -479,6 +510,62 @@ export default function ParkingPage() {
                                         })()}
                                     </span>
                                 </div>
+
+                                {/* Change Calculator for Cash */}
+                                {paymentMethod === 'CASH' && (
+                                    <div className="mt-4 border-t pt-3 bg-gray-50 p-3 rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="text-sm font-bold text-gray-700">Dinero Recibido:</label>
+                                            <input
+                                                type="number"
+                                                value={cashReceived}
+                                                onChange={(e) => setCashReceived(e.target.value)}
+                                                className="w-32 border border-gray-300 rounded-md px-2 py-1 text-right font-medium text-lg"
+                                                placeholder="$"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-bold text-gray-700">Devuelta:</span>
+                                            <span className={`text-xl font-bold ${Number(cashReceived) >= (previewData.cost - (selectedAgreementId ? (agreements.find(a => a.id.toString() === selectedAgreementId)?.value || 0) : 0)) // Approximate check, real calc below
+                                                ? 'text-blue-600'
+                                                : 'text-gray-400'
+                                                }`}>
+                                                {(() => {
+                                                    // Re-calculate total for change logic
+                                                    const originalCost = previewData.cost;
+                                                    let finalDiscount = 0;
+                                                    if (redeem && previewData.loyalty) {
+                                                        if (previewData.loyalty.rewardType === 'HOURS') {
+                                                            const hourlyRate = previewData.hourlyRate || 0;
+                                                            finalDiscount = hourlyRate * (previewData.loyalty.rewardHours || 0);
+                                                        } else {
+                                                            finalDiscount = originalCost;
+                                                        }
+                                                    } else if (selectedAgreementId) {
+                                                        const agreement = agreements.find(a => a.id.toString() === selectedAgreementId);
+                                                        if (agreement) {
+                                                            if (agreement.type === 'FREE_HOURS') {
+                                                                const hourlyRate = previewData.hourlyRate || 0;
+                                                                finalDiscount = hourlyRate * agreement.value;
+                                                            } else if (agreement.type === 'PERCENTAGE') {
+                                                                finalDiscount = (originalCost * agreement.value) / 100;
+                                                            } else if (agreement.type === 'FLAT_DISCOUNT') {
+                                                                finalDiscount = agreement.value;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    const total = Math.max(0, originalCost - finalDiscount);
+                                                    const received = Number(cashReceived) || 0;
+                                                    const change = received - total;
+
+                                                    return change >= 0 ? `$${change.toLocaleString()}` : '---';
+                                                })()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             {/* Visual breakdown of applied discount */}
                             {(selectedAgreementId || (discount && Number(discount) > 0)) && (
