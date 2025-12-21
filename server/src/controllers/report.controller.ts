@@ -3,7 +3,6 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { Transaction } from '../entities/Transaction';
 import { SystemSetting } from '../entities/SystemSetting';
-import { startOfDay, endOfDay } from 'date-fns';
 import { fromZonedTime } from 'date-fns-tz';
 
 export class ReportController {
@@ -53,7 +52,7 @@ export class ReportController {
 
             // 1. Get Timezone from settings
             const timezoneSetting = await em.findOne(SystemSetting, { key: 'app_timezone' });
-            const timeZone = timezoneSetting?.value || 'America/Bogota';
+            const timeZone = timezoneSetting?.value || 'America/Bogota'; // Default to Colombia
 
             // 2. Parse Date Params
             const dateParam = req.query.date as string;
@@ -75,8 +74,14 @@ export class ReportController {
             }
 
             // 3. Construct Start/End in Target Timezone
+            // fromZonedTime takes a "Local" string (e.g. 2023-10-25 00:00:00) and the timezone
+            // and returns the UTC Date instant that corresponds to that local time.
             const startDate = fromZonedTime(startString, timeZone);
             const endDate = fromZonedTime(endString, timeZone);
+
+            console.log(`[Report Debug] Zone: ${timeZone}`);
+            console.log(`[Report Debug] Input: ${startString} to ${endString}`);
+            console.log(`[Report Debug] UTC: ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
             // Find transactions between these dates
             const transactions = await em.find(Transaction, {
@@ -125,7 +130,7 @@ export class ReportController {
             res.json({
                 date: dateParam || (dateFrom ? `${dateFrom} to ${dateTo}` : 'Unknown'),
                 timezone: timeZone,
-                range: {
+                debug: {
                     start: startDate.toISOString(),
                     end: endDate.toISOString()
                 },

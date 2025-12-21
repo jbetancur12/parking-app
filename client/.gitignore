@@ -23,4 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 node_modules/
+<<<<<<< HEAD
 release/
+=======
+release
+>>>>>>> master

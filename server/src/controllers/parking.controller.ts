@@ -8,6 +8,7 @@ import { Agreement, AgreementType } from '../entities/Agreement';
 import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { Loyalty } from '../entities/Loyalty';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // Map tariffs for easy access
@@ -145,12 +146,46 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
 
     const result = calculateParkingCost(session, tariffs, gracePeriod);
 
+    // Check Loyalty Status
+    const loyaltyEnabled = settings['loyalty_enabled'] === 'true';
+    const loyaltyTarget = Number(settings['loyalty_target'] || 10);
+    const loyaltyRewardType = settings['loyalty_reward_type'] || 'FULL';
+    const loyaltyRewardHours = Number(settings['loyalty_reward_hours'] || 0);
+
+
+    let loyalty: any = null;
+    let canRedeem = false;
+
+    if (loyaltyEnabled) {
+        const lp = await em.findOne(Loyalty, { plate: session.plate });
+        if (lp) {
+            loyalty = {
+                points: lp.points,
+                target: loyaltyTarget,
+                rewardType: loyaltyRewardType,
+                rewardHours: loyaltyRewardHours
+            };
+            if (lp.points >= loyaltyTarget) {
+                canRedeem = true;
+            }
+        } else {
+            loyalty = {
+                points: 0,
+                target: loyaltyTarget,
+                rewardType: loyaltyRewardType,
+                rewardHours: loyaltyRewardHours
+            };
+        }
+    }
+
     return res.json({
         plate: session.plate,
         entryTime: session.entryTime,
         planType: session.planType,
         ...result,
-        hourlyRate: tariffs.find(t => t.tariffType === 'HOUR')?.cost || 0
+        hourlyRate: tariffs.find(t => t.tariffType === 'HOUR')?.cost || 0,
+        loyalty,
+        canRedeem
     });
 };
 
@@ -160,7 +195,7 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    const { plate, paymentMethod, discount, discountReason, agreementId } = req.body;
+    const { plate, paymentMethod, discount, discountReason, agreementId, redeem } = req.body;
 
     if (!plate) {
         return res.status(400).json({ message: 'Plate is required' });
@@ -241,6 +276,65 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         // Manual override
         appliedDiscount = Number(discount);
         finalCost = Math.max(0, calculatedCost - appliedDiscount);
+    }
+
+    // Loyalty Logic
+    const loyaltyEnabled = settings['loyalty_enabled'] === 'true';
+    const loyaltyTarget = Number(settings['loyalty_target'] || 10);
+    const loyaltyRewardType = settings['loyalty_reward_type'] || 'FULL';
+    const loyaltyRewardHours = Number(settings['loyalty_reward_hours'] || 0);
+
+    let loyaltyPointsRedeemed = 0;
+
+    if (loyaltyEnabled) {
+        let lp = await em.findOne(Loyalty, { plate });
+        if (!lp) {
+            lp = em.create(Loyalty, {
+                plate,
+                points: 0,
+                totalVisits: 0,
+                lastVisit: new Date()
+            });
+            em.persist(lp);
+        }
+
+        if (redeem && lp.points >= loyaltyTarget) {
+            // Apply Discount based on Reward Type
+            if (loyaltyRewardType === 'HOURS' && loyaltyRewardHours > 0) {
+                // Calculate value of X hours
+                const hourTariff = tariffs.find(t => t.tariffType === 'HOUR');
+                if (hourTariff) {
+                    const discountAmount = hourTariff.cost * loyaltyRewardHours;
+                    appliedDiscount = Math.min(calculatedCost, discountAmount);
+                    finalCost = calculatedCost - appliedDiscount;
+                    finalDiscountReason = `Canje Loyalty (${loyaltyRewardHours} Horas)`;
+                } else {
+                    // Fallback if no hour tariff? assume FULL? No, better warn or just 0.
+                    // Let's assume proportional discount if needed, but per-hour is safer.
+                    // If no per-hour tariff, maybe it's day only?
+                    // Safe Fallback:
+                    appliedDiscount = 0; // Config error
+                }
+            } else {
+                // Default to FULL
+                appliedDiscount = calculatedCost;
+                finalCost = 0;
+                finalDiscountReason = 'Canje de Puntos Loyalty (Total)';
+            }
+
+
+            // Deduct Points
+            lp.points -= loyaltyTarget;
+            lp.totalVisits += 1;
+            lp.lastVisit = new Date();
+            loyaltyPointsRedeemed = loyaltyTarget;
+
+        } else {
+            // Normal Accrual
+            lp.points += 1;
+            lp.totalVisits += 1;
+            lp.lastVisit = new Date();
+        }
     }
 
     session.exitTime = exitTime;

@@ -88,6 +88,41 @@ export default function ReportsPage() {
         exportToExcel(exportData, filename, 'Resumen');
     };
 
+    const formatDuration = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+    };
+
+    const formatDescription = (desc: string) => {
+        let formatted = desc
+            .replace('Parking[HOUR]', 'Parqueo [Hora]')
+            .replace('Parking[DAY]', 'Parqueo [Día]')
+            .replace('WASH_SERVICE', 'Lavado')
+            .replace('MONTHLY_PAYMENT', 'Mensualidad')
+            .replace('DESC:', 'Obs:');
+
+        // Regex to find duration in mins and convert to hh:mm:ss
+        const durationMatch = formatted.match(/\((\d+)\s*mins?\)/);
+        if (durationMatch) {
+            const minutes = parseInt(durationMatch[1]);
+            formatted = formatted.replace(durationMatch[0], `(${formatDuration(minutes)})`);
+        }
+
+        return formatted;
+    };
+
+    const getTypeLabel = (type: string) => {
+        const labels: Record<string, string> = {
+            'PARKING_REVENUE': 'Parqueo',
+            'MONTHLY_PAYMENT': 'Mensualidad',
+            'WASH_SERVICE': 'Lavadero',
+            'INCOME': 'Ingreso',
+            'EXPENSE': 'Egreso'
+        };
+        return labels[type] || type;
+    };
+
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center">
@@ -262,7 +297,11 @@ export default function ReportsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${t.type === 'EXPENSE' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                                                     }`}>
+<<<<<<< HEAD
                                                     {TRANSACTION_TYPES[t.type] || t.type}
+=======
+                                                    {getTypeLabel(t.type)}
+>>>>>>> master
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">

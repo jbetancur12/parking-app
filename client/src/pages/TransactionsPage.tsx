@@ -103,6 +103,30 @@ export default function TransactionsPage() {
 
     if (loading) return <div className="p-8">Cargando...</div>;
 
+    const formatDuration = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+    };
+
+    const formatDescription = (desc: string) => {
+        let formatted = desc
+            .replace('Parking[HOUR]', 'Parqueo [Hora]')
+            .replace('Parking[DAY]', 'Parqueo [Día]')
+            .replace('WASH_SERVICE', 'Lavado')
+            .replace('MONTHLY_PAYMENT', 'Mensualidad')
+            .replace('DESC:', 'Obs:');
+
+        // Regex to find duration in mins and convert to hh:mm:ss
+        const durationMatch = formatted.match(/\((\d+)\s*mins?\)/);
+        if (durationMatch) {
+            const minutes = parseInt(durationMatch[1]);
+            formatted = formatted.replace(durationMatch[0], `(${formatDuration(minutes)})`);
+        }
+
+        return formatted;
+    };
+
     return (
         <div>
             <div className="flex justify-between items-center mb-6">

@@ -21,6 +21,12 @@ export default function SettingsPage() {
     const [capacityCar, setCapacityCar] = useState('50');
     const [capacityMoto, setCapacityMoto] = useState('30');
 
+    // Loyalty Settings
+    const [loyaltyEnabled, setLoyaltyEnabled] = useState(false);
+    const [loyaltyTarget, setLoyaltyTarget] = useState('10');
+    const [loyaltyRewardType, setLoyaltyRewardType] = useState('FULL'); // FULL or HOURS
+    const [loyaltyRewardHours, setLoyaltyRewardHours] = useState('0');
+
     // Ticket / Company Settings
     const [companyName, setCompanyName] = useState('');
     const [companyNit, setCompanyNit] = useState('');
@@ -56,6 +62,10 @@ export default function SettingsPage() {
             if (settings['check_capacity']) setCheckCapacity(settings['check_capacity'] === 'true');
             if (settings['capacity_car']) setCapacityCar(settings['capacity_car']);
             if (settings['capacity_motorcycle']) setCapacityMoto(settings['capacity_motorcycle']);
+            if (settings['loyalty_enabled']) setLoyaltyEnabled(settings['loyalty_enabled'] === 'true');
+            if (settings['loyalty_target']) setLoyaltyTarget(settings['loyalty_target']);
+            if (settings['loyalty_reward_type']) setLoyaltyRewardType(settings['loyalty_reward_type']);
+            if (settings['loyalty_reward_hours']) setLoyaltyRewardHours(settings['loyalty_reward_hours']);
 
             // Ticket Settings
             if (settings['company_name']) setCompanyName(settings['company_name']);
@@ -98,7 +108,11 @@ export default function SettingsPage() {
                 grace_period: gracePeriod,
                 check_capacity: String(checkCapacity),
                 capacity_car: capacityCar,
-                capacity_motorcycle: capacityMoto
+                capacity_motorcycle: capacityMoto,
+                loyalty_enabled: String(loyaltyEnabled),
+                loyalty_target: loyaltyTarget,
+                loyalty_reward_type: loyaltyRewardType,
+                loyalty_reward_hours: loyaltyRewardHours
             });
             await tariffService.update(tariffs);
             toast.success('Configuración general guardada');
@@ -319,12 +333,79 @@ export default function SettingsPage() {
                                 </select>
                             </div>
                         </div>
-
-                        <div className="flex justify-end">
-                            <button onClick={handleSaveGeneral} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
-                                <Save className="mr-2" size={20} /> Guardar Cambios
-                            </button>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Zona Horaria (Reportes)</label>
+                            <select
+                                value={timezone}
+                                onChange={(e) => setTimezone(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                            >
+                                <option value="America/Bogota">America/Bogota (Colombia)</option>
+                                <option value="America/New_York">America/New_York (USA ET)</option>
+                                <option value="Europe/Madrid">Europe/Madrid (España)</option>
+                                <option value="UTC">UTC (Universal)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div className="mb-6 border-t pt-6 bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                            <span className="mr-2">🎁</span> Fidelización de Clientes
+                        </h3>
+                        <div className="flex items-center mb-4">
+                            <input
+                                type="checkbox"
+                                checked={loyaltyEnabled}
+                                onChange={(e) => setLoyaltyEnabled(e.target.checked)}
+                                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                            />
+                            <label className="text-gray-700 font-medium">Activar Sistema de Puntos</label>
+                        </div>
+                        <div className={`flex flex-col space-y-4 ${!loyaltyEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <div className="flex items-center">
+                                <label className="text-gray-700 w-48">Meta para Premio (Visitas):</label>
+                                <input
+                                    type="number"
+                                    value={loyaltyTarget}
+                                    onChange={(e) => setLoyaltyTarget(e.target.value)}
+                                    className="w-24 border rounded px-2 py-1"
+                                    placeholder="Ej: 10"
+                                />
+                                <span className="ml-3 text-gray-500 text-sm">Visitas requeridas para canjear.</span>
+                            </div>
+
+                            <div className="flex items-center">
+                                <label className="text-gray-700 w-48">Tipo de Premio:</label>
+                                <select
+                                    value={loyaltyRewardType}
+                                    onChange={(e) => setLoyaltyRewardType(e.target.value)}
+                                    className="w-48 border rounded px-2 py-1 bg-white"
+                                >
+                                    <option value="FULL">Salida Gratis (100%)</option>
+                                    <option value="HOURS">Horas Gratis</option>
+                                </select>
+                            </div>
+
+                            {loyaltyRewardType === 'HOURS' && (
+                                <div className="flex items-center">
+                                    <label className="text-gray-700 w-48">Cantidad Horas:</label>
+                                    <input
+                                        type="number"
+                                        value={loyaltyRewardHours}
+                                        onChange={(e) => setLoyaltyRewardHours(e.target.value)}
+                                        className="w-24 border rounded px-2 py-1"
+                                        placeholder="Ej: 2"
+                                    />
+                                    <span className="ml-3 text-gray-500 text-sm">Horas a descontar del total.</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end mb-6">
+                        <button onClick={handleSaveGeneral} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg">
+                            <Save className="mr-2" size={20} /> Guardar Cambios
+                        </button>
                     </div>
 
                     {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
