@@ -58,6 +58,11 @@ export default function ReportsPage() {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center">
                 <FileText className="mr-3" /> Reportes Financieros
+                {reportData?.timezone && (
+                    <span className="ml-4 text-xs font-normal text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200">
+                        Zona: {reportData.timezone}
+                    </span>
+                )}
             </h1>
 
             {/* Controls */}
