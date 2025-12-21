@@ -36,7 +36,10 @@ export default function ShiftHistoryPage() {
     // Print ref
     const shiftSummaryRef = React.useRef<HTMLDivElement>(null);
 
-    const handlePrintShiftSummary = useElectronPrint({ contentRef: shiftSummaryRef });
+    const handlePrintShiftSummary = useElectronPrint({
+        contentRef: shiftSummaryRef,
+        silent: settings?.show_print_dialog === 'false'
+    });
 
     useEffect(() => {
         fetchClosedShifts();

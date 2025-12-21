@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 // Expose Electron print API
 contextBridge.exposeInMainWorld('electronAPI', {
-    print: (content) => ipcRenderer.invoke('print-window', content)
+    print: (content, options) => ipcRenderer.invoke('print-window', content, options)
 })
 
 // --------- Expose some API to the Renderer process ---------

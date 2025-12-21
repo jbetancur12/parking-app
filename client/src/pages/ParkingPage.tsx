@@ -46,9 +46,15 @@ export default function ParkingPage() {
     const receiptRef = React.useRef<HTMLDivElement>(null);
     const [printData, setPrintData] = useState<any>(null);
 
-    const handlePrintTicket = useElectronPrint({ contentRef: ticketRef });
+    const handlePrintTicket = useElectronPrint({
+        contentRef: ticketRef,
+        silent: settings?.show_print_dialog === 'false'
+    });
 
-    const handlePrintReceipt = useElectronPrint({ contentRef: receiptRef });
+    const handlePrintReceipt = useElectronPrint({
+        contentRef: receiptRef,
+        silent: settings?.show_print_dialog === 'false'
+    });
 
     useEffect(() => {
         fetchSessions();

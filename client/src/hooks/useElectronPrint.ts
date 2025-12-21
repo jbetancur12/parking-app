@@ -4,9 +4,17 @@ interface UseElectronPrintOptions {
   contentRef: React.RefObject<HTMLElement | null>;
   onBeforePrint?: () => void;
   onAfterPrint?: () => void;
+  silent?: boolean;
+  deviceName?: string;
 }
 
-export const useElectronPrint = ({ contentRef, onBeforePrint, onAfterPrint }: UseElectronPrintOptions) => {
+export const useElectronPrint = ({
+  contentRef,
+  onBeforePrint,
+  onAfterPrint,
+  silent = true,
+  deviceName
+}: UseElectronPrintOptions) => {
   const handlePrint = useCallback(async () => {
     if (!contentRef.current) {
       console.error('Print content ref is null');
@@ -34,6 +42,7 @@ export const useElectronPrint = ({ contentRef, onBeforePrint, onAfterPrint }: Us
             <html>
                 <head>
                     <meta charset="utf-8">
+                    <title>Ticket - Aparca</title>
                     <style>
                         ${styles}
                         
@@ -65,7 +74,7 @@ export const useElectronPrint = ({ contentRef, onBeforePrint, onAfterPrint }: Us
     if (electronAPI?.print) {
       try {
         // Enviamos el contenido HTML al proceso principal para imprimir en una ventana oculta
-        await electronAPI.print(htmlContent);
+        await electronAPI.print(htmlContent, { silent, deviceName });
       } catch (error) {
         console.error('Electron print failed:', error);
 
@@ -78,7 +87,7 @@ export const useElectronPrint = ({ contentRef, onBeforePrint, onAfterPrint }: Us
     }
 
     onAfterPrint?.();
-  }, [contentRef, onBeforePrint, onAfterPrint]);
+  }, [contentRef, onBeforePrint, onAfterPrint, silent, deviceName]);
 
   return handlePrint;
 };

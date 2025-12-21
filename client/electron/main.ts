@@ -96,7 +96,7 @@ app.on('activate', () => {
 
 app.whenReady().then(() => {
     // Handle print requests from renderer with worker window
-    ipcMain.handle('print-window', async (_, content) => {
+    ipcMain.handle('print-window', async (_, content, options) => {
         const workerWindow = new BrowserWindow({
             show: false,
             width: 800, // Size matters for preview generation
@@ -108,7 +108,7 @@ app.whenReady().then(() => {
             }
         });
 
-        console.log('Main: Received print request. Content length:', content.length);
+        console.log('Main: Received print request. Content length:', content.length, 'Options:', options);
 
         try {
             await workerWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(content));
@@ -127,9 +127,9 @@ app.whenReady().then(() => {
                 workerWindow.show();
 
                 workerWindow.webContents.print({
-                    silent: false,
+                    silent: options?.silent || false,
                     printBackground: true,
-                    deviceName: ''
+                    deviceName: options?.deviceName || ''
                 }, (success, errorType) => {
                     if (!success) {
                         console.error('Main: Print failed:', errorType);

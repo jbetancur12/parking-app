@@ -66,6 +66,7 @@ export default function MonthlyClientsPage() {
     const handlePrint = useElectronPrint({
         contentRef: componentRef,
         onAfterPrint: () => setPrintData(null),
+        silent: settings?.show_print_dialog === 'false'
     });
 
     const triggerPrint = (data: any) => {

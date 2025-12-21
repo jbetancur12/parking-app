@@ -28,6 +28,7 @@ export default function SettingsPage() {
     const [companyPhone, setCompanyPhone] = useState('');
     const [ticketWidth, setTicketWidth] = useState('58mm'); // 58mm or 80mm
     const [enableQr, setEnableQr] = useState('true');
+    const [showPrintDialog, setShowPrintDialog] = useState('true');
     const [regulations, setRegulations] = useState<string[]>(Array(6).fill(''));
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
@@ -62,6 +63,7 @@ export default function SettingsPage() {
             if (settings['company_phone']) setCompanyPhone(settings['company_phone']);
             if (settings['ticket_width']) setTicketWidth(settings['ticket_width']);
             if (settings['enable_qr']) setEnableQr(settings['enable_qr']);
+            if (settings['show_print_dialog']) setShowPrintDialog(settings['show_print_dialog']);
             if (settings['company_logo']) setLogoPreview(settings['company_logo']);
 
             // Regulations
@@ -115,6 +117,7 @@ export default function SettingsPage() {
                 company_phone: companyPhone,
                 ticket_width: ticketWidth,
                 enable_qr: enableQr,
+                show_print_dialog: showPrintDialog,
                 company_logo: logoPreview || ''
             };
 
@@ -197,8 +200,8 @@ export default function SettingsPage() {
                 <button
                     onClick={() => setActiveTab('tariffs')}
                     className={`flex items-center py-2 px-4 font-medium text-sm border-b-2 transition-colors ${activeTab === 'tariffs'
-                            ? 'border-blue-500 text-blue-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                         }`}
                 >
                     <Settings className="mr-2" size={16} />
@@ -207,8 +210,8 @@ export default function SettingsPage() {
                 <button
                     onClick={() => setActiveTab('ticket')}
                     className={`flex items-center py-2 px-4 font-medium text-sm border-b-2 transition-colors ${activeTab === 'ticket'
-                            ? 'border-blue-500 text-blue-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                         }`}
                 >
                     <Receipt className="mr-2" size={16} />
@@ -399,6 +402,20 @@ export default function SettingsPage() {
                                         <option value="true">Sí, mostrar QR</option>
                                         <option value="false">No</option>
                                     </select>
+                                </div>
+                                <div className="mt-4 col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">Diálogo de Impresión</label>
+                                    <select
+                                        value={showPrintDialog}
+                                        onChange={(e) => setShowPrintDialog(e.target.value)}
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                    >
+                                        <option value="true">Mostrar diálogo (Seleccionar impresora)</option>
+                                        <option value="false">Impresión directa (Silenciosa)</option>
+                                    </select>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        "Impresión directa" usará la impresora predeterminada del sistema sin preguntar.
+                                    </p>
                                 </div>
                             </div>
 
