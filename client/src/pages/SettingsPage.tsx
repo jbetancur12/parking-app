@@ -180,7 +180,7 @@ export default function SettingsPage() {
     };
 
     const updateCost = (id: number, val: string) => {
-        setTariffs(prev => prev.map(t => t.id === id ? { ...t, cost: Number(val) } : t));
+        setTariffs(prev => prev.map(t => t.id == id ? { ...t, cost: Number(val) } : t));
     };
 
     const handleDownloadBackup = async () => {
