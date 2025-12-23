@@ -21,6 +21,7 @@ import AgreementsPage from './pages/AgreementsPage';
 import ShiftHistoryPage from './pages/ShiftHistoryPage';
 import TransactionsPage from './pages/TransactionsPage';
 import TicketStatusPage from './pages/TicketStatusPage';
+import LicenseActivationPage from './pages/LicenseActivationPage';
 
 // Detect if running in Electron
 const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
@@ -40,6 +41,9 @@ function App() {
         <Toaster richColors position="top-center" />
         <Router>
           <Routes>
+            {/* License activation route - only in Electron */}
+            {isElectron && <Route path="/license" element={<LicenseActivationPage />} />}
+
             {/* Setup route only available in Electron */}
             {isElectron && <Route path="/setup" element={<SetupPage />} />}
 

@@ -1,7 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { fork, ChildProcess } from 'child_process'
+import { getHardwareId } from './hardware-id'
+import { validateLicense, saveLicenseLocally, getLicenseKey } from './license-validator'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -101,6 +103,43 @@ app.on('activate', () => {
     }
 })
 
+/**
+ * Check license and start app accordingly
+ */
+async function checkLicenseAndStart() {
+    const validation = await validateLicense();
+
+    // Start server first
+    startServer();
+
+    if (!validation.isValid) {
+        // No valid license - will show license activation page
+        console.log('No valid license found:', validation.error);
+        createWindow();
+        return;
+    }
+
+    // License is valid - check if expiring soon
+    if (validation.daysRemaining && validation.daysRemaining <= 30) {
+        const licenseKey = getLicenseKey();
+        dialog.showMessageBox({
+            type: 'warning',
+            title: 'Licencia por vencer',
+            message: `Tu licencia vence en ${validation.daysRemaining} días`,
+            detail: licenseKey ? `Clave: ${licenseKey}` : '',
+            buttons: ['Renovar', 'Recordar después'],
+            defaultId: 0
+        }).then(result => {
+            if (result.response === 0) {
+                // Open renewal page
+                shell.openExternal(`https://tuapp.com/renovar?key=${licenseKey || ''}`);
+            }
+        });
+    }
+
+    createWindow();
+}
+
 app.whenReady().then(() => {
     // Handle print requests from renderer with worker window
     ipcMain.handle('print-window', async (_, content, options) => {
@@ -155,6 +194,53 @@ app.whenReady().then(() => {
         });
     });
 
-    startServer()
-    createWindow()
+    // License IPC Handlers
+    ipcMain.handle('get-hardware-id', () => {
+        return getHardwareId();
+    });
+
+    ipcMain.handle('activate-license', async (_, signedLicense: string) => {
+        try {
+            saveLicenseLocally(signedLicense);
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('validate-license', async () => {
+        try {
+            const result = await validateLicense();
+            return result;
+        } catch (error: any) {
+            return { isValid: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('start-trial', async () => {
+        try {
+            const hardwareId = getHardwareId();
+            const LICENSE_SERVER_URL = process.env.LICENSE_SERVER_URL || 'http://localhost:3002';
+
+            const response = await fetch(`${LICENSE_SERVER_URL}/trial`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hardwareId })
+            });
+
+            const data = await response.json() as { signedLicense: string; error?: string };
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to start trial');
+            }
+
+            saveLicenseLocally(data.signedLicense);
+            return { success: true };
+        } catch (error: any) {
+            throw new Error(error.message || 'Trial activation failed');
+        }
+    });
+
+    // Check license before starting app
+    checkLicenseAndStart();
 })
