@@ -1,5 +1,6 @@
 import { useAuth } from '../context/AuthContext';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
@@ -21,6 +22,30 @@ export default function DashboardLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<string[]>(['Operación', 'Finanzas']); // Default open
     const location = useLocation();
+    const navigate = useNavigate();
+
+    // STRICT CHECK: Validate license on every dashboard load
+    // This prevents users with saved sessions from bypassing revocation
+    useEffect(() => {
+        // Only checking in Electron mode
+        const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
+        if (!isElectron) return;
+
+        const verifyAccess = async () => {
+            try {
+                const result = await (window as any).electronAPI?.validateLicense();
+                if (!result || !result.isValid) {
+                    console.warn('License invalid during session - forcing logout/activation');
+                    // Optional: logout(); // If you want to clear session too
+                    navigate('/license');
+                }
+            } catch (error) {
+                console.error('Security check failed:', error);
+            }
+        };
+
+        verifyAccess();
+    }, [navigate]);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 

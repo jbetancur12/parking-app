@@ -7,7 +7,7 @@ import { getHardwareId } from './hardware-id';
 const LICENSE_SECRET = process.env.LICENSE_SECRET || 'your-super-secret-jwt-key-change-this-to-something-very-long-and-random';
 const LICENSE_SERVER_URL = process.env.LICENSE_SERVER_URL || 'http://localhost:3002';
 
-interface LicensePayload {
+export interface LicensePayload {
     licenseKey: string;
     customerId: string;
     customerName: string;
@@ -199,18 +199,26 @@ export async function validateLicense(): Promise<ValidationResult> {
 }
 
 /**
- * Get license key from local storage (for display/renewal)
+ * Get full license details for UI display
  */
-export function getLicenseKey(): string | null {
+export function getLicenseDetails(): LicensePayload | null {
     const licenseData = loadLicenseFromDisk();
     if (!licenseData) return null;
 
     try {
         const hardwareId = getHardwareId();
         const decrypted = xorDecrypt(licenseData, hardwareId);
-        const decoded = jwt.verify(decrypted, LICENSE_SECRET) as LicensePayload;
-        return decoded.licenseKey;
+        return jwt.verify(decrypted, LICENSE_SECRET) as LicensePayload;
     } catch (error) {
+        console.error('Error decoding license details:', error);
         return null;
     }
+}
+
+/**
+ * Get license key from local storage (for display/renewal)
+ */
+export function getLicenseKey(): string | null {
+    const details = getLicenseDetails();
+    return details ? details.licenseKey : null;
 }

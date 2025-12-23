@@ -1,5 +1,8 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
+export type LicenseStatus = 'pending' | 'active' | 'expired' | 'revoked';
+export type LicenseType = 'trial' | 'full';
+
 @Entity()
 export class License {
     @PrimaryKey()
@@ -39,10 +42,10 @@ export class License {
     features: string[] = [];
 
     @Property()
-    status: 'pending' | 'active' | 'expired' | 'revoked' = 'pending';
+    status: LicenseStatus = 'pending';
 
     @Property()
-    type: 'trial' | 'full' = 'full';
+    type: LicenseType = 'full';
 
     @Property()
     createdAt: Date = new Date();

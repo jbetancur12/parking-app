@@ -1,9 +1,15 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { fork, ChildProcess } from 'child_process'
 import { getHardwareId } from './hardware-id'
-import { validateLicense, saveLicenseLocally, getLicenseKey } from './license-validator'
+import { validateLicense, saveLicenseLocally, getLicenseKey, getLicenseDetails } from './license-validator'
+
+// Auto-Updater Logging
+autoUpdater.logger = console;
+// logger.transports is not available on console object
+// autoUpdater.logger.transports.file.level = 'info';
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -80,7 +86,12 @@ function createWindow() {
         // Open DevTools in development
         win.webContents.openDevTools()
     } else {
-        // win.loadFile('dist/index.html')
+        win.loadFile(path.join(process.env.DIST || '', 'index.html'))
+    }
+
+    // Check for updates if packaged (Production)
+    if (app.isPackaged) {
+        autoUpdater.checkForUpdatesAndNotify();
     }
 }
 
@@ -244,6 +255,28 @@ app.whenReady().then(() => {
         } catch (error: any) {
             throw new Error(error.message || 'Trial activation failed');
         }
+    });
+
+    ipcMain.handle('get-license-details', () => {
+        return getLicenseDetails();
+    });
+
+    // Auto-Updater IPC Handlers
+    ipcMain.handle('check-for-update', () => {
+        return autoUpdater.checkForUpdatesAndNotify();
+    });
+
+    ipcMain.handle('quit-and-install', () => {
+        autoUpdater.quitAndInstall();
+    });
+
+    // Auto-Updater Events (forward to renderer)
+    autoUpdater.on('update-available', () => {
+        if (win) win.webContents.send('update-available');
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+        if (win) win.webContents.send('update-downloaded');
     });
 
     // Check license before starting app

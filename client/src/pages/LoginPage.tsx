@@ -21,31 +21,26 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, navigate]);
 
-    // Check license status first (Electron only)
+    // Unified check for Electron: License -> Setup
     useEffect(() => {
-        if (!isElectron) return; // Skip license check in web version
+        if (!isElectron) return; // Skip in web version
 
-        const checkLicense = async () => {
+        const initChecks = async () => {
+            // 1. Check License first
             try {
                 const result = await (window as any).electronAPI?.validateLicense();
                 if (!result || !result.isValid) {
                     console.log('No valid license found, redirecting to /license');
                     navigate('/license');
-                    return;
+                    return; // Stop here, do not check setup
                 }
             } catch (error) {
                 console.error('Error checking license:', error);
                 navigate('/license');
+                return;
             }
-        };
-        checkLicense();
-    }, [navigate]);
 
-    // Check system setup status (Electron only)
-    useEffect(() => {
-        if (!isElectron) return; // Skip setup check in web version
-
-        const checkSetup = async () => {
+            // 2. Check Setup (only if license is valid)
             try {
                 const response = await api.get('/auth/setup-status');
                 if (!response.data.isConfigured) {
@@ -55,7 +50,10 @@ export default function LoginPage() {
                 console.error('Error checking setup status', error);
             }
         };
-        checkSetup();
+
+        // Add a small delay to ensure Electron IPC is ready if necessary, 
+        // though typically window.electronAPI is available on mount.
+        initChecks();
     }, [navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
+import obfuscator from 'rollup-plugin-javascript-obfuscator'
 
 // Detect if we're building for Electron
 const isElectronMode = process.env.VITE_APP_MODE === 'electron';
@@ -49,6 +50,29 @@ export default defineConfig({
           vite: {
             build: {
               rollupOptions: {
+                plugins: [
+                  process.env.NODE_ENV === 'production' && obfuscator({
+                    compact: true,
+                    controlFlowFlattening: true,
+                    controlFlowFlatteningThreshold: 1,
+                    deadCodeInjection: true,
+                    deadCodeInjectionThreshold: 0.2, // Lower to avoid overly massive files
+                    debugProtection: false, // Avoid breaking devtools for now
+                    disableConsoleOutput: true,
+                    identifierNamesGenerator: 'hexadecimal',
+                    log: false,
+                    numbersToExpressions: true,
+                    renameGlobals: false,
+                    rotateStringArray: true,
+                    selfDefending: true,
+                    shuffleStringArray: true,
+                    splitStrings: true,
+                    stringArray: true,
+                    stringArrayEncoding: ['rc4'],
+                    stringArrayThreshold: 0.8,
+                    unicodeEscapeSequence: false
+                  })
+                ]
               },
             },
           },
@@ -63,6 +87,29 @@ export default defineConfig({
           vite: {
             build: {
               rollupOptions: {
+                plugins: [
+                  process.env.NODE_ENV === 'production' && obfuscator({
+                    compact: true,
+                    controlFlowFlattening: true,
+                    controlFlowFlatteningThreshold: 1,
+                    deadCodeInjection: true,
+                    deadCodeInjectionThreshold: 0.2,
+                    debugProtection: false,
+                    disableConsoleOutput: true,
+                    identifierNamesGenerator: 'hexadecimal',
+                    log: false,
+                    numbersToExpressions: true,
+                    renameGlobals: false,
+                    rotateStringArray: true,
+                    selfDefending: true,
+                    shuffleStringArray: true,
+                    splitStrings: true,
+                    stringArray: true,
+                    stringArrayEncoding: ['rc4'],
+                    stringArrayThreshold: 0.8,
+                    unicodeEscapeSequence: false
+                  })
+                ]
               }
             }
           }

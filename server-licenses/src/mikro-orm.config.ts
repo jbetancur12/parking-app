@@ -3,6 +3,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import dotenv from 'dotenv';
 import path from 'path';
 import { License } from './entities/License';
+import { LicenseLog } from './entities/LicenseLog';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const config: Options = {
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
-    entities: [License],
+    entities: [License, LicenseLog],
     debug: true,
 };
 
