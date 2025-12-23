@@ -1,9 +1,16 @@
 // @ts-nocheck
 const { contextBridge, ipcRenderer } = require('electron')
 
-// Expose Electron print API
+// Expose Electron APIs
 contextBridge.exposeInMainWorld('electronAPI', {
-    print: (content, options) => ipcRenderer.invoke('print-window', content, options)
+    // Print API
+    print: (content, options) => ipcRenderer.invoke('print-window', content, options),
+
+    // License APIs
+    getHardwareId: () => ipcRenderer.invoke('get-hardware-id'),
+    activateLicense: (licenseKey) => ipcRenderer.invoke('activate-license', licenseKey),
+    validateLicense: () => ipcRenderer.invoke('validate-license'),
+    startTrial: () => ipcRenderer.invoke('start-trial')
 })
 
 // --------- Expose some API to the Renderer process ---------
