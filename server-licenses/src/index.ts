@@ -19,8 +19,9 @@ let orm: MikroORM;
 // Initialize database
 async function initDatabase() {
     orm = await MikroORM.init(config);
-    await orm.getMigrator().up();
-    console.log('✅ Database connected and migrated');
+    const generator = orm.getSchemaGenerator();
+    await generator.updateSchema();
+    console.log('✅ Database connected and schema updated');
 }
 
 // Middleware to inject EntityManager
