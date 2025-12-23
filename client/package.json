@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Gestión de Parqueadero Offline-First",
   "author": "Aparca Team",
-  "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "ts-check": "tsc -b",

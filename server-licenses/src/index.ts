@@ -133,7 +133,24 @@ app.post('/trial', async (req: Request, res: Response) => {
     // Check if hardware already has trial
     const existingTrial = await em.findOne(License, { hardwareId, type: 'trial' });
     if (existingTrial) {
-        return res.status(409).json({ error: 'Trial already used on this device' });
+        // Check if expired
+        if (existingTrial.status === 'expired' || existingTrial.expiresAt < new Date()) {
+            return res.status(403).json({ error: 'Tu periodo de prueba ha expirado. Por favor adquiere una licencia.' });
+        }
+
+        // If revoked
+        if (existingTrial.status === 'revoked') {
+            return res.status(403).json({ error: 'Tu periodo de prueba ha sido revocado.' });
+        }
+
+        // Return existing valid trial (recovery mode)
+        const signedLicense = signLicense(existingTrial, hardwareId);
+        return res.json({
+            signedLicense,
+            licenseKey: existingTrial.licenseKey,
+            expiresAt: existingTrial.expiresAt.toISOString(),
+            message: 'Trial existente recuperado'
+        });
     }
 
     // Create trial license

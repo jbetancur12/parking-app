@@ -46,6 +46,12 @@ export default defineConfig({
         {
           // Main-Process entry point of the Electron App.
           entry: 'electron/main.ts',
+          vite: {
+            build: {
+              rollupOptions: {
+              },
+            },
+          },
         },
         {
           entry: 'electron/preload.ts',
@@ -57,9 +63,6 @@ export default defineConfig({
           vite: {
             build: {
               rollupOptions: {
-                output: {
-                  format: 'cjs'
-                }
               }
             }
           }

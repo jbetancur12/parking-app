@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { License } from '../entities/License';
 
-const LICENSE_SECRET = process.env.LICENSE_SECRET || 'change-this-secret';
+const LICENSE_SECRET = process.env.LICENSE_SECRET || 'your-super-secret-jwt-key-change-this-to-something-very-long-and-random';
 
 interface LicensePayload {
     licenseKey: string;

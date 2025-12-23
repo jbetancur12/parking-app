@@ -4,7 +4,7 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import { getHardwareId } from './hardware-id';
 
-const LICENSE_SECRET = process.env.LICENSE_SECRET || 'change-this-secret';
+const LICENSE_SECRET = process.env.LICENSE_SECRET || 'your-super-secret-jwt-key-change-this-to-something-very-long-and-random';
 const LICENSE_SERVER_URL = process.env.LICENSE_SERVER_URL || 'http://localhost:3002';
 
 interface LicensePayload {

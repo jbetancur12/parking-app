@@ -55,7 +55,6 @@ function createWindow() {
     const preloadPath = path.join(__dirname, 'preload.js');
     console.log('Preload path:', preloadPath);
     console.log('__dirname:', __dirname);
-    console.log('Preload exists:', require('fs').existsSync(preloadPath));
 
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC || '', 'electron-vite.svg'),
@@ -82,7 +81,6 @@ function createWindow() {
         win.webContents.openDevTools()
     } else {
         // win.loadFile('dist/index.html')
-        win.loadFile(path.join(process.env.DIST || '', 'index.html'))
     }
 }
 
