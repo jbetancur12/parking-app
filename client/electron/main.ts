@@ -52,12 +52,17 @@ function startServer() {
 }
 
 function createWindow() {
+    const preloadPath = path.join(__dirname, 'preload.js');
+    console.log('Preload path:', preloadPath);
+    console.log('__dirname:', __dirname);
+    console.log('Preload exists:', require('fs').existsSync(preloadPath));
+
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC || '', 'electron-vite.svg'),
         width: 1200,
         height: 800,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: preloadPath,
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
@@ -73,6 +78,8 @@ function createWindow() {
 
     if (VITE_DEV_SERVER_URL) {
         win.loadURL(VITE_DEV_SERVER_URL)
+        // Open DevTools in development
+        win.webContents.openDevTools()
     } else {
         // win.loadFile('dist/index.html')
         win.loadFile(path.join(process.env.DIST || '', 'index.html'))

@@ -1,6 +1,8 @@
 // @ts-nocheck
 const { contextBridge, ipcRenderer } = require('electron')
 
+console.log('🔧 Preload script is loading...');
+
 // Expose Electron APIs
 contextBridge.exposeInMainWorld('electronAPI', {
     // Print API
@@ -12,6 +14,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     validateLicense: () => ipcRenderer.invoke('validate-license'),
     startTrial: () => ipcRenderer.invoke('start-trial')
 })
+
+console.log('✅ electronAPI exposed to window');
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
