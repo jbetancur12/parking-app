@@ -11,7 +11,7 @@ import path from 'path';
 export function getHardwareId(): string {
     try {
         // Get original machine ID (more stable than hashed)
-        const machineId = machineIdSync({ original: true });
+        const machineId = machineIdSync(true);
 
         // Hash it for privacy/obfuscation
         return crypto.createHash('sha256').update(machineId).digest('hex').slice(0, 16);
