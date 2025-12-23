@@ -28,8 +28,13 @@ export default function LicenseActivationPage() {
     };
 
     const handleActivate = async () => {
-        if (licenseKey.length < 19) { // PARK-XXXX-XXXX-XXXX-XXXX = 24 chars with hyphens
+        if (licenseKey.length < 19) {
             setError('Clave de licencia incompleta');
+            return;
+        }
+
+        if (!(window as any).electronAPI) {
+            setError('Error: API de Electron no disponible. Reinicia la aplicación.');
             return;
         }
 
@@ -71,6 +76,12 @@ export default function LicenseActivationPage() {
     };
 
     const handleStartTrial = async () => {
+        if (!(window as any).electronAPI) {
+            setError('Error: API de Electron no disponible. Reinicia la aplicación.');
+            console.error('electronAPI is undefined. The preload script mayot be loaded.');
+            return;
+        }
+
         setLoading(true);
         setError('');
 
