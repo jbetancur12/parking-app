@@ -21,6 +21,26 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, navigate]);
 
+    // Check license status first (Electron only)
+    useEffect(() => {
+        if (!isElectron) return; // Skip license check in web version
+
+        const checkLicense = async () => {
+            try {
+                const result = await (window as any).electronAPI?.validateLicense();
+                if (!result || !result.isValid) {
+                    console.log('No valid license found, redirecting to /license');
+                    navigate('/license');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking license:', error);
+                navigate('/license');
+            }
+        };
+        checkLicense();
+    }, [navigate]);
+
     // Check system setup status (Electron only)
     useEffect(() => {
         if (!isElectron) return; // Skip setup check in web version
