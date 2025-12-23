@@ -1,14 +1,17 @@
 {
   "name": "client",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Control de Parqueaderos System",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jbetancur12/parking-app-releases.git"
+  },
   "publish": [
     {
       "provider": "github",
-      "owner": "Jabetancur12",
-      "repo": "parking-app",
-      "private": true
+      "owner": "jbetancur12",
+      "repo": "parking-app-releases"
     }
   ],
   "author": "Aparca Team",
@@ -20,7 +23,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "cross-env VITE_APP_MODE=electron vite",
-    "electron:build": "npm run build --prefix ../server && tsc -b && cross-env VITE_APP_MODE=electron vite build && electron-builder"
+    "electron:build": "npm run build --prefix ../server && tsc -b && cross-env VITE_APP_MODE=electron vite build && electron-builder",
+    "electron:release": "npm run build --prefix ../server && tsc -b && cross-env VITE_APP_MODE=electron vite build && electron-builder -p always"
   },
   "dependencies": {
     "axios": "^1.13.2",

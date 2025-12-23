@@ -173,6 +173,7 @@ export default function DashboardLayout() {
                         <LogOut className="mr-3 h-5 w-5" />
                         Cerrar Sesión
                     </button>
+                    <p className="text-xs text-gray-400 mt-2 text-center opacity-70">v0.0.2</p>
                 </div>
             </div>
 
