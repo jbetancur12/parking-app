@@ -9,6 +9,10 @@ interface User {
     role: string;
     isActive: boolean;
     createdAt: string;
+    location?: {
+        id: string;
+        name: string;
+    };
 }
 
 const roleLabels: Record<string, string> = {
@@ -21,6 +25,7 @@ const roleLabels: Record<string, string> = {
 export default function UsersPage() {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
+    const [locations, setLocations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -34,6 +39,7 @@ export default function UsersPage() {
 
     useEffect(() => {
         fetchUsers();
+        fetchLocations();
     }, []);
 
     const fetchUsers = async () => {
@@ -44,6 +50,16 @@ export default function UsersPage() {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchLocations = async () => {
+        try {
+            // Fetch locations for dropdown (admin endpoints available if ADMIN/SUPER_ADMIN)
+            const response = await api.get('/admin/locations');
+            setLocations(response.data);
+        } catch (err) {
+            console.error('Error fetching locations:', err);
         }
     };
 
@@ -79,6 +95,15 @@ export default function UsersPage() {
             fetchUsers();
         } catch (err: any) {
             alert(err.response?.data?.message || 'Error al eliminar usuario');
+        }
+    };
+
+    const handleAssignLocation = async (userId: number, locationId: string | null) => {
+        try {
+            await api.post(`/users/${userId}/assign-location`, { locationId });
+            fetchUsers(); // Refresh users to show updated location
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Error al asignar sede');
         }
     };
 
@@ -139,6 +164,7 @@ export default function UsersPage() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sede Asignada</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Creado</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
@@ -154,6 +180,21 @@ export default function UsersPage() {
                                     <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                         {roleLabels[user.role]}
                                     </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <select
+                                        value={user.location?.id || ''}
+                                        onChange={(e) => handleAssignLocation(user.id, e.target.value || null)}
+                                        className="text-sm border rounded-md px-2 py-1 bg-white"
+                                        disabled={currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN'}
+                                    >
+                                        <option value="">Sin asignar</option>
+                                        {locations.map((loc) => (
+                                            <option key={loc.id} value={loc.id}>
+                                                {loc.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
