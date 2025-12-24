@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { User, UserRole } from '../entities/User';
+import { Tenant } from '../entities/Tenant';
 import { AuthRequest } from '../middleware/auth.middleware';
 import bcrypt from 'bcryptjs';
 
@@ -43,16 +44,23 @@ export class UserController {
         }
     }
 
-    // Create new user (SUPER_ADMIN only)
+    // Create new user (SUPER_ADMIN and ADMIN only)
     async create(req: Request, res: Response) {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
-            const { username, password, role } = req.body;
+            const { username, password, role, tenantId: bodyTenantId } = req.body;
+            // Get tenant from context (header) or body
+            const currentTenantId = (req as any).tenant?.id || bodyTenantId;
 
             if (!username || !password || !role) {
                 return res.status(400).json({ message: 'Username, password, and role are required' });
+            }
+
+            // Verify tenant requirement
+            if (role !== UserRole.SUPER_ADMIN && !currentTenantId) {
+                return res.status(400).json({ message: 'Tenant context or tenantId is required to create a non-SuperAdmin user' });
             }
 
             // Check if user already exists
@@ -77,6 +85,16 @@ export class UserController {
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
+
+            // Assign to tenant if not Super Admin (or if Super Admin wants to be in a tenant)
+            if (currentTenantId) {
+                const tenant = await em.findOne(Tenant, { id: currentTenantId });
+                if (tenant) {
+                    user.tenants.add(tenant);
+                } else {
+                    return res.status(404).json({ message: 'Tenant not found' });
+                }
+            }
 
             await em.persistAndFlush(user);
 

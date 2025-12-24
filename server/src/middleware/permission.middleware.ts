@@ -39,8 +39,8 @@ export const verifyTenantAccess = async (req: AuthRequest, res: Response, next: 
     try {
         // Load user with permissions
         // We load 'tenants' to check if user belongs to the requested tenant
-        // We load 'location' (if any) to check if user is restricted to a specific location
-        const user = await em.findOne(User, { id: req.user.id }, { populate: ['tenants', 'location'] });
+        // We load 'locations' (if any) to check if user is restricted to specific locations
+        const user = await em.findOne(User, { id: req.user.id }, { populate: ['tenants', 'locations'] });
 
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
@@ -56,9 +56,14 @@ export const verifyTenantAccess = async (req: AuthRequest, res: Response, next: 
 
         // 2. Verify Location Access (if request relies on a specific location)
         if (req.location) {
-            // If user is restricted to a location (e.g. Cashier assigned to a Sede), they must match
-            if (user.location && user.location.id !== req.location.id) {
-                return res.status(403).json({ message: `Access to location '${req.location.name}' is restricted for your user` });
+            // If user is ADMIN or SUPER_ADMIN they usually have access to all locations in tenant
+            // But if we want strict assignment even for admins (unlikely) or for regular users:
+            if (user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN) {
+                // Check if user is assigned to this location
+                const hasLocationAccess = user.locations.getItems().some(l => l.id === req.location!.id);
+                if (!hasLocationAccess) {
+                    return res.status(403).json({ message: `Access to location '${req.location.name}' is restricted for your user` });
+                }
             }
         }
 
