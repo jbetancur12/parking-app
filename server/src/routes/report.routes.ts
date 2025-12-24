@@ -10,5 +10,6 @@ router.use(requireRole(['ADMIN', 'SUPER_ADMIN']));
 
 router.get('/shift/:shiftId', controller.getShiftReport);
 router.get('/daily', controller.getDailyStats);
+router.get('/consolidated', controller.getConsolidatedReport); // New consolidated endpoint
 
 export default router;
