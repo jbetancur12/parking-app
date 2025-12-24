@@ -38,9 +38,9 @@ export default function LocationsPage() {
         phone: '',
     });
 
-    // Redirect if not SUPER_ADMIN
+    // Redirect if not SUPER_ADMIN or ADMIN
     useEffect(() => {
-        if (user?.role !== 'SUPER_ADMIN') {
+        if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
             navigate('/');
         }
     }, [user, navigate]);
@@ -50,8 +50,12 @@ export default function LocationsPage() {
     }, []);
 
     useEffect(() => {
+        // If ADMIN, default to their tenant
+        if (user?.role === 'ADMIN' && tenants.length > 0 && !selectedTenant) {
+            setSelectedTenant(tenants[0].id);
+        }
         fetchLocations();
-    }, [selectedTenant]);
+    }, [selectedTenant, tenants]);
 
     const fetchTenants = async () => {
         try {
@@ -107,7 +111,7 @@ export default function LocationsPage() {
     };
 
     const handleDelete = async (locationId: string) => {
-        if (!confirm('¿Está seguro de desactivar esta sede?')) return;
+        if (!confirm('¿Está seguro de desacrivar esta sede?')) return;
 
         try {
             await api.delete(`/admin/locations/${locationId}`);
@@ -124,6 +128,8 @@ export default function LocationsPage() {
         setShowForm(false);
     };
 
+    const canCreate = user?.role === 'SUPER_ADMIN';
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -131,13 +137,15 @@ export default function LocationsPage() {
                     <h1 className="text-2xl font-bold text-gray-900">Gestión de Sedes</h1>
                     <p className="text-sm text-gray-600 mt-1">Administrar locaciones de las empresas</p>
                 </div>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                    <Plus className="mr-2 h-5 w-5" />
-                    Nueva Sede
-                </button>
+                {canCreate && (
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        <Plus className="mr-2 h-5 w-5" />
+                        Nueva Sede
+                    </button>
+                )}
             </div>
 
             {/* Form (shown when creating/editing) */}
