@@ -21,14 +21,31 @@ type NavGroup = {
 
 export default function DashboardLayout() {
     const { user, logout } = useAuth();
-    const { currentTenant, availableTenants } = useSaas();
+    const { currentTenant, currentLocation, availableTenants } = useSaas(); // Destructure currentLocation
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<string[]>(['Operación', 'Finanzas']); // Default open
     const location = useLocation();
     const navigate = useNavigate();
 
+    // Force selection if user has multiple locations but none selected
+    useEffect(() => {
+        if (user?.locations && user.locations.length > 1 && !currentTenant && !location.pathname.includes('select-location')) {
+            // Actually check SaasContext for currentLocation. 
+            // We need to access currentLocation from hook to check it properly
+            // But wait, we have `currentTenant` from hook above, `availableTenants`. 
+            // We need `currentLocation` from useSaas.
+        }
+    }, [user, navigate]);
+
     // Show tenant selector if user has multiple tenants and none selected
     const showTenantSelector = availableTenants.length > 1 && !currentTenant;
+
+    // Redirect to location selection if needed
+    useEffect(() => {
+        if (user?.locations && user.locations.length > 1 && !currentLocation) {
+            navigate('/select-location');
+        }
+    }, [user, currentLocation, navigate]);
 
     // STRICT CHECK: Validate license on every dashboard load
     // This prevents users with saved sessions from bypassing revocation

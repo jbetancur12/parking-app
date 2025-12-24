@@ -16,7 +16,8 @@ interface User {
     username: string;
     role: string;
     tenants: Tenant[];
-    location: Location | null;
+    locations: Location[];
+    lastActiveLocation?: Location;
 }
 
 interface AuthContextType {

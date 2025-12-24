@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SaasProvider } from './context/SaasContext';
 import { OfflineProvider } from './context/OfflineContext';
 import LoginPage from './pages/LoginPage';
+import LocationSelectionPage from './pages/LocationSelectionPage';
 import SetupPage from './pages/SetupPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
@@ -54,6 +55,11 @@ function App() {
               {isElectron && <Route path="/setup" element={<SetupPage />} />}
 
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/select-location" element={
+                <ProtectedRoute>
+                  <LocationSelectionPage />
+                </ProtectedRoute>
+              } />
               <Route path="/ticket/:id" element={<TicketStatusPage />} />
               <Route
                 path="/"

@@ -47,9 +47,10 @@ export const SaasProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
 
-            // Auto-select location if user has a fixed location
-            if (user.location && !currentLocation) {
-                setCurrentLocation(user.location);
+            // Auto-select location if user has exactly one fixed location
+            // and no location is currently set
+            if (user.locations && user.locations.length === 1 && !currentLocation) {
+                setCurrentLocation(user.locations[0]);
             }
         } else if (!user) {
             // Clear context on logout

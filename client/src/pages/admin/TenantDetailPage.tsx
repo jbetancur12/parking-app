@@ -73,7 +73,7 @@ export default function TenantDetailPage() {
         e.preventDefault();
         try {
             // 1. Create user
-            const createResponse = await api.post('/users', newUser);
+            const createResponse = await api.post('/users', { ...newUser, tenantId: id });
             const createdUserId = createResponse.data.id;
 
             // 2. Assign to tenant

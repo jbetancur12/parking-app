@@ -60,8 +60,15 @@ export default function LoginPage() {
         e.preventDefault();
         try {
             const response = await api.post('/auth/login', { username, password });
-            login(response.data.token, response.data.user);
-            navigate('/');
+            const userData = response.data.user;
+            login(response.data.token, userData);
+
+            // Redirect based on locations
+            if (userData.locations && userData.locations.length > 1) {
+                navigate('/select-location');
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             setError('Invalid credentials');
         }
