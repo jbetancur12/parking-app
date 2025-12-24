@@ -30,6 +30,7 @@ export default function DashboardPage() {
     const [summaryData, setSummaryData] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [occupancy, setOccupancy] = useState<any>(null);
+    const [consolidatedData, setConsolidatedData] = useState<any>(null);
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
     // Print ref for shift summary
@@ -47,6 +48,7 @@ export default function DashboardPage() {
         const interval = setInterval(fetchOccupancy, 30000); // Poll every 30s
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
             fetchStats();
+            fetchConsolidatedStats();
         }
         return () => clearInterval(interval);
     }, [user]);
@@ -57,6 +59,16 @@ export default function DashboardPage() {
             setSettings(data);
         } catch (error) {
             console.error('Error loading settings', error);
+        }
+    };
+
+    const fetchConsolidatedStats = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const response = await api.get('/reports/consolidated', { params: { date: today } });
+            setConsolidatedData(response.data);
+        } catch (error) {
+            console.error('Error fetching consolidated stats:', error);
         }
     };
 
@@ -138,6 +150,60 @@ export default function DashboardPage() {
     return (
         <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Bienvenido, {user?.username}</h1>
+
+            {/* Multi-Location Summary (Admin Only) */}
+            {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && consolidatedData && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                        <Users className="mr-2" size={24} /> Resumen Multi-Sede (Hoy)
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-600">
+                            <div className="text-sm text-gray-500">Total Ingresos (Global)</div>
+                            <div className="text-2xl font-bold text-gray-800">${consolidatedData.globalStats?.totalIncome?.toLocaleString()}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-600">
+                            <div className="text-sm text-gray-500">Transacciones Totales</div>
+                            <div className="text-2xl font-bold text-gray-800">{consolidatedData.globalStats?.transactionCount}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-purple-600">
+                            <div className="text-sm text-gray-500">Parqueo Total</div>
+                            <div className="text-2xl font-bold text-gray-800">${(consolidatedData.globalStats?.parkingHourly + consolidatedData.globalStats?.parkingDaily)?.toLocaleString()}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500">
+                            <div className="text-sm text-gray-500">Sedes Activas</div>
+                            <div className="text-2xl font-bold text-gray-800">{consolidatedData.locationStats?.length || 0}</div>
+                        </div>
+                    </div>
+
+                    {/* Location Breakdown Grid */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-medium text-gray-700 mb-4">Desglose por Sede</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {consolidatedData.locationStats?.map((loc: any) => (
+                                <div key={loc.locationId} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <h4 className="font-bold text-gray-800">{loc.locationName}</h4>
+                                        <span className="text-xs font-semibold bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                                            {loc.transactionCount} Tx
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Ingresos:</span>
+                                            <span className="font-medium text-green-600">${loc.totalIncome.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Neto:</span>
+                                            <span className="font-medium text-blue-600">${(loc.totalIncome - loc.totalExpenses).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Occupancy Widget */}
             {occupancy && (
