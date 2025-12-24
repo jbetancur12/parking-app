@@ -64,49 +64,39 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
     // Default plan to HOUR if not provided
     const selectedPlan = planType || PlanType.HOUR;
 
-    // Find active shift for user
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    if (!locationId) {
+        return res.status(400).json({ message: 'Location context is required' });
+    }
+
+    // Find active shift for user IN THIS LOCATION
     const shift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
-    });
+        location: locationId
+    }, { populate: ['tenant', 'location'] });
 
     if (!shift) {
-        return res.status(400).json({ message: 'No active shift found. Open a shift first.' });
+        return res.status(400).json({ message: 'No active shift found in this location. Open a shift first.' });
     }
 
     // Check for existing active session for this plate
+    // Also scope this check to location? Or Global?
+    // User complaint implies they want isolation. 
+    // If I enter matching plate in Sede 2, and it exists in Sede 1, should I block?
+    // If different locations, physically possible (different car, cloned plate, or error).
+    // Allowing duplicates across locations is safer for multi-location isolation.
+    // So filtering existingSession by location is also good practice.
     const existingSession = await em.findOne(ParkingSession, {
         plate,
         status: ParkingStatus.ACTIVE,
+        location: locationId
     });
 
     if (existingSession) {
-        return res.status(400).json({ message: 'Vehicle already parked', session: existingSession });
-    }
-
-    // Check Capacity Logic
-    const settingsList = await em.find(SystemSetting, {});
-    const settings: Record<string, string> = {};
-    settingsList.forEach(s => settings[s.key] = s.value);
-
-    // Default to disabled ("false") if not set. User requested "infinite option" which is basically check_capacity = false
-    const checkCapacity = settings['check_capacity'] === 'true';
-
-    if (checkCapacity) {
-        const capacityKey = vehicleType === VehicleType.CAR ? 'capacity_car' : 'capacity_motorcycle';
-        // Default caps if missing
-        const maxCapacity = Number(settings[capacityKey] || (vehicleType === VehicleType.CAR ? 50 : 30));
-
-        const currentCount = await em.count(ParkingSession, {
-            status: ParkingStatus.ACTIVE,
-            vehicleType: vehicleType as VehicleType
-        });
-
-        if (currentCount >= maxCapacity) {
-            return res.status(400).json({
-                message: `No hay cupos disponibles para ${vehicleType === VehicleType.CAR ? 'Carros' : 'Motos'}. Capacidad máxima: ${maxCapacity} `
-            });
-        }
+        return res.status(400).json({ message: 'Vehicle already has an active session in this location' });
     }
 
     const session = em.create(ParkingSession, {
@@ -116,6 +106,8 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         entryTime: entryTime ? new Date(entryTime) : new Date(),
         status: ParkingStatus.ACTIVE,
         entryShift: shift,
+        tenant: shift.tenant,
+        location: shift.location,
         notes,
     });
 
@@ -128,16 +120,24 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
     if (!em) return res.status(500).json({ message: 'Internal Server Error' });
 
     const { plate } = req.params;
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
-    const session = await em.findOne(ParkingSession, {
+    // Scope by location if possible, but previewExit is GET /:plate
+    // Ideally we filter by location.
+    const filter: any = {
         plate,
         status: ParkingStatus.ACTIVE,
-    });
+    };
+    if (locationId) filter.location = locationId;
+
+    const session = await em.findOne(ParkingSession, filter);
 
     if (!session) {
         return res.status(404).json({ message: 'No active session' });
     }
 
+    // ... (rest is same)
     const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
     const settingsList = await em.find(SystemSetting, {});
     const settings: Record<string, string> = {};
@@ -201,22 +201,31 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(400).json({ message: 'Plate is required' });
     }
 
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    if (!locationId) {
+        return res.status(400).json({ message: 'Location context is required' });
+    }
+
     const shift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
-    });
+        location: locationId
+    }, { populate: ['tenant', 'location'] });
 
     if (!shift) {
-        return res.status(400).json({ message: 'No active shift found' });
+        return res.status(400).json({ message: 'No active shift found (in this location)' });
     }
 
     const session = await em.findOne(ParkingSession, {
         plate,
         status: ParkingStatus.ACTIVE,
+        location: locationId
     });
 
     if (!session) {
-        return res.status(404).json({ message: 'No active parking session found for this plate' });
+        return res.status(404).json({ message: 'No active parking session found for this plate in this location' });
     }
 
     const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
@@ -350,6 +359,8 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     // Create Revenue Transaction
     const transaction = em.create(Transaction, {
         shift: shift,
+        tenant: shift.tenant,
+        location: shift.location,
         type: TransactionType.PARKING_REVENUE,
         description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)${appliedDiscount > 0 ? ` - DESC: $${appliedDiscount} (${finalDiscountReason})` : ''} `,
         amount: finalCost,
@@ -383,7 +394,19 @@ export const getActiveSessions = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
     if (!em) return res.status(500).json({ message: 'Internal error' });
 
-    const sessions = await em.find(ParkingSession, { status: ParkingStatus.ACTIVE }, { orderBy: { entryTime: 'DESC' } });
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    const filter: any = { status: ParkingStatus.ACTIVE };
+
+    // If location context exists, filter by it. 
+    // If NOT exists (e.g. global admin view?), currently shows all.
+    // Given the user report, we MUST filter if context is present.
+    if (locationId && locationId !== 'null' && locationId !== 'undefined') {
+        filter.location = locationId;
+    }
+
+    const sessions = await em.find(ParkingSession, filter, { orderBy: { entryTime: 'DESC' } });
     return res.json(sessions);
 };
 

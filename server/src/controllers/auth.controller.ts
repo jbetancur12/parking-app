@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { User, UserRole } from '../entities/User';
+import { Tenant } from '../entities/Tenant';
+import { Location } from '../entities/Location';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -72,6 +74,32 @@ export const setupAdmin = async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Username and password are required' });
     }
 
+    // 1. Create Default Tenant
+    const tenant = em?.create(Tenant, {
+        name: 'Mi Parqueadero',
+        slug: 'default-parking', // "default" might be reserved or too generic, but fine for desktop
+        plan: 'enterprise', // Default to enterprise or similar for desktop
+        status: 'active',
+        contactEmail: '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    } as any);
+
+    if (tenant) await em?.persist(tenant);
+
+    // 2. Create Default Location
+    const location = em?.create(Location, {
+        name: 'Sede Principal',
+        address: 'Dirección Principal',
+        isActive: true,
+        tenant: tenant, // Link to tenant
+        createdAt: new Date(),
+        updatedAt: new Date()
+    } as any);
+
+    if (location) await em?.persist(location);
+
+    // 3. Create Super Admin User
     const hashedPassword = await bcrypt.hash(password, 10);
     const admin = em?.create(User, {
         username,
@@ -83,9 +111,12 @@ export const setupAdmin = async (req: Request, res: Response) => {
     });
 
     if (admin) {
+        if (tenant) admin.tenants.add(tenant); // Assign to tenant
+        if (location) admin.locations.add(location); // Assign to location
+
         await em?.persistAndFlush(admin);
-        return res.json({ message: 'Super Admin created successfully' });
+        return res.json({ message: 'Super Admin and Default Environment created successfully' });
     } else {
-        return res.status(500).json({ message: 'Error creating admin' });
+        return res.status(500).json({ message: 'Error creating configuration' });
     }
 };

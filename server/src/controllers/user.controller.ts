@@ -20,7 +20,7 @@ export class UserController {
             // SUPER_ADMIN can see all users, others only see users from their tenant
             if (req.user?.role === UserRole.SUPER_ADMIN) {
                 users = await em.find(User, {}, {
-                    populate: ['tenants'],
+                    populate: ['tenants', 'locations'],
                     orderBy: { createdAt: 'DESC' },
                     fields: ['id', 'username', 'role', 'isActive', 'createdAt']
                 });
@@ -29,7 +29,7 @@ export class UserController {
                 users = await em.find(User, {
                     tenants: { id: currentTenantId }
                 }, {
-                    populate: ['tenants'],
+                    populate: ['tenants', 'locations'],
                     orderBy: { createdAt: 'DESC' },
                     fields: ['id', 'username', 'role', 'isActive', 'createdAt']
                 });

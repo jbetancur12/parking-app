@@ -24,15 +24,28 @@ export const assignUserToLocation = async (req: Request, res: Response) => {
             if (locationIds.length > 0) {
                 const locations = await em.find(Location, { id: { $in: locationIds } }, { populate: ['tenant'] });
 
-                // Verify all locations belong to valid tenants for this user
-                // (Ideally we check if user belongs to the tenant of the location)
-                // For now, we assume if the admin has access to assign, it's valid, 
-                // OR we strictly check against user.tenants
-                const validLocations = locations.filter(loc =>
-                    user.tenants.getItems().some(t => t.id === loc.tenant.id)
-                );
+                // Get request context
+                const authReq = req as any;
+                const currentTenantId = authReq.tenant?.id;
+                const userRole = authReq.user?.role;
 
-                user.locations.set(validLocations);
+                let allowedLocations = locations;
+
+                // Security: If not Super Admin, ensure locations belong to the current tenant context
+                if (userRole !== 'SUPER_ADMIN' && currentTenantId) {
+                    // Use String() to ensure safe comparison between UUIDs/strings
+                    allowedLocations = locations.filter(l => String(l.tenant.id) === String(currentTenantId));
+                }
+
+                // Auto-link user to the tenant(s) of the assigned locations if not already linked
+                // This fixes the issue where a user might be created without tenant association
+                for (const loc of allowedLocations) {
+                    if (!user.tenants.contains(loc.tenant)) {
+                        user.tenants.add(loc.tenant);
+                    }
+                }
+
+                user.locations.set(allowedLocations);
             }
         }
 

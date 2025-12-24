@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
+import { ParkingSession, ParkingStatus, VehicleType } from '../entities/ParkingSession';
 import { SystemSetting } from '../entities/SystemSetting';
 import { subDays, startOfDay, endOfDay, format } from 'date-fns';
 
@@ -142,5 +143,52 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         hourlyData,
         weeklyIncome,
         pieData
+    });
+};
+
+export const getOccupancy = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal error' });
+
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    // Filter by location if present
+    const filter: any = { status: ParkingStatus.ACTIVE };
+    if (locationId && locationId !== 'null' && locationId !== 'undefined') {
+        filter.location = locationId;
+    }
+
+    const sessions = await em.find(ParkingSession, filter);
+
+    let carCount = 0;
+    let motoCount = 0;
+
+    sessions.forEach(s => {
+        if (s.vehicleType === VehicleType.CAR) carCount++;
+        else if (s.vehicleType === VehicleType.MOTORCYCLE) motoCount++;
+    });
+
+    // Get Capacities (System Global defaults)
+    const settingsList = await em.find(SystemSetting, {});
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+
+    // If we want per-location capacity, we should fetch Location here.
+    // For now, use global fallback.
+    const carCapacity = Number(settings['capacity_car'] || 50);
+    const motoCapacity = Number(settings['capacity_motorcycle'] || 30);
+    const checkEnabled = settings['check_capacity'] === 'true';
+
+    return res.json({
+        car: {
+            current: carCount,
+            capacity: carCapacity
+        },
+        motorcycle: {
+            current: motoCount,
+            capacity: motoCapacity
+        },
+        checkEnabled
     });
 };

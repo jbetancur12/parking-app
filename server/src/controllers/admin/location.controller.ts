@@ -47,10 +47,23 @@ export const getAllLocations = async (req: Request, res: Response) => {
     if (!em) return res.status(500).json({ message: 'Database context missing' });
 
     try {
+        const authReq = req as any; // Cast to access user and tenant
+        const userRole = authReq.user?.role;
+        const currentTenantId = authReq.tenant?.id;
+
+        // query param for SuperAdmin
         const { tenantId } = req.query;
 
         const where: any = {};
-        if (tenantId) {
+
+        // Security: If not Super Admin, FORCE tenant filter
+        if (userRole !== 'SUPER_ADMIN') {
+            if (!currentTenantId) {
+                return res.status(403).json({ message: 'Tenant context required' });
+            }
+            where.tenant = currentTenantId;
+        } else if (tenantId) {
+            // If Super Admin and tenantId query param provided
             where.tenant = tenantId;
         }
 

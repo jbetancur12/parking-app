@@ -15,8 +15,11 @@ interface Shift {
     baseAmount: number;
 }
 
+import { useSaas } from '../context/SaasContext';
+
 export default function DashboardPage() {
     const { user } = useAuth();
+    const { currentLocation } = useSaas();
     const [activeShift, setActiveShift] = useState<Shift | null>(null);
     const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -42,16 +45,25 @@ export default function DashboardPage() {
     });
 
     useEffect(() => {
+        if (!currentLocation) {
+            setLoading(false);
+            return;
+        }
+
         checkActiveShift();
         fetchOccupancy();
         fetchSettings();
-        const interval = setInterval(fetchOccupancy, 30000); // Poll every 30s
+
+        const interval = setInterval(() => {
+            if (currentLocation) fetchOccupancy();
+        }, 30000); // Poll every 30s
+
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
             fetchStats();
             fetchConsolidatedStats();
         }
         return () => clearInterval(interval);
-    }, [user]);
+    }, [user, currentLocation]);
 
     const fetchSettings = async () => {
         try {
@@ -102,8 +114,16 @@ export default function DashboardPage() {
     };
 
     const handleOpenShift = async () => {
+        if (!currentLocation) {
+            setError('Debe seleccionar una sede activa para iniciar turno');
+            return;
+        }
+
         try {
-            const response = await api.post('/shifts/open', { baseAmount: Number(baseAmount) });
+            const response = await api.post('/shifts/open', {
+                baseAmount: Number(baseAmount),
+                locationId: currentLocation.id
+            });
             setActiveShift(response.data);
             setError('');
         } catch (err: any) {

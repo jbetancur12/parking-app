@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, Crown } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, Crown, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
@@ -129,6 +129,18 @@ export default function DashboardLayout() {
     }).filter(group => group.items.length > 0);
 
 
+    // Prevent rendering content until tenant context is established
+    if (user?.role !== 'SUPER_ADMIN' && !currentTenant && availableTenants.length > 0) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="text-gray-600">Cargando empresa...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex h-screen bg-gray-100">
             {/* Mobile Sidebar Overlay */}
@@ -192,12 +204,26 @@ export default function DashboardLayout() {
                 <div className="w-full border-t p-4 flex-shrink-0 bg-white">
                     {/* Tenant Context Display */}
                     {currentTenant && (
-                        <div className="mb-3 px-4 py-2 bg-blue-50 rounded-lg">
+                        <div className="mb-2 px-4 py-2 bg-blue-50 rounded-lg">
                             <div className="flex items-center text-xs">
                                 <Building2 className="mr-2 h-4 w-4 text-blue-600" />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-blue-900 truncate">{currentTenant.name}</p>
-                                    <p className="text-blue-600 truncate">@{currentTenant.slug}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Location Context Display */}
+                    {currentLocation && (
+                        <div className="mb-3 px-4 py-2 bg-green-50 rounded-lg group cursor-pointer relative" onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}>
+                            <div className="flex items-center text-xs">
+                                <MapPin className="mr-2 h-4 w-4 text-green-600" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-green-900 truncate">{currentLocation.name}</p>
+                                    {user?.locations && user.locations.length > 1 && (
+                                        <p className="text-green-600 text-[10px]">Cambiar Sede</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -226,11 +252,18 @@ export default function DashboardLayout() {
                     <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
                         <Menu size={24} />
                     </button>
-                    <span className="font-semibold text-gray-800">Aparca</span>
+                    <div className="flex flex-col items-center">
+                        <span className="font-semibold text-gray-800">Aparca</span>
+                        {currentLocation && (
+                            <span className="text-xs text-green-600 font-medium flex items-center">
+                                <MapPin size={10} className="mr-1" />
+                                {currentLocation.name}
+                            </span>
+                        )}
+                    </div>
                     <div className="flex items-center">
                         <OfflineIndicator />
                     </div>
-                    <div className="w-6" /> {/* Spacer */}
                 </header>
 
 

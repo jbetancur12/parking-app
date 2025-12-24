@@ -24,25 +24,24 @@ import {
 const router = Router();
 
 // All admin routes require SUPER_ADMIN role
-router.use(requireRole([UserRole.SUPER_ADMIN]));
+// Tenant routes (SuperAdmin Only)
+router.post('/tenants', requireRole([UserRole.SUPER_ADMIN]), createTenant);
+router.get('/tenants', requireRole([UserRole.SUPER_ADMIN]), getAllTenants);
+router.get('/tenants/:id', requireRole([UserRole.SUPER_ADMIN]), getTenantById);
+router.put('/tenants/:id', requireRole([UserRole.SUPER_ADMIN]), updateTenant);
+router.patch('/tenants/:id/status', requireRole([UserRole.SUPER_ADMIN]), updateTenantStatus);
 
-// Tenant routes
-router.post('/tenants', createTenant);
-router.get('/tenants', getAllTenants);
-router.get('/tenants/:id', getTenantById);
-router.put('/tenants/:id', updateTenant);
-router.patch('/tenants/:id/status', updateTenantStatus);
+// Location routes (SuperAdmin AND Admin)
+// Admin will be restricted to their own tenant by the controller
+router.post('/locations', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), createLocation);
+router.get('/locations', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), getAllLocations);
+router.get('/locations/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), getLocationById);
+router.put('/locations/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), updateLocation);
+router.delete('/locations/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), deleteLocation);
 
-// Location routes
-router.post('/locations', createLocation);
-router.get('/locations', getAllLocations);
-router.get('/locations/:id', getLocationById);
-router.put('/locations/:id', updateLocation);
-router.delete('/locations/:id', deleteLocation);
-
-// User-Tenant assignment routes
-router.post('/users/:userId/tenants', assignUserToTenants);
-router.get('/users/:userId/tenants', getUserTenants);
-router.delete('/users/:userId/tenants/:tenantId', removeUserFromTenant);
+// User-Tenant assignment routes (SuperAdmin AND Admin)
+router.post('/users/:userId/tenants', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), assignUserToTenants);
+router.get('/users/:userId/tenants', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), getUserTenants);
+router.delete('/users/:userId/tenants/:tenantId', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), removeUserFromTenant);
 
 export default router;

@@ -10,20 +10,37 @@ export const openShift = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    // Check if user already has an active shift
+    // Check if user already has an active shift IN THIS LOCATION
+    // If we want to strictly limit 1 shift per user globally, we keep it as is.
+    // But user wants multiple shifts per location.
+
+    const { baseAmount, locationId } = req.body;
+
+    if (!locationId) {
+        return res.status(400).json({ message: 'Location ID is required' });
+    }
+
     const existingShift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
+        location: locationId
     });
 
     if (existingShift) {
-        return res.status(400).json({ message: 'User already has an active shift', shift: existingShift });
+        return res.status(400).json({ message: 'User already has an active shift in this location', shift: existingShift });
     }
 
-    const { baseAmount } = req.body;
+    const authReq = req as any;
+    const currentTenant = authReq.tenant;
+
+    if (!currentTenant) {
+        return res.status(403).json({ message: 'Tenant context required' });
+    }
 
     const shift = em.create(Shift, {
         user: req.user.id,
+        tenant: currentTenant.id,
+        location: locationId,
         startTime: new Date(),
         baseAmount: baseAmount || 0,
         totalIncome: 0,
@@ -44,15 +61,28 @@ export const getActiveShift = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    console.log(`[getActiveShift] Checking for user ${req.user.id} at location ${locationId}`);
+
+    if (!locationId) {
+        console.warn(`[getActiveShift] Missing location ID`);
+        return res.status(400).json({ message: 'Valid Location context required' });
+    }
+
     const shift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
+        location: locationId
     });
 
     if (!shift) {
+        // console.log(`[getActiveShift] No active shift found for user ${req.user.id} at location ${locationId}`);
         return res.status(404).json({ message: 'No active shift found' });
     }
 
+    // console.log(`[getActiveShift] Found shift ${shift.id}`);
     return res.json(shift);
 };
 
@@ -62,9 +92,17 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    if (!locationId) {
+        return res.status(400).json({ message: 'Location context required' });
+    }
+
     const shift = await em.findOne(Shift, {
         user: req.user.id,
         isActive: true,
+        location: locationId
     });
 
     if (!shift) {

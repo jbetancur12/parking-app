@@ -82,23 +82,49 @@ export class WashController {
         }
     }
 
-    // Temporary seed for testing
     async seedServices(req: Request, res: Response) {
         const em = RequestContext.getEntityManager();
-        if (!em) return;
+        if (!em) return res.status(500).json({ message: 'No EM' });
 
-        const count = await em.count(WashServiceType, {});
-        if (count === 0) {
-            const defaults = [
-                { name: 'Lavado General Moto', price: 15000, vehicleType: 'Moto', isActive: true },
-                { name: 'Lavado General Carro', price: 25000, vehicleType: 'Carro', isActive: true },
-                { name: 'Polichado Moto', price: 25000, vehicleType: 'Moto', isActive: true },
-                { name: 'Polichado Carro', price: 40000, vehicleType: 'Carro', isActive: true },
-            ];
+        try {
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
-            defaults.forEach(d => em.persist(em.create(WashServiceType, d)));
-            await em.flush();
+            if (!tenantId || !locationId) {
+                return res.status(400).json({ message: 'Context required for seeding' });
+            }
+
+            const count = await em.count(WashServiceType, {
+                tenant: Number(tenantId),
+                location: locationId
+            });
+
+            if (count === 0) {
+                const defaults = [
+                    { name: 'Lavado General Moto', price: 15000, vehicleType: 'Moto', isActive: true },
+                    { name: 'Lavado General Carro', price: 25000, vehicleType: 'Carro', isActive: true },
+                    { name: 'Polichado Moto', price: 25000, vehicleType: 'Moto', isActive: true },
+                    { name: 'Polichado Carro', price: 40000, vehicleType: 'Carro', isActive: true },
+                ];
+
+                const tenant = await em.getReference('Tenant', Number(tenantId));
+                const location = await em.getReference('Location', locationId);
+
+                defaults.forEach(d => {
+                    const s = em.create(WashServiceType, {
+                        ...d,
+                        tenant,
+                        location
+                    });
+                    em.persist(s);
+                });
+                await em.flush();
+            }
+            res.json({ message: 'Seeded' });
+        } catch (error) {
+            console.error('Seed Wash Error:', error);
+            res.status(500).json({ message: 'Failed to seed wash services' });
         }
-        res.json({ message: 'Seeded' });
     }
 }
