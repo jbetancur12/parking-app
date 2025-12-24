@@ -3,38 +3,37 @@ import { RequestContext } from '@mikro-orm/core';
 import { User } from '../entities/User';
 import { Location } from '../entities/Location';
 
-// Assign user to location
+// Assign user to locations
 export const assignUserToLocation = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
     if (!em) return res.status(500).json({ message: 'Database context missing' });
 
     try {
         const { userId } = req.params;
-        const { locationId } = req.body;
+        const { locationIds } = req.body; // Expect array of IDs or empty array
 
-        const user = await em.findOne(User, { id: parseInt(userId) }, { populate: ['tenants'] });
+        const user = await em.findOne(User, { id: parseInt(userId) }, { populate: ['tenants', 'locations'] });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if (locationId) {
-            const location = await em.findOne(Location, { id: locationId }, { populate: ['tenant'] });
-            if (!location) {
-                return res.status(404).json({ message: 'Location not found' });
-            }
+        if (locationIds && Array.isArray(locationIds)) {
+            // Clear existing locations
+            user.locations.removeAll();
 
-            // Verify user has access to the tenant of this location
-            const hasAccess = user.tenants.getItems().some(t => t.id === location.tenant.id);
-            if (!hasAccess) {
-                return res.status(403).json({
-                    message: 'User does not have access to this location\'s tenant'
-                });
-            }
+            if (locationIds.length > 0) {
+                const locations = await em.find(Location, { id: { $in: locationIds } }, { populate: ['tenant'] });
 
-            user.location = location;
-        } else {
-            // Unassign location (allow access to all locations of their tenants)
-            user.location = undefined;
+                // Verify all locations belong to valid tenants for this user
+                // (Ideally we check if user belongs to the tenant of the location)
+                // For now, we assume if the admin has access to assign, it's valid, 
+                // OR we strictly check against user.tenants
+                const validLocations = locations.filter(loc =>
+                    user.tenants.getItems().some(t => t.id === loc.tenant.id)
+                );
+
+                user.locations.set(validLocations);
+            }
         }
 
         await em.flush();
@@ -43,18 +42,18 @@ export const assignUserToLocation = async (req: Request, res: Response) => {
             id: user.id,
             username: user.username,
             role: user.role,
-            location: user.location ? {
-                id: user.location.id,
-                name: user.location.name
-            } : null
+            locations: user.locations.getItems().map(l => ({
+                id: l.id,
+                name: l.name
+            }))
         });
     } catch (error) {
-        console.error('Error assigning user to location:', error);
+        console.error('Error assigning user to locations:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Get user's assigned location
+// Get user's assigned locations
 export const getUserLocation = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
     if (!em) return res.status(500).json({ message: 'Database context missing' });
@@ -62,16 +61,16 @@ export const getUserLocation = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
 
-        const user = await em.findOne(User, { id: parseInt(userId) }, { populate: ['location'] });
+        const user = await em.findOne(User, { id: parseInt(userId) }, { populate: ['locations'] });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         return res.json({
-            location: user.location ? {
-                id: user.location.id,
-                name: user.location.name
-            } : null
+            locations: user.locations.getItems().map(l => ({
+                id: l.id,
+                name: l.name
+            }))
         });
     } catch (error) {
         console.error('Error fetching user location:', error);

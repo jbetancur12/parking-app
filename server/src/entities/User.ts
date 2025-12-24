@@ -38,7 +38,11 @@ export class User {
     @ManyToMany(() => Tenant, 'users', { owner: true })
     tenants = new Collection<Tenant>(this);
 
-    // Current/Last active location context (optional)
+    // A user can be assigned to multiple locations within a tenant
+    @ManyToMany(() => Location, 'users', { owner: true })
+    locations = new Collection<Location>(this);
+
+    // Optional: Keep track of the last selected location for convenience
     @ManyToOne(() => Location, { nullable: true })
-    location?: Location;
+    lastActiveLocation?: Location;
 }

@@ -20,7 +20,7 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Entity Manager not found' });
     }
 
-    const user = await em.findOne(User, { username }, { populate: ['tenants', 'location'] });
+    const user = await em.findOne(User, { username }, { populate: ['tenants', 'locations', 'lastActiveLocation'] });
     console.log(user);
 
     if (!user) {
@@ -46,7 +46,8 @@ export const login = async (req: Request, res: Response) => {
             username: user.username,
             role: user.role,
             tenants: user.tenants.getItems().map(t => ({ id: t.id, name: t.name, slug: t.slug })), // Return available tenants
-            location: user.location ? { id: user.location.id, name: user.location.name } : null
+            locations: user.locations.getItems().map(l => ({ id: l.id, name: l.name })), // Return available locations
+            lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
         },
     });
 };

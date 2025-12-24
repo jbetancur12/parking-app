@@ -1,6 +1,7 @@
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Collection, Cascade } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection, Cascade } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { Tenant } from './Tenant';
+import { User } from './User';
 
 @Entity()
 export class Location {
@@ -37,4 +38,7 @@ export class Location {
 
     @Property({ onUpdate: () => new Date() })
     updatedAt = new Date();
+
+    @ManyToMany(() => User, user => user.locations)
+    users = new Collection<User>(this);
 }

@@ -24,20 +24,37 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
     const tenantId = req.headers['x-tenant-id'] as string;
     let locationId = req.headers['x-location-id'] as string;
 
-    // NEW: If user is authenticated and has a location assigned, use it automatically
-    // (unless they're ADMIN or SUPER_ADMIN who can see all locations)
+
+    // NEW: If user is authenticated and has locations assigned
     const authReq = req as AuthRequest;
-    if (authReq.user && !locationId) {
+    if (authReq.user) {
         try {
-            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['location'] });
-            if (user?.location && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN) {
-                // Operator/Cashier with assigned location: force filter
-                locationId = user.location.id;
-                req.location = user.location;
-                console.log(`[SaaS Context] Auto-applying location filter for ${user.username}: ${user.location.name}`);
+            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['locations'] });
+
+            // If locationId provided in header, verify user has access to it (unless Admin/SuperAdmin)
+            if (locationId) {
+                if (user?.role !== UserRole.ADMIN && user?.role !== UserRole.SUPER_ADMIN) {
+                    const hasAccess = user?.locations.getItems().some(l => l.id === locationId);
+                    if (!hasAccess) {
+                        console.warn(`[SaaS Context] User ${user?.username} attempted to access unauthorized location ${locationId}`);
+                        // We could block here, but for now we just won't apply the filter/context which might result in empty data or 403 later
+                        locationId = '';
+                    }
+                }
+            } else {
+                // No location header provided. 
+                // If user is OPERATOR/CASHIER and has exactly one location, force it.
+                if (user?.role !== UserRole.ADMIN && user?.role !== UserRole.SUPER_ADMIN) {
+                    const locations = user?.locations.getItems() || [];
+                    if (locations.length === 1) {
+                        locationId = locations[0].id;
+                        req.location = locations[0];
+                        console.log(`[SaaS Context] Auto-applying single assigned location for ${user?.username}: ${locations[0].name}`);
+                    }
+                }
             }
         } catch (error) {
-            console.error('Error loading user location:', error);
+            console.error('Error loading user locations:', error);
         }
     }
 

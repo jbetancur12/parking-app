@@ -9,10 +9,10 @@ interface User {
     role: string;
     isActive: boolean;
     createdAt: string;
-    location?: {
+    locations: Array<{
         id: string;
         name: string;
-    };
+    }>;
 }
 
 const roleLabels: Record<string, string> = {
@@ -28,7 +28,10 @@ export default function UsersPage() {
     const [locations, setLocations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showLocationModal, setShowLocationModal] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
+    const [assigningUser, setAssigningUser] = useState<User | null>(null);
 
     // Form state
     const [username, setUsername] = useState('');
@@ -98,13 +101,31 @@ export default function UsersPage() {
         }
     };
 
-    const handleAssignLocation = async (userId: number, locationId: string | null) => {
+    const handleOpenLocationModal = (user: User) => {
+        setAssigningUser(user);
+        setSelectedLocationIds(user.locations?.map(l => l.id) || []);
+        setShowLocationModal(true);
+    };
+
+    const handleSaveLocations = async () => {
+        if (!assigningUser) return;
         try {
-            await api.post(`/users/${userId}/assign-location`, { locationId });
-            fetchUsers(); // Refresh users to show updated location
+            await api.post(`/users/${assigningUser.id}/assign-location`, { locationIds: selectedLocationIds });
+            fetchUsers();
+            setShowLocationModal(false);
+            setAssigningUser(null);
+            setSelectedLocationIds([]);
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al asignar sede');
+            alert(err.response?.data?.message || 'Error al asignar sedes');
         }
+    };
+
+    const toggleLocationSelection = (locationId: string) => {
+        setSelectedLocationIds(prev =>
+            prev.includes(locationId)
+                ? prev.filter(id => id !== locationId)
+                : [...prev, locationId]
+        );
     };
 
     const openCreateModal = () => {
@@ -164,7 +185,7 @@ export default function UsersPage() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sede Asignada</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sedes Asignadas</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Creado</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
@@ -182,19 +203,22 @@ export default function UsersPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <select
-                                        value={user.location?.id || ''}
-                                        onChange={(e) => handleAssignLocation(user.id, e.target.value || null)}
-                                        className="text-sm border rounded-md px-2 py-1 bg-white"
-                                        disabled={currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN'}
-                                    >
-                                        <option value="">Sin asignar</option>
-                                        {locations.map((loc) => (
-                                            <option key={loc.id} value={loc.id}>
-                                                {loc.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">
+                                            {user.locations?.length || 0} sedes
+                                        </span>
+                                        {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') && (
+                                            <button
+                                                onClick={() => handleOpenLocationModal(user)}
+                                                className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100"
+                                            >
+                                                Gestionar
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1 max-w-[150px] truncate">
+                                        {user.locations?.map(l => l.name).join(', ')}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -318,6 +342,56 @@ export default function UsersPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Location Assignment Modal */}
+            {showLocationModal && assigningUser && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold">
+                                Asignar Sedes: {assigningUser.username}
+                            </h2>
+                            <button onClick={() => setShowLocationModal(false)}><X size={20} /></button>
+                        </div>
+
+                        <div className="mb-4 max-h-60 overflow-y-auto border rounded-md">
+                            {locations.length === 0 ? (
+                                <p className="p-4 text-gray-500 text-center">No hay sedes disponibles.</p>
+                            ) : (
+                                locations.map(loc => (
+                                    <div key={loc.id} className="flex items-center p-3 hover:bg-gray-50 border-b last:border-b-0">
+                                        <input
+                                            type="checkbox"
+                                            id={`loc-${loc.id}`}
+                                            checked={selectedLocationIds.includes(loc.id)}
+                                            onChange={() => toggleLocationSelection(loc.id)}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        />
+                                        <label htmlFor={`loc-${loc.id}`} className="ml-3 block text-sm text-gray-700 cursor-pointer flex-1">
+                                            {loc.name}
+                                        </label>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowLocationModal(false)}
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleSaveLocations}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            >
+                                Guardar Asignaciones
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
