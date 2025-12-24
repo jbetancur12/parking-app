@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Tenant } from '../entities/Tenant';
 import { Location } from '../entities/Location';
+import { User, UserRole } from '../entities/User';
+import { AuthRequest } from './auth.middleware';
 
 // Extend Express Request type to include tenant and location
 declare global {
@@ -20,7 +22,24 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
     }
 
     const tenantId = req.headers['x-tenant-id'] as string;
-    const locationId = req.headers['x-location-id'] as string;
+    let locationId = req.headers['x-location-id'] as string;
+
+    // NEW: If user is authenticated and has a location assigned, use it automatically
+    // (unless they're ADMIN or SUPER_ADMIN who can see all locations)
+    const authReq = req as AuthRequest;
+    if (authReq.user && !locationId) {
+        try {
+            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['location'] });
+            if (user?.location && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPER_ADMIN) {
+                // Operator/Cashier with assigned location: force filter
+                locationId = user.location.id;
+                req.location = user.location;
+                console.log(`[SaaS Context] Auto-applying location filter for ${user.username}: ${user.location.name}`);
+            }
+        } catch (error) {
+            console.error('Error loading user location:', error);
+        }
+    }
 
     // Apply default filter if tenant is present
     if (tenantId) {
@@ -58,7 +77,8 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
         }
     }
 
-    if (locationId) {
+    if (locationId && !req.location) {
+        // Only load from header if not already loaded from user
         try {
             const location = await em.findOne(Location, { id: locationId });
             if (location) {
