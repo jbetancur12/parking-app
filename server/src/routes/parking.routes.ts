@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus } from '../controllers/parking.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
+import { verifyTenantAccess } from '../middleware/permission.middleware';
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.get('/public/status/:id', publicStatus);
 
 // Protected Routes
 router.use(authenticateToken);
+router.use(verifyTenantAccess);
 router.post('/entry', entryVehicle);
 router.get('/preview/:plate', previewExit);
 router.post('/exit', exitVehicle);

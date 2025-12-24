@@ -1,8 +1,11 @@
-import { Entity, PrimaryKey, Property, Enum } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToMany, ManyToOne, Collection } from '@mikro-orm/core';
+import { Tenant } from './Tenant';
+import { Location } from './Location';
 
 export enum UserRole {
-    SUPER_ADMIN = 'SUPER_ADMIN',
-    ADMIN = 'ADMIN',
+    SUPER_ADMIN = 'SUPER_ADMIN', // Platform owner
+    // Tenant roles
+    ADMIN = 'ADMIN',             // Tenant owner/manager
     OPERATOR = 'OPERATOR',
     CASHIER = 'CASHIER',
 }
@@ -29,4 +32,13 @@ export class User {
 
     @Property({ onUpdate: () => new Date() })
     updatedAt: Date = new Date();
+
+    // SaaS Relationships
+    // A user can be assigned to multiple tenants (companies)
+    @ManyToMany(() => Tenant, 'users', { owner: true })
+    tenants = new Collection<Tenant>(this);
+
+    // Current/Last active location context (optional)
+    @ManyToOne(() => Location, { nullable: true })
+    location?: Location;
 }

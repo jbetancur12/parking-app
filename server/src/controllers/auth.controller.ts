@@ -9,6 +9,8 @@ const SECRET_KEY = process.env.JWT_SECRET || 'supersecret_parking_app_key';
 export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
+    console.log(username, password);
+
     if (!username || !password) {
         return res.status(400).json({ message: 'Username and password are required' });
     }
@@ -18,7 +20,8 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Entity Manager not found' });
     }
 
-    const user = await em.findOne(User, { username });
+    const user = await em.findOne(User, { username }, { populate: ['tenants', 'location'] });
+    console.log(user);
 
     if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -42,6 +45,8 @@ export const login = async (req: Request, res: Response) => {
             id: user.id,
             username: user.username,
             role: user.role,
+            tenants: user.tenants.getItems().map(t => ({ id: t.id, name: t.name, slug: t.slug })), // Return available tenants
+            location: user.location ? { id: user.location.id, name: user.location.name } : null
         },
     });
 };

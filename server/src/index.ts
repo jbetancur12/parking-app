@@ -19,10 +19,14 @@ import statsRoutes from './routes/stats.routes';
 import backupRoutes from './routes/backup.routes';
 import auditRoutes from './routes/audit.routes';
 import agreementRoutes from './routes/agreement.routes';
+import adminRoutes from './routes/admin.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
 import bcrypt from 'bcryptjs';
+import { saasContext } from './middleware/saasContext';
+import { authenticateToken } from './middleware/auth.middleware';
+import { verifyTenantAccess } from './middleware/permission.middleware';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,34 +40,43 @@ const startServer = async () => {
         await orm.getSchemaGenerator().updateSchema();
         console.log('✅ Database connected successfully and schema updated');
 
-        // Seed Admin User
-        // REMOVED: Custom seeding logic moved to First Run Setup flow
-        // const em = orm.em.fork();
-        // const count = await em.count(User);
-        // ...
-
         // Fork the entity manager for each request
         app.use((req, res, next) => {
             RequestContext.create(orm.em, next);
         });
 
+        // Public Routes (NO SAAS CONTEXT HERE)
         app.use('/api/auth', authRoutes);
-        app.use('/api/shifts', shiftRoutes);
-        app.use('/api/parking', parkingRoutes);
-        app.use('/api/monthly', monthlyRoutes);
-        app.use('/api/reports', reportRoutes);
-        app.use('/api/expenses', expenseRoutes);
-        app.use('/api/wash', washRoutes);
-        app.use('/api/brands', brandRoutes);
-        app.use('/api/sales', saleRoutes);
-        app.use('/api/tariffs', tariffRoutes);
-        app.use('/api/settings', settingRoutes);
-        app.use('/api/users', userRoutes);
-        app.use('/api/transactions', transactionRoutes);
-        app.use('/api/stats', statsRoutes);
-        app.use('/api/backup', backupRoutes);
-        app.use('/api/audit', auditRoutes);
-        app.use('/api/agreements', agreementRoutes);
+        app.use('/api/parking', parkingRoutes); // Managed internally (mixed public/private)
+
+        // Protected Routes Middleware
+        // All API routes below this point require Authentication and Valid Tenant Context
+        const protectedApi = express.Router();
+        protectedApi.use(authenticateToken);
+        protectedApi.use(saasContext); // Apply SaaS context AFTER authentication
+        protectedApi.use(verifyTenantAccess);
+
+        protectedApi.use('/shifts', shiftRoutes);
+        // Parking routes have mixed public/private endpoints, handled internally
+        // protectedApi.use('/parking', parkingRoutes); --> Moved to app.use
+
+        protectedApi.use('/monthly', monthlyRoutes);
+        protectedApi.use('/reports', reportRoutes);
+        protectedApi.use('/expenses', expenseRoutes);
+        protectedApi.use('/wash', washRoutes);
+        protectedApi.use('/brands', brandRoutes);
+        protectedApi.use('/sales', saleRoutes);
+        protectedApi.use('/tariffs', tariffRoutes);
+        protectedApi.use('/settings', settingRoutes);
+        protectedApi.use('/users', userRoutes);
+        protectedApi.use('/transactions', transactionRoutes);
+        protectedApi.use('/stats', statsRoutes);
+        protectedApi.use('/backup', backupRoutes);
+        protectedApi.use('/audit', auditRoutes);
+        protectedApi.use('/agreements', agreementRoutes);
+        protectedApi.use('/admin', adminRoutes); // SuperAdmin routes
+
+        app.use('/api', protectedApi);
 
         app.get('/', (req, res) => {
             res.send('Parking App API is running');

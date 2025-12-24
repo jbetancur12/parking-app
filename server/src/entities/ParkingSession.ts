@@ -63,4 +63,11 @@ export class ParkingSession {
 
     @ManyToOne(() => 'Agreement', { nullable: true })
     agreement?: any; // Avoiding circular dependency import for now or use require
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

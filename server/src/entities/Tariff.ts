@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, Enum } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
 
 export enum VehicleType {
     CAR = 'CAR',
@@ -31,4 +31,11 @@ export class Tariff {
     // Optional: for "Full Day" definition or similar
     @Property({ nullable: true })
     description?: string;
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

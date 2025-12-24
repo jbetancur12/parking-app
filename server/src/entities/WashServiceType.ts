@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
 export class WashServiceType {
@@ -16,4 +16,11 @@ export class WashServiceType {
 
     @Property()
     isActive: boolean = true;
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

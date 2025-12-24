@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
 export class AuditLog {
@@ -28,4 +28,11 @@ export class AuditLog {
 
     @Property({ onCreate: () => new Date() })
     timestamp: Date = new Date();
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant', { nullable: true })
+    tenant?: any; // Nullable because some system audits might be global
+
+    @ManyToOne(() => 'Location', { nullable: true })
+    location?: any;
 }

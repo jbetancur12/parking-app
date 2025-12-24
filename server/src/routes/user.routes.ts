@@ -8,7 +8,7 @@ const router = Router();
 const controller = new UserController();
 
 // All routes require authentication
-router.use(authenticateToken);
+// authentication is now handled globally in index.ts
 
 // SUPER_ADMIN and ADMIN routes
 router.get('/', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.getAll);

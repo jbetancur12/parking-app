@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, Enum } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
 
 export enum AgreementType {
     FREE_HOURS = 'FREE_HOURS', // e.g., 2 hours free
@@ -31,4 +31,11 @@ export class Agreement {
 
     @Property({ onUpdate: () => new Date() })
     updatedAt: Date = new Date();
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

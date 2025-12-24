@@ -39,4 +39,11 @@ export class Shift {
     // Status linked to whether endTime is set, but explicit status helps
     @Property()
     isActive: boolean = true;
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

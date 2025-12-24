@@ -4,7 +4,7 @@ import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.use(authenticateToken); // Protect all shift routes
+// authentication is now handled globally in index.ts
 
 router.post('/open', openShift);
 router.post('/close', closeShift);

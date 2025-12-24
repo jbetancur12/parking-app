@@ -27,4 +27,11 @@ export class WashEntry {
 
     @Property({ onCreate: () => new Date() })
     createdAt: Date = new Date();
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

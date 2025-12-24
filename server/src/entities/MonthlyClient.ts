@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
 export class MonthlyClient {
@@ -34,4 +34,11 @@ export class MonthlyClient {
 
     @Property({ onUpdate: () => new Date() })
     updatedAt: Date = new Date();
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any; // Required: Client is specific to a location
 }

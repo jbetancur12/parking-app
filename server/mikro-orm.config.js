@@ -18,5 +18,23 @@ const config = {
     entitiesTs: ['./src/entities'],
     metadataProvider: reflection_1.TsMorphMetadataProvider,
     debug: true,
+    filters: {
+        tenant: {
+            cond: (args, type, em) => {
+                if (!args.tenantId) return {};
+                return { tenant: args.tenantId };
+            },
+            entity: ['User', 'ParkingSession', 'Transaction', 'Shift', 'Tariff', 'Expense', 'MonthlyClient', 'WashEntry', 'Brand', 'SystemSetting'],
+            default: true
+        },
+        location: {
+            cond: (args, type, em) => {
+                if (!args.locationId) return {};
+                return { location: args.locationId };
+            },
+            entity: ['ParkingSession', 'Transaction', 'Shift', 'Expense', 'WashEntry'],
+            default: false // Location filter is optional (enabled manually per request or context)
+        }
+    }
 };
 exports.default = config;

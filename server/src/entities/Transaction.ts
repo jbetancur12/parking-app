@@ -45,4 +45,11 @@ export class Transaction {
 
     @ManyToOne(() => 'Agreement', { nullable: true })
     agreement?: any;
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location')
+    location!: any;
 }

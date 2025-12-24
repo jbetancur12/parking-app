@@ -5,16 +5,36 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import bcrypt from 'bcryptjs';
 
 export class UserController {
-    // Get all users (SUPER_ADMIN only)
-    async getAll(req: Request, res: Response) {
+    // Get all users (filtered by tenant for non-SUPER_ADMIN)
+    async getAll(req: AuthRequest, res: Response) {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
-            const users = await em.find(User, {}, {
-                orderBy: { createdAt: 'DESC' },
-                fields: ['id', 'username', 'role', 'isActive', 'createdAt'] // Exclude password
-            });
+            // Get current user's tenant context from request (set by saasContext middleware)
+            const currentTenantId = (req as any).tenant?.id;
+
+            let users;
+
+            // SUPER_ADMIN can see all users, others only see users from their tenant
+            if (req.user?.role === UserRole.SUPER_ADMIN) {
+                users = await em.find(User, {}, {
+                    populate: ['tenants'],
+                    orderBy: { createdAt: 'DESC' },
+                    fields: ['id', 'username', 'role', 'isActive', 'createdAt']
+                });
+            } else if (currentTenantId) {
+                // Find users that belong to the current tenant via the Many-to-Many relationship
+                users = await em.find(User, {
+                    tenants: { id: currentTenantId }
+                }, {
+                    populate: ['tenants'],
+                    orderBy: { createdAt: 'DESC' },
+                    fields: ['id', 'username', 'role', 'isActive', 'createdAt']
+                });
+            } else {
+                return res.status(403).json({ message: 'No tenant context found' });
+            }
 
             res.json(users);
         } catch (error) {
