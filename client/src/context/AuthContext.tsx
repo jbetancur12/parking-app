@@ -1,9 +1,22 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
+interface Tenant {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+interface Location {
+    id: string;
+    name: string;
+}
+
 interface User {
     id: number;
     username: string;
     role: string;
+    tenants: Tenant[];
+    location: Location | null;
 }
 
 interface AuthContextType {

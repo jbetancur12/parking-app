@@ -1,9 +1,11 @@
 import { useAuth } from '../context/AuthContext';
+import { useSaas } from '../context/SaasContext';
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, Crown } from 'lucide-react';
 import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
+import TenantSelector from '../components/TenantSelector';
 
 type NavItem = {
     name: string;
@@ -19,10 +21,14 @@ type NavGroup = {
 
 export default function DashboardLayout() {
     const { user, logout } = useAuth();
+    const { currentTenant, availableTenants } = useSaas();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<string[]>(['Operación', 'Finanzas']); // Default open
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Show tenant selector if user has multiple tenants and none selected
+    const showTenantSelector = availableTenants.length > 1 && !currentTenant;
 
     // STRICT CHECK: Validate license on every dashboard load
     // This prevents users with saved sessions from bypassing revocation
@@ -85,6 +91,13 @@ export default function DashboardLayout() {
                 { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN', 'SUPER_ADMIN'] },
                 { name: 'Auditoría', href: '/audit', icon: Shield, roles: ['ADMIN', 'SUPER_ADMIN'] },
                 { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN', 'SUPER_ADMIN'] },
+            ]
+        },
+        {
+            title: 'SuperAdmin',
+            items: [
+                { name: 'Empresas', href: '/admin/tenants', icon: Building2, roles: ['SUPER_ADMIN'] },
+                { name: 'Sedes', href: '/admin/locations', icon: Crown, roles: ['SUPER_ADMIN'] },
             ]
         }
     ];
@@ -160,6 +173,19 @@ export default function DashboardLayout() {
                 </nav>
 
                 <div className="w-full border-t p-4 flex-shrink-0 bg-white">
+                    {/* Tenant Context Display */}
+                    {currentTenant && (
+                        <div className="mb-3 px-4 py-2 bg-blue-50 rounded-lg">
+                            <div className="flex items-center text-xs">
+                                <Building2 className="mr-2 h-4 w-4 text-blue-600" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-blue-900 truncate">{currentTenant.name}</p>
+                                    <p className="text-blue-600 truncate">@{currentTenant.slug}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex items-center mb-4 px-4 text-sm text-gray-600">
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 truncate">{user?.username}</p>
@@ -173,7 +199,7 @@ export default function DashboardLayout() {
                         <LogOut className="mr-3 h-5 w-5" />
                         Cerrar Sesión
                     </button>
-                    <p className="text-xs text-gray-400 mt-2 text-center opacity-70">v0.0.2</p>
+                    <p className="text-xs text-gray-400 mt-2 text-center opacity-70">v0.0.4</p>
                 </div>
             </div>
 
@@ -190,28 +216,14 @@ export default function DashboardLayout() {
                     <div className="w-6" /> {/* Spacer */}
                 </header>
 
-                {/* Desktop Header for Offline Indicator (since we removed it from Sidebar top in previous steps implicitly if we replaced everything? logic check: original code had indicator in sidebar header too?) --> 
-                    Original code line 62: <OfflineIndicator /> inside sidebar header.
-                    I removed it in my replacement because usually sidebar header is just logo. 
-                    Let's Check if I should put it back.
-                    The user said "sidebar is too long", maybe removing indicator helps? 
-                    But wait, Indicator is crucial. Desktop users need to see it.
-                    In original code, `DashboardLayout` had:
-                     Line 60: { /* Offline Indicator * / }
-                     Line 62: <OfflineIndicator />
-                    Mobile header also had it (Line 109).
-                    
-                    If I remove it from sidebar, desktop users won't see it (unless I add a desktop header).
-                    Currently there is NO desktop header in the original layout structure shown (only mobile header lg:hidden).
-                    So the sidebar IS the only place for desktop users to see the indicator.
-                    I MUST put it back in the Sidebar.
-                */}
-                {/* Re-adding Indicator to Sidebar for Desktop visibility */}
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                     <Outlet />
                 </main>
             </div>
+
+            {/* Tenant Selector Modal - shown when user has multiple tenants and none selected */}
+            {showTenantSelector && <TenantSelector />}
         </div>
     );
 }
