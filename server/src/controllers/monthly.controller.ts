@@ -13,9 +13,14 @@ export class MonthlyClientController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
             // Support basic simple search by name or plate
             const { search } = req.query;
             const where: any = {};
+
+            if (locationId) where.location = locationId;
 
             if (search) {
                 where.$or = [
@@ -38,14 +43,26 @@ export class MonthlyClientController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            if (!tenantId || !locationId) {
+                return res.status(400).json({ message: 'Context required' });
+            }
+
+            const user = (req as any).user;
             const { plate, name, phone, vehicleType, monthlyRate } = req.body;
 
-            // 1. Check if ANY client exists with this plate (active or inactive)
-            const existingClient = await em.findOne(MonthlyClient, { plate });
+            // 1. Check if ANY client exists with this plate (active or inactive) in this location
+            const existingClient = await em.findOne(MonthlyClient, { plate, location: locationId });
+
+            const tenant = await em.getReference('Tenant', tenantId); // UUID string
+            const location = await em.getReference('Location', locationId); // UUID string
 
             if (existingClient) {
                 if (existingClient.isActive) {
-                    return res.status(400).json({ message: 'Ya existe un cliente activo con esta placa' });
+                    return res.status(400).json({ message: 'Ya existe un cliente activo con esta placa en esta sede' });
                 }
 
                 // REACTIVATE LOGIC for inactive client
@@ -73,10 +90,17 @@ export class MonthlyClientController {
                 });
 
                 // Transaction Logic
-                const activeShift = await em.findOne(Shift, { endTime: null });
+                const activeShift = await em.findOne(Shift, {
+                    user: user.id,
+                    isActive: true,
+                    location: locationId
+                }, { populate: ['tenant', 'location'] });
+
                 if (activeShift) {
                     const transaction = em.create(Transaction, {
                         shift: activeShift,
+                        tenant: activeShift.tenant,
+                        location: activeShift.location,
                         type: TransactionType.MONTHLY_PAYMENT,
                         description: `Reactivación Mensualidad: ${name} (${plate})`,
                         amount: monthlyRate || 0,
@@ -92,7 +116,7 @@ export class MonthlyClientController {
                 return res.status(200).json({ client: existingClient, payment, message: 'Cliente reactivado exitosamente' });
             }
 
-            // 2. New Client Creation (Original Logic)
+            // 2. New Client Creation
             const startDate = new Date();
             const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
 
@@ -106,7 +130,9 @@ export class MonthlyClientController {
                 endDate,
                 isActive: true,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                tenant,
+                location
             });
 
             // Create initial payment record
@@ -119,14 +145,21 @@ export class MonthlyClientController {
             });
 
             // Need to create a Transaction for the initial payment as well if there's an active shift
-            const activeShift = await em.findOne(Shift, { endTime: null });
+            const activeShift = await em.findOne(Shift, {
+                user: user.id,
+                isActive: true,
+                location: locationId
+            }, { populate: ['tenant', 'location'] });
+
             if (activeShift) {
                 const transaction = em.create(Transaction, {
                     shift: activeShift,
+                    tenant: activeShift.tenant,
+                    location: activeShift.location,
                     type: TransactionType.MONTHLY_PAYMENT,
                     description: `Nueva Mensualidad: ${name} (${plate})`,
                     amount: monthlyRate || 0,
-                    paymentMethod: PaymentMethod.CASH, // Default to CASH for now
+                    paymentMethod: PaymentMethod.CASH,
                     timestamp: new Date()
                 });
                 em.persist(transaction);
@@ -149,25 +182,26 @@ export class MonthlyClientController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
-            const { id } = req.params;
-            const { amount, paymentMethod } = req.body; // Allow overriding amount and payment method
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
-            const client = await em.findOne(MonthlyClient, { id: Number(id) });
+            const { id } = req.params;
+            const { amount, paymentMethod } = req.body;
+
+            // Find client strictly within location
+            const client = await em.findOne(MonthlyClient, { id: Number(id), location: locationId });
 
             if (!client) {
-                return res.status(404).json({ message: 'Client not found' });
+                return res.status(404).json({ message: 'Client not found or not in this location' });
             }
 
             // Logic: Add 1 month to the current end date (or today if expired)
-            // If expired, start from today. If active, extend from current end date.
             const now = new Date();
             const baseDate = client.endDate > now ? client.endDate : now;
 
-            // Calculate new end date properly
             const newEndDate = new Date(baseDate);
             newEndDate.setMonth(newEndDate.getMonth() + 1);
 
-            const oldEndDate = client.endDate;
             client.endDate = newEndDate;
             client.isActive = true;
 
@@ -182,25 +216,27 @@ export class MonthlyClientController {
             em.persist(payment);
 
             // Create Transaction
-            // Need active shift to link transaction
-            const activeShift = await em.findOne(Shift, { endTime: null });
+            const activeShift = await em.findOne(Shift, {
+                user: (req as any).user.id,
+                isActive: true,
+                location: locationId
+            }, { populate: ['tenant', 'location'] });
 
             // Create transaction
             if (activeShift) {
                 const transaction = em.create(Transaction, {
                     shift: activeShift,
+                    tenant: activeShift.tenant,
+                    location: activeShift.location,
                     type: TransactionType.MONTHLY_PAYMENT,
                     description: `Renovación: ${client.name} (${client.plate})`,
                     amount: amount || client.monthlyRate,
-                    paymentMethod: paymentMethod || PaymentMethod.CASH, // Default to CASH
+                    paymentMethod: paymentMethod || PaymentMethod.CASH,
                     timestamp: new Date()
                 });
                 em.persist(transaction);
             } else {
                 console.warn('Renewing monthly without active shift');
-                // We allow it but warn, or block? 
-                // Better to block to ensure money is tracked, unless explictly allowed.
-                // For now, allow it but money won't be in a shift box strictly.
                 return res.status(400).json({ message: 'No active shift found. Please start a shift to renew.' });
             }
 
@@ -218,8 +254,11 @@ export class MonthlyClientController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
             const { id } = req.params;
-            const client = await em.findOne(MonthlyClient, { id: Number(id) });
+            const client = await em.findOne(MonthlyClient, { id: Number(id), location: locationId });
 
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });
@@ -243,8 +282,11 @@ export class MonthlyClientController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
             const { id } = req.params;
-            const client = await em.findOne(MonthlyClient, { id: Number(id) });
+            const client = await em.findOne(MonthlyClient, { id: Number(id), location: locationId });
 
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });

@@ -1,8 +1,11 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
 export class Loyalty {
     @PrimaryKey()
+    id!: number;
+
+    @Property()
     plate!: string;
 
     @Property()
@@ -13,4 +16,11 @@ export class Loyalty {
 
     @Property({ onCreate: () => new Date(), onUpdate: () => new Date() })
     lastVisit: Date = new Date();
+
+    // SaaS Relationships
+    @ManyToOne(() => 'Tenant')
+    tenant!: any;
+
+    @ManyToOne(() => 'Location', { nullable: true })
+    location?: any; // Optional: Points specific to a location
 }

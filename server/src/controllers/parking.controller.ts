@@ -229,9 +229,26 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     }
 
     const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
-    const settingsList = await em.find(SystemSetting, {});
+    // Fetch Settings hierarchical (Global < Tenant < Location)
+    const allSettings = await em.find(SystemSetting, {
+        $or: [
+            { tenant: null, location: null }, // Global
+            { tenant: shift.tenant.id, location: null }, // Tenant
+            { tenant: shift.tenant.id, location: shift.location.id } // Location
+        ]
+    });
+
     const settings: Record<string, string> = {};
-    settingsList.forEach(s => settings[s.key] = s.value);
+
+    // Sort logic to ensure override: Global -> Tenant -> Location
+    const globalS = allSettings.filter(s => !s.tenant && !s.location);
+    const tenantS = allSettings.filter(s => s.tenant?.id === shift.tenant.id && !s.location);
+    const locationS = allSettings.filter(s => s.location?.id === shift.location.id);
+
+    globalS.forEach(s => settings[s.key] = s.value);
+    tenantS.forEach(s => settings[s.key] = s.value);
+    locationS.forEach(s => settings[s.key] = s.value);
+
     const gracePeriod = Number(settings['grace_period'] || 5);
 
     let { cost: calculatedCost, durationMinutes, exitTime } = calculateParkingCost(session, tariffs, gracePeriod);
@@ -242,31 +259,16 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     let finalDiscountReason = discountReason || '';
     let appliedAgreement: Agreement | undefined;
 
-    // Priority: Manual Discount OVERRIDES Agreement if both present? Or Agreement first?
-    // Let's say: If Agreement is passed, use it. If Manual Discount is passed, use it.
-    // If both.. Manual wins for specific override? Or additive? 
-    // Logic: If agreementId is present, calculate discount from it. 
-    // If manual discount is present, use that instead (override).
-
     if (agreementId) {
         const agreement = await em.findOne(Agreement, { id: Number(agreementId), isActive: true });
         if (agreement) {
             appliedAgreement = agreement;
-            finalDiscountReason = agreement.name; // Set reason to agreement name automatically
+            finalDiscountReason = agreement.name;
 
             if (agreement.type === AgreementType.FREE_HOURS) {
-                // Recalculate cost subtracting usage time? 
-                // Or easier: Calculate cost of X hours and subtract?
-                // Better: Modify calculation. 
-                // Simple approach: Subtract value * hour_tariff from cost? 
-                // Accurate approach: Subtract hours from duration and recalculate?
-                // Let's try: Subtract hours from duration.
                 const freeMinutes = agreement.value * 60;
-                const paidMinutes = Math.max(0, durationMinutes - freeMinutes);
-
-                // Hacky recalculation or just rough estimate?
-                // Let's use the tariff for HOUR * value as the discount amount.
-                // Assuming hour tariff exists.
+                // Recalculate cost? Or simple deduction?
+                // Let's deduce cost of X hours.
                 const hourTariff = tariffs.find(t => t.tariffType === 'HOUR');
                 if (hourTariff) {
                     const discountAmount = hourTariff.cost * agreement.value;
@@ -282,7 +284,6 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
             }
         }
     } else if (discount && Number(discount) > 0) {
-        // Manual override
         appliedDiscount = Number(discount);
         finalCost = Math.max(0, calculatedCost - appliedDiscount);
     }
@@ -296,10 +297,14 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     let loyaltyPointsRedeemed = 0;
 
     if (loyaltyEnabled) {
-        let lp = await em.findOne(Loyalty, { plate });
+        // Loyalty is Tenant-Wide (Brand Loyalty)
+        let lp = await em.findOne(Loyalty, { plate, tenant: shift.tenant });
+
         if (!lp) {
             lp = em.create(Loyalty, {
                 plate,
+                tenant: shift.tenant,
+                location: undefined, // Explicitly undefined for Tenant-Wide
                 points: 0,
                 totalVisits: 0,
                 lastVisit: new Date()

@@ -99,12 +99,12 @@ export const setupAdmin = async (req: Request, res: Response) => {
 
     if (location) await em?.persist(location);
 
-    // 3. Create Super Admin User
+    // 3. Create First Admin User (Owner of this Tenant)
     const hashedPassword = await bcrypt.hash(password, 10);
     const admin = em?.create(User, {
         username,
         password: hashedPassword,
-        role: UserRole.SUPER_ADMIN,
+        role: UserRole.ADMIN, // Default to ADMIN for Desktop/Single-Tenant
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -115,7 +115,7 @@ export const setupAdmin = async (req: Request, res: Response) => {
         if (location) admin.locations.add(location); // Assign to location
 
         await em?.persistAndFlush(admin);
-        return res.json({ message: 'Super Admin and Default Environment created successfully' });
+        return res.json({ message: 'Admin and Default Environment created successfully' });
     } else {
         return res.status(500).json({ message: 'Error creating configuration' });
     }

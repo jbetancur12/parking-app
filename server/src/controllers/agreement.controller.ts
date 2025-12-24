@@ -8,7 +8,13 @@ export class AgreementController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            const agreements = await em.find(Agreement, {}, { orderBy: { name: 'ASC' } });
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            const filter: any = {};
+            if (locationId) filter.location = locationId;
+
+            const agreements = await em.find(Agreement, filter, { orderBy: { name: 'ASC' } });
             res.json(agreements);
         } catch (error) {
             console.error('Error fetching agreements:', error);
@@ -21,7 +27,13 @@ export class AgreementController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            const agreements = await em.find(Agreement, { isActive: true }, { orderBy: { name: 'ASC' } });
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            const filter: any = { isActive: true };
+            if (locationId) filter.location = locationId;
+
+            const agreements = await em.find(Agreement, filter, { orderBy: { name: 'ASC' } });
             res.json(agreements);
         } catch (error) {
             console.error('Error fetching active agreements:', error);
@@ -34,7 +46,17 @@ export class AgreementController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            if (!tenantId || !locationId) {
+                return res.status(400).json({ message: 'Context required' });
+            }
+
             const { name, type, value, description } = req.body;
+            const tenant = await em.getReference('Tenant', tenantId);
+            const location = await em.getReference('Location', locationId);
 
             const agreement = em.create(Agreement, {
                 name,
@@ -43,7 +65,9 @@ export class AgreementController {
                 description,
                 isActive: true,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                tenant,
+                location
             });
 
             await em.persistAndFlush(agreement);
@@ -59,15 +83,21 @@ export class AgreementController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
             const { id } = req.params;
-            const agreement = await em.findOne(Agreement, { id: Number(id) });
+            const filter: any = { id: Number(id) };
+            if (locationId) filter.location = locationId;
+
+            const agreement = await em.findOne(Agreement, filter);
 
             if (!agreement) {
                 return res.status(404).json({ message: 'Agreement not found' });
             }
 
             agreement.isActive = !agreement.isActive;
-            await em.persistAndFlush(agreement);
+            await em.flush();
 
             res.json(agreement);
         } catch (error) {

@@ -96,7 +96,7 @@ export class WashController {
             }
 
             const count = await em.count(WashServiceType, {
-                tenant: Number(tenantId),
+                tenant: tenantId,
                 location: locationId
             });
 
@@ -108,7 +108,7 @@ export class WashController {
                     { name: 'Polichado Carro', price: 40000, vehicleType: 'Carro', isActive: true },
                 ];
 
-                const tenant = await em.getReference('Tenant', Number(tenantId));
+                const tenant = await em.getReference('Tenant', tenantId);
                 const location = await em.getReference('Location', locationId);
 
                 defaults.forEach(d => {

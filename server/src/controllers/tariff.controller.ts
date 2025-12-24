@@ -11,7 +11,15 @@ export class TariffController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            const tariffs = await em.find(Tariff, {}, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            const filter: any = {};
+            if (locationId) {
+                filter.location = locationId;
+            }
+
+            const tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
             res.json(tariffs);
         } catch (error) {
             console.error(error);
@@ -25,22 +33,32 @@ export class TariffController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            // Expecting an array of tariffs or single update
-            // Let's support bulk update/upsert for simplicity in settings page
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            if (!tenantId || !locationId) {
+                return res.status(400).json({ message: 'Context required' });
+            }
+
             const items = Array.isArray(req.body) ? req.body : [req.body];
+
+            const tenant = await em.getReference('Tenant', tenantId);
+            const location = await em.getReference('Location', locationId);
 
             for (const item of items) {
                 if (item.id) {
-                    const tariff = await em.findOne(Tariff, { id: item.id });
+                    const tariff = await em.findOne(Tariff, { id: item.id, location: locationId });
                     if (tariff) {
                         tariff.cost = item.cost;
                     }
                 } else {
-                    // Create if not exists (seed logic mostly)
                     const tariff = em.create(Tariff, {
                         vehicleType: item.vehicleType,
                         tariffType: item.tariffType,
-                        cost: item.cost
+                        cost: item.cost,
+                        tenant,
+                        location
                     });
                     em.persist(tariff);
                 }
@@ -48,13 +66,12 @@ export class TariffController {
 
             await em.flush();
 
-            // Audit
             await AuditService.logAction(
                 em,
-                (req as any).user, // Type casting or use AuthRequest if available
+                (req as any).user,
                 'UPDATE_TARIFFS',
                 'Tariff',
-                undefined, // Batch update
+                undefined,
                 items
             );
 
@@ -71,6 +88,12 @@ export class TariffController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            if (!tenantId || !locationId) return res.status(400).json({ message: 'Context required' });
+
             const defaults = [
                 { vehicleType: VehicleType.CAR, tariffType: TariffType.MINUTE, cost: 100 },
                 { vehicleType: VehicleType.CAR, tariffType: TariffType.HOUR, cost: 3000 },
@@ -82,10 +105,17 @@ export class TariffController {
                 { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MONTH, cost: 50000 },
             ];
 
+            const tenant = await em.getReference('Tenant', tenantId);
+            const location = await em.getReference('Location', locationId);
+
             for (const d of defaults) {
-                const exists = await em.findOne(Tariff, { vehicleType: d.vehicleType, tariffType: d.tariffType });
+                const exists = await em.findOne(Tariff, {
+                    vehicleType: d.vehicleType,
+                    tariffType: d.tariffType,
+                    location: locationId
+                });
                 if (!exists) {
-                    em.persist(em.create(Tariff, d));
+                    em.persist(em.create(Tariff, { ...d, tenant, location }));
                 }
             }
             await em.flush();
