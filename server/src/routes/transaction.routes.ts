@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getByShift } from '../controllers/transaction.controller';
+import { getByShift, deleteTransaction } from '../controllers/transaction.controller';
 import { authenticateToken, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -10,5 +10,6 @@ router.use(authenticateToken);
 router.use(requireRole(['ADMIN', 'SUPER_ADMIN']));
 
 router.get('/shift/:shiftId', getByShift);
+router.delete('/:id', deleteTransaction);
 
 export default router;

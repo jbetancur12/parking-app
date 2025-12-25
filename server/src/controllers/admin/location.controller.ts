@@ -21,6 +21,14 @@ export const createLocation = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Tenant not found' });
         }
 
+        // Check SaaS Limits (Max Locations)
+        const currentLocationsCount = await em.count(Location, { tenant });
+        if (currentLocationsCount >= tenant.maxLocations) {
+            return res.status(403).json({
+                message: `Límite de sedes alcanzado (${tenant.maxLocations}). Actualiza tu plan para agregar más sedes.`
+            });
+        }
+
         const location = em.create(Location, {
             tenant,
             name,

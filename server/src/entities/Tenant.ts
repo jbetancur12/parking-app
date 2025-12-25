@@ -24,6 +24,12 @@ export class Tenant {
     plan = TenantPlan.FREE;
 
     @Property()
+    maxLocations: number = 1;
+
+    @Property()
+    maxUsers: number = 2; // Default small limit for FREE
+
+    @Property()
     createdAt = new Date();
 
     @Property({ onUpdate: () => new Date() })

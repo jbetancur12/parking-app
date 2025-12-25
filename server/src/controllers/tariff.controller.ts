@@ -66,13 +66,14 @@ export class TariffController {
 
             await em.flush();
 
-            await AuditService.logAction(
+            await AuditService.log(
                 em,
-                (req as any).user,
                 'UPDATE_TARIFFS',
                 'Tariff',
-                undefined,
-                items
+                'BULK',
+                (req as any).user,
+                items,
+                req
             );
 
             res.json({ message: 'Tariffs updated' });

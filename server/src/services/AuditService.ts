@@ -1,29 +1,40 @@
 import { EntityManager } from '@mikro-orm/core';
 import { AuditLog } from '../entities/AuditLog';
+import { User } from '../entities/User';
 
 export class AuditService {
-    static async logAction(
+    static async log(
         em: EntityManager,
-        user: { id: number; username: string } | undefined,
         action: string,
         entity: string,
-        entityId?: string,
-        details?: any
+        entityId: string | number,
+        user: User,
+        details: any,
+        req?: any
     ) {
         try {
-            const log = em.create(AuditLog, {
+            const audit = em.create(AuditLog, {
                 action,
                 entity,
-                entityId: entityId ? String(entityId) : undefined,
-                userId: user?.id,
-                username: user?.username || 'System',
-                details: details ? JSON.stringify(details) : undefined,
-                timestamp: new Date()
+                entityId: String(entityId),
+                userId: user.id,
+                username: user.username,
+                details: JSON.stringify(details),
+                ipAddress: req?.ip || req?.socket?.remoteAddress,
+                timestamp: new Date(),
+                tenant: user.tenants[0], // Fallback if no context
+                location: (req as any)?.location // From SaaS context
             });
-            em.persist(log);
+
+            // If we have a robust SaaS context
+            if ((req as any)?.tenant) {
+                audit.tenant = (req as any).tenant;
+            }
+
+            await em.persistAndFlush(audit);
         } catch (error) {
             console.error('Failed to create audit log:', error);
-            // Don't throw, we don't want to break the main flow if logging fails
+            // Don't throw, we don't want to break the main transaction just because logging failed
         }
     }
 }
