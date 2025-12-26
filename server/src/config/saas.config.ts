@@ -9,7 +9,7 @@ export const SAAS_PLANS: Record<TenantPlan, { maxLocations: number; maxUsers: nu
     },
     [TenantPlan.TRIAL]: {
         maxLocations: 1,
-        maxUsers: 5,
+        maxUsers: 2,
         price: 0,
         label: 'Prueba (14 Días)'
     },

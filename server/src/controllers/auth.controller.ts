@@ -36,7 +36,7 @@ export const registerTenant = async (req: Request, res: Response) => {
         contactEmail: email || '',
         trialEndsAt: addDays(new Date(), 14), // 14 Days Trial
         maxLocations: 1,
-        maxUsers: 5,
+        maxUsers: 2,
         createdAt: new Date(),
         updatedAt: new Date()
     });
