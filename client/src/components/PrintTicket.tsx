@@ -15,8 +15,11 @@ interface PrintTicketProps {
 
 export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
     ({ session, settings }, ref) => {
-        const width = settings?.ticket_width === '80mm' ? '80mm' : '58mm';
-        const showQr = settings?.enable_qr !== 'false'; // Default to true if undefined
+        // For 58mm, using '100%' is often safer than fixed '58mm' which can trigger horizontal scroll/cut-off
+        // depending on the driver's unprintable margins.
+        const is80mm = settings?.ticket_width === '80mm';
+        const width = is80mm ? '80mm' : '100%';
+        const showQr = settings?.enable_qr !== 'false';
         const logo = settings?.company_logo;
 
         // Filter valid regulations
@@ -25,14 +28,14 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
             const line = settings?.[`regulation_text_${i}`];
             if (line) regulations.push(line);
         }
-        console.log("Aca")
+
         return (
-            <div ref={ref} className="p-2 mx-auto bg-white text-black font-mono text-[10pt] leading-tight" style={{ width: width, maxWidth: width }}>
+            <div ref={ref} className="p-1 mx-auto bg-white text-black font-mono text-[10pt] leading-tight" style={{ width: width, maxWidth: is80mm ? '80mm' : '58mm' }}>
                 <style>
                     {`
                         @media print {
                             body { margin: 0; }
-                            @page { size: ${width} auto; margin: 0; }
+                            @page { size: ${is80mm ? '80mm' : '58mm'} auto; margin: 0; }
                         }
                     `}
                 </style>
@@ -79,17 +82,17 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
 
                 {/* QR Code */}
                 {showQr && (
-                    <div className="flex justify-center my-4">
-                        <QRCodeSVG value={`${window.location.origin}/ticket/${session.id}`} size={100} />
+                    <div className="flex justify-center my-2">
+                        <QRCodeSVG value={`${window.location.origin}/ticket/${session.id}`} size={is80mm ? 120 : 100} />
                     </div>
                 )}
 
                 {/* Barcode (Plate) for Legacy Scanners */}
-                <div className="flex justify-center mb-4">
+                <div className="flex justify-center mb-2 overflow-hidden">
                     <Barcode
                         value={session.plate}
                         format="CODE128"
-                        width={1.6}
+                        width={is80mm ? 1.5 : 0.9} // Reduced to 0.9 for 58mm to ensure fit
                         height={40}
                         fontSize={12}
                         displayValue={true}
