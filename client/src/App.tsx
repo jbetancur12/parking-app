@@ -1,35 +1,38 @@
-import React from 'react';
-import RegisterPage from './pages/RegisterPage';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SaasProvider } from './context/SaasContext';
 import { OfflineProvider } from './context/OfflineContext';
-import LoginPage from './pages/LoginPage';
-import LocationSelectionPage from './pages/LocationSelectionPage';
-import SetupPage from './pages/SetupPage';
+import { Loader2 } from 'lucide-react';
 import DashboardLayout from './layouts/DashboardLayout';
-import DashboardPage from './pages/DashboardPage';
-import ParkingPage from './pages/ParkingPage';
-import MonthlyClientsPage from './pages/MonthlyClientsPage';
-import ReportsPage from './pages/ReportsPage';
-import SettingsPage from './pages/SettingsPage';
-import AuditLogsPage from './pages/admin/AuditLogsPage';
-import BrandsPage from './pages/BrandsPage';
-import ExpensesPage from './pages/ExpensesPage';
-import IncomesPage from './pages/IncomesPage';
-import WashPage from './pages/WashPage';
-import UsersPage from './pages/UsersPage';
-import AgreementsPage from './pages/AgreementsPage';
-import ShiftHistoryPage from './pages/ShiftHistoryPage';
-import TransactionsPage from './pages/TransactionsPage';
-import { InventoryPage } from './pages/InventoryPage';
-import TicketStatusPage from './pages/TicketStatusPage';
-import LicenseActivationPage from './pages/LicenseActivationPage';
-import TenantsPage from './pages/admin/TenantsPage';
-import TenantFormPage from './pages/admin/TenantFormPage';
-import TenantDetailPage from './pages/admin/TenantDetailPage';
-import LocationsPage from './pages/admin/LocationsPage';
+
+// Lazy Load Pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const LocationSelectionPage = lazy(() => import('./pages/LocationSelectionPage'));
+const SetupPage = lazy(() => import('./pages/SetupPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ParkingPage = lazy(() => import('./pages/ParkingPage'));
+const MonthlyClientsPage = lazy(() => import('./pages/MonthlyClientsPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AuditLogsPage = lazy(() => import('./pages/admin/AuditLogsPage'));
+const BrandsPage = lazy(() => import('./pages/BrandsPage'));
+const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
+const IncomesPage = lazy(() => import('./pages/IncomesPage'));
+const WashPage = lazy(() => import('./pages/WashPage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
+const AgreementsPage = lazy(() => import('./pages/AgreementsPage'));
+const ShiftHistoryPage = lazy(() => import('./pages/ShiftHistoryPage'));
+const TransactionsPage = lazy(() => import('./pages/TransactionsPage'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage').then(module => ({ default: module.InventoryPage }))); // Handle named export
+const TicketStatusPage = lazy(() => import('./pages/TicketStatusPage'));
+const LicenseActivationPage = lazy(() => import('./pages/LicenseActivationPage'));
+const TenantsPage = lazy(() => import('./pages/admin/TenantsPage'));
+const TenantFormPage = lazy(() => import('./pages/admin/TenantFormPage'));
+const TenantDetailPage = lazy(() => import('./pages/admin/TenantDetailPage'));
+const LocationsPage = lazy(() => import('./pages/admin/LocationsPage'));
 
 // Detect if running in Electron
 const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
@@ -42,6 +45,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
+const LoadingSpinner = () => (
+  <div className="h-screen w-full flex items-center justify-center bg-gray-50">
+    <div className="flex flex-col items-center gap-2">
+      <Loader2 className="animate-spin text-brand-blue" size={48} />
+      <p className="text-gray-500 font-medium animate-pulse">Cargando...</p>
+    </div>
+  </div>
+);
+
 function App() {
   return (
     <OfflineProvider>
@@ -49,56 +61,42 @@ function App() {
         <SaasProvider>
           <Toaster richColors position="top-center" />
           <Router>
-            <Routes>
-              {/* License activation route - only in Electron */}
-              {isElectron && <Route path="/license" element={<LicenseActivationPage />} />}
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/setup" element={<SetupPage />} />
+                <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
+                <Route path="/activate" element={<LicenseActivationPage />} />
 
-              {/* Setup route only available in Electron */}
-              {isElectron && <Route path="/setup" element={<SetupPage />} />}
+                <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="select-location" element={<LocationSelectionPage />} />
 
+                  <Route path="parking" element={<ParkingPage />} />
+                  <Route path="monthly" element={<MonthlyClientsPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="audit-logs" element={<AuditLogsPage />} />
+                  <Route path="brands" element={<BrandsPage />} />
+                  <Route path="expenses" element={<ExpensesPage />} />
+                  <Route path="incomes" element={<IncomesPage />} />
+                  <Route path="wash" element={<WashPage />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route path="agreements" element={<AgreementsPage />} />
+                  <Route path="shifts" element={<ShiftHistoryPage />} />
+                  <Route path="transactions" element={<TransactionsPage />} />
+                  <Route path="inventory" element={<InventoryPage />} />
 
-
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/select-location" element={
-                <ProtectedRoute>
-                  <LocationSelectionPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/ticket/:id" element={<TicketStatusPage />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<DashboardPage />} />
-                <Route path="parking" element={<ParkingPage />} />
-                <Route path="monthly-clients" element={<MonthlyClientsPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="brands" element={<BrandsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="expenses" element={<ExpensesPage />} />
-                <Route path="incomes" element={<IncomesPage />} />
-                <Route path="wash" element={<WashPage />} />
-                <Route path="inventory" element={<InventoryPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="audit" element={<AuditLogsPage />} />
-                <Route path="agreements" element={<AgreementsPage />} />
-                <Route path="shift-history" element={<ShiftHistoryPage />} />
-                <Route path="transactions" element={<TransactionsPage />} />
-                {/* Admin Routes - SUPER_ADMIN only */}
-                <Route path="admin/tenants" element={<TenantsPage />} />
-                <Route path="admin/tenants/new" element={<TenantFormPage />} />
-                <Route path="admin/tenants/:id/edit" element={<TenantFormPage />} />
-                <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
-                <Route path="admin/locations" element={<LocationsPage />} />
-                <Route path="admin/audit-logs" element={<AuditLogsPage />} />
-                {/* Add other nested routes here */}
-              </Route>
-            </Routes>
+                  {/* Admin Routes */}
+                  <Route path="admin/tenants" element={<TenantsPage />} />
+                  <Route path="admin/tenants/new" element={<TenantFormPage />} />
+                  <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
+                  <Route path="admin/locations" element={<LocationsPage />} />
+                </Route>
+              </Routes>
+            </Suspense>
           </Router>
         </SaasProvider>
       </AuthProvider>

@@ -87,11 +87,11 @@ export default function DashboardLayout() {
         {
             title: 'Operación',
             items: [
-                { name: 'Inicio', href: '/', icon: LayoutDashboard },
+                { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
                 { name: 'Parqueo', href: '/parking', icon: Car },
                 { name: 'Lavadero', href: '/wash', icon: Droplets },
                 { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Mensualidades', href: '/monthly-clients', icon: Users },
+                { name: 'Mensualidades', href: '/monthly', icon: Users },
             ]
         },
         {
@@ -100,7 +100,7 @@ export default function DashboardLayout() {
                 { name: 'Egresos', href: '/expenses', icon: TrendingDown },
                 { name: 'Ingresos', href: '/incomes', icon: DollarSign },
                 { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Historial Turnos', href: '/shift-history', icon: History, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Historial Turnos', href: '/shifts', icon: History, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
             ]
         },
@@ -110,7 +110,7 @@ export default function DashboardLayout() {
                 { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Auditoría', href: '/audit', icon: Shield, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
             ]
         }

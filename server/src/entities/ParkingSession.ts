@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToOne, Index } from '@mikro-orm/core';
 import { Shift } from './Shift';
 import { BaseTenantEntity } from './BaseTenantEntity';
 
@@ -24,6 +24,7 @@ export class ParkingSession extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
+    @Index()
     @Property()
     plate!: string;
 
@@ -42,6 +43,7 @@ export class ParkingSession extends BaseTenantEntity {
     @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     cost?: number;
 
+    @Index()
     @Enum(() => ParkingStatus)
     status: ParkingStatus = ParkingStatus.ACTIVE;
 
