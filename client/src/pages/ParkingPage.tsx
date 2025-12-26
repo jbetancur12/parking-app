@@ -322,10 +322,10 @@ export default function ParkingPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gestión de Parqueadero</h1>
+                <h1 className="text-2xl font-display font-bold text-brand-blue">Gestión de Parqueadero</h1>
                 <button
                     onClick={() => setIsEntryModalOpen(true)}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    className="flex items-center bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
                     data-testid="btn-open-entry-modal"
                 >
                     <Plus className="mr-2" size={20} />
@@ -339,7 +339,7 @@ export default function ParkingPage() {
                 <input
                     type="text"
                     placeholder="Buscar por placa o escanear ticket..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none uppercase"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none uppercase transition-shadow"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
                     onKeyDown={(e) => {
@@ -594,7 +594,7 @@ export default function ParkingPage() {
                             </button>
                             <button
                                 onClick={confirmExit}
-                                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
+                                className="flex-1 bg-brand-yellow text-brand-blue font-bold py-2 rounded hover:bg-yellow-400 shadow-sm transition-colors"
                                 data-testid="btn-confirm-exit"
                             >
                                 Confirmar Salida
@@ -741,7 +741,7 @@ export default function ParkingPage() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                                    className="w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transition-colors"
                                     data-testid="btn-register-entry"
                                 >
                                     Registrar Entrada
@@ -791,7 +791,7 @@ export default function ParkingPage() {
                                         <div className="flex justify-end gap-2">
                                             <button
                                                 onClick={() => handleReprintTicket(session)}
-                                                className="text-blue-600 hover:text-blue-900 bg-blue-50 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                                                className="text-brand-blue hover:text-blue-900 bg-blue-50 hover:bg-blue-100 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 transition-colors"
                                                 title="Reimprimir ticket"
                                             >
                                                 <Printer size={14} />

@@ -1,7 +1,7 @@
 {
     "name": "parking-licenses-server",
     "version": "1.0.0",
-    "description": "License management API for ParkingSof Desktop",
+    "description": "License management API for Aparca Desktop",
     "main": "dist/index.js",
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

@@ -52,7 +52,7 @@ export const PrintShiftSummary = React.forwardRef<HTMLDivElement, PrintShiftSumm
                             <img src={logo} alt="Logo" style={{ maxHeight: '60px', maxWidth: '100%' }} />
                         </div>
                     )}
-                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'PARKINGSOF'}</h1>
+                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'APARCA'}</h1>
                     {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
                     {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
                     {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}

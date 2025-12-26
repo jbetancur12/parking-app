@@ -231,19 +231,19 @@ export default function IncomesPage() {
     return (
         <div className="p-6 h-[calc(100vh-4rem)] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
                     <DollarSign className="mr-2" /> Ingresos & Ventas
                 </h1>
-                <div className="flex bg-gray-200 rounded-lg p-1">
+                <div className="flex bg-gray-100 p-1 rounded-lg">
                     <button
                         onClick={() => setMode('POS')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${mode === 'POS' ? 'bg-white shadow text-blue-600' : 'text-gray-600'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'POS' ? 'bg-white text-brand-blue ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         Punto de Venta
                     </button>
                     <button
                         onClick={() => setMode('MANUAL')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${mode === 'MANUAL' ? 'bg-white shadow text-blue-600' : 'text-gray-600'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'MANUAL' ? 'bg-white text-brand-blue ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         Manual
                     </button>
@@ -254,16 +254,16 @@ export default function IncomesPage() {
                 {/* Left Panel: Content */}
                 <div className="flex-1 overflow-y-auto pr-2">
                     {mode === 'MANUAL' ? (
-                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-                            <h2 className="text-lg font-semibold mb-4 text-gray-700">Registrar Ingreso Vario</h2>
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green">
+                            <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Ingreso Vario</h2>
                             <form onSubmit={handleManualSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                                    <label className="block text-sm font-bold text-gray-700">Descripción</label>
                                     <input
                                         type="text"
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        className="mt-1 block w-full border rounded-md px-3 py-2"
+                                        className="mt-1 block w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
                                         required={mode === 'MANUAL'}
                                         name="description"
                                         id="description"
@@ -271,23 +271,23 @@ export default function IncomesPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Monto</label>
+                                        <label className="block text-sm font-bold text-gray-700">Monto</label>
                                         <input
                                             type="number"
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
-                                            className="mt-1 block w-full border rounded-md px-3 py-2"
+                                            className="mt-1 block w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
                                             required={mode === 'MANUAL'}
                                             name="amount"
                                             id="amount"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Pago</label>
+                                        <label className="block text-sm font-bold text-gray-700">Pago</label>
                                         <select
                                             value={paymentMethod}
                                             onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                                            className="mt-1 block w-full border rounded-md px-3 py-2 bg-white"
+                                            className="mt-1 block w-full border rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
                                         >
                                             <option value="CASH">Efectivo</option>
                                             <option value="TRANSFER">Transferencia</option>
@@ -297,7 +297,7 @@ export default function IncomesPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                                    className="w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
                                 >
                                     Registrar
                                 </button>
@@ -338,12 +338,12 @@ export default function IncomesPage() {
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">Historial Reciente</h3>
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-brand-blue/5">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ticket</th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hora</th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Descripción</th>
+                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Monto</th>
+                                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Ticket</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -423,11 +423,11 @@ export default function IncomesPage() {
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Método de Pago</label>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
                                 <select
                                     value={paymentMethod}
                                     onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 text-sm bg-white"
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 text-sm bg-white"
                                 >
                                     <option value="CASH">Efectivo</option>
                                     <option value="TRANSFER">Transferencia</option>
@@ -438,7 +438,7 @@ export default function IncomesPage() {
                                 onClick={handlePOSSubmit}
                                 disabled={cart.length === 0 || loading}
                                 data-testid="btn-confirm-pos-sale"
-                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:shadow-none transition-all"
+                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 disabled:bg-gray-400 disabled:shadow-none transition-all active:scale-95"
                             >
                                 Confirmar Venta
                             </button>

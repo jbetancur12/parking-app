@@ -1,6 +1,6 @@
-# License Server - ParkingSof Desktop
-
-API server for managing annual licenses for ParkingSof Electron desktop application.
+# License Server - Aparca Desktop
+ 
+API server for managing annual licenses for Aparca Electron desktop application.
 
 ## Setup
 

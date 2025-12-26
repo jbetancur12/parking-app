@@ -314,12 +314,12 @@ export default function MonthlyClientsPage() {
             </div>
 
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
                     <Users className="mr-3" /> Clientes Mensuales
                 </h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex items-center bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md transition-all active:scale-95"
                     data-testid="btn-open-new-client"
                 >
                     <Plus className="mr-2" size={20} />
@@ -331,25 +331,25 @@ export default function MonthlyClientsPage() {
             <div className="mb-4 flex gap-2">
                 <button
                     onClick={() => setFilterStatus('ALL')}
-                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ALL' ? 'bg-brand-blue text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
                 >
                     Todos
                 </button>
                 <button
                     onClick={() => setFilterStatus('ACTIVE')}
-                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'ACTIVE' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ACTIVE' ? 'bg-brand-green text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
                 >
                     Activos
                 </button>
                 <button
                     onClick={() => setFilterStatus('EXPIRED')}
-                    className={`px-4 py-2 rounded-md transition-colors ${filterStatus === 'EXPIRED' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'EXPIRED' ? 'bg-red-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
                 >
                     Vencidos
                 </button>
                 <button
                     onClick={handleExport}
-                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="ml-auto text-brand-blue border border-brand-blue bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2 font-medium"
                 >
                     <Download size={18} />
                     Exportar
@@ -362,9 +362,9 @@ export default function MonthlyClientsPage() {
                 <input
                     type="text"
                     placeholder="Buscar por nombre o placa (incluso desactivados)..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+                    className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow uppercase"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
                 />
             </div>
 
@@ -438,7 +438,7 @@ export default function MonthlyClientsPage() {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors mt-2"
+                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg hover:bg-yellow-400 font-bold shadow-md transition-transform active:scale-95 mt-4"
                                 data-testid="btn-create-client"
                             >
                                 Crear Cliente
@@ -572,14 +572,14 @@ export default function MonthlyClientsPage() {
             )}
 
             {/* Clients List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                 <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-brand-blue/5">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contacto</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Cliente</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Contacto</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">

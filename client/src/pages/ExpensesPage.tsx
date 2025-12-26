@@ -64,21 +64,21 @@ export default function ExpensesPage() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <h1 className="text-2xl font-display font-bold text-brand-blue mb-6 flex items-center">
                 <TrendingDown className="mr-2" /> Egresos (Gastos)
             </h1>
 
             {/* Create Form */}
             <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500 mb-8">
-                <h2 className="text-lg font-semibold mb-4 text-gray-700">Registrar Nuevo Egreso</h2>
+                <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Nuevo Egreso</h2>
                 <form onSubmit={handleCreate} className="flex gap-4 items-end flex-wrap">
                     <div className="flex-1 min-w-[200px]">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
                         <input
                             type="text"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border"
+                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border outline-none transition-shadow"
                             placeholder="e.j. Jabón, Almuerzo"
                             required
                             name="description"
@@ -86,12 +86,12 @@ export default function ExpensesPage() {
                         />
                     </div>
                     <div className="w-40">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Monto</label>
                         <input
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border"
+                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border outline-none transition-shadow"
                             placeholder="0.00"
                             min="0"
                             required
@@ -100,11 +100,11 @@ export default function ExpensesPage() {
                         />
                     </div>
                     <div className="w-40">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Método de Pago</label>
                         <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white"
+                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white outline-none transition-shadow"
                         >
                             <option value="CASH">Efectivo</option>
                             <option value="TRANSFER">Transferencia</option>
@@ -113,7 +113,7 @@ export default function ExpensesPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-red-600 text-white py-2 px-6 rounded-md hover:bg-red-700 disabled:bg-gray-400 transition-colors flex items-center h-10"
+                        className="bg-brand-yellow text-brand-blue font-bold py-2 px-6 rounded-lg hover:bg-yellow-400 disabled:bg-gray-400 shadow-md transition-transform active:scale-95 flex items-center h-10"
                     >
                         <Plus size={18} className="mr-2" />
                         Registrar
@@ -130,11 +130,11 @@ export default function ExpensesPage() {
                     <p className="text-gray-500 text-center py-8">No hay egresos registrados en este turno.</p>
                 ) : (
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-brand-blue/5">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hora</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Descripción</th>
+                                <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Monto</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">

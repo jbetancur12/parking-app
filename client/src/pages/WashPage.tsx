@@ -102,37 +102,37 @@ export default function WashPage() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <h1 className="text-2xl font-display font-bold text-brand-blue mb-6 flex items-center">
                 <Car className="mr-2" /> Lavadero de Autos
             </h1>
 
             {message && (
-                <div className="mb-4 bg-green-100 text-green-700 p-3 rounded-lg text-sm text-center font-medium">
+                <div className="mb-4 bg-brand-green/10 text-brand-green p-3 rounded-lg text-sm text-center font-bold border border-brand-green/20">
                     {message}
                 </div>
             )}
 
             {/* Form */}
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-cyan-500">
-                <h2 className="text-lg font-semibold mb-4 text-gray-700">Nuevo Servicio</h2>
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-8 border-l-4 border-brand-blue">
+                <h2 className="text-lg font-display font-bold mb-4 text-brand-blue">Nuevo Servicio</h2>
                 <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Placa</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Placa</label>
                         <input
                             type="text"
                             value={plate}
                             onChange={e => setPlate(e.target.value.toUpperCase())}
-                            className="w-full border rounded px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            className="w-full border rounded-lg px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
                             placeholder="ABC-123"
                             required
                         />
                     </div>
                     <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Servicio</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Servicio</label>
                         <select
                             value={selectedType}
                             onChange={e => setSelectedType(Number(e.target.value))}
-                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
                             required
                         >
                             <option value="">Seleccione Servicio...</option>
@@ -144,31 +144,31 @@ export default function WashPage() {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Precio (Opcional)</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Precio (Opcional)</label>
                         <input
                             type="number"
                             value={price}
                             onChange={e => setPrice(e.target.value)}
-                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none font-semibold text-gray-700"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none font-semibold text-gray-700 transition-shadow"
                             placeholder="Sugerido..."
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Operario (Opcional)</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Operario (Opcional)</label>
                         <input
                             type="text"
                             value={operator}
                             onChange={e => setOperator(e.target.value)}
-                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
                             placeholder="Nombre"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Pago</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Pago</label>
                         <select
                             value={paymentMethod}
                             onChange={e => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none bg-white transition-shadow"
                         >
                             <option value="CASH">Efectivo</option>
                             <option value="TRANSFER">Transf.</option>
@@ -177,7 +177,7 @@ export default function WashPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan-700 flex items-center justify-center h-10 md:col-start-6"
+                        className="bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 shadow-md flex items-center justify-center h-10 md:col-start-6 transform transition-transform active:scale-95"
                     >
                         <Plus size={18} className="mr-2" />
                         Registrar
@@ -186,21 +186,21 @@ export default function WashPage() {
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h3 className="text-lg font-semibold text-gray-800">Historial del Día (Turno Actual)</h3>
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <div className="px-6 py-4 border-b border-gray-200 bg-brand-blue/5">
+                    <h3 className="text-lg font-display font-bold text-gray-800">Historial del Día (Turno Actual)</h3>
                 </div>
                 {entries.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No hay lavados registrados en este turno.</p>
+                    <p className="text-gray-500 text-center py-8 font-sans">No hay lavados registrados en este turno.</p>
                 ) : (
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Servicio</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operario</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Hora</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Placa</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Servicio</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Operario</th>
+                                <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Monto</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">

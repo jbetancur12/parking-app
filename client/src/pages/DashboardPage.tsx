@@ -166,56 +166,55 @@ export default function DashboardPage() {
     }
 
     if (loading) return <div className="p-8">Cargando...</div>;
-
     return (
         <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Bienvenido, {user?.username}</h1>
+            <h1 className="text-3xl font-display font-bold text-brand-blue mb-6">Bienvenido, {user?.username}</h1>
 
             {/* Multi-Location Summary (Admin Only) */}
             {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && consolidatedData && (
                 <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <h2 className="text-xl font-display font-bold text-brand-blue mb-4 flex items-center">
                         <Users className="mr-2" size={24} /> Resumen Multi-Sede (Hoy)
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-600">
-                            <div className="text-sm text-gray-500">Total Ingresos (Global)</div>
-                            <div className="text-2xl font-bold text-gray-800">${consolidatedData.globalStats?.totalIncome?.toLocaleString()}</div>
+                        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-brand-blue">
+                            <div className="text-sm font-bold text-gray-500">Total Ingresos (Global)</div>
+                            <div className="text-2xl font-bold text-brand-blue">${consolidatedData.globalStats?.totalIncome?.toLocaleString()}</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-600">
-                            <div className="text-sm text-gray-500">Transacciones Totales</div>
+                        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-brand-green">
+                            <div className="text-sm font-bold text-gray-500">Transacciones Totales</div>
                             <div className="text-2xl font-bold text-gray-800">{consolidatedData.globalStats?.transactionCount}</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-purple-600">
-                            <div className="text-sm text-gray-500">Parqueo Total</div>
+                        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-600">
+                            <div className="text-sm font-bold text-gray-500">Parqueo Total</div>
                             <div className="text-2xl font-bold text-gray-800">${(consolidatedData.globalStats?.parkingHourly + consolidatedData.globalStats?.parkingDaily)?.toLocaleString()}</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500">
-                            <div className="text-sm text-gray-500">Sedes Activas</div>
+                        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-brand-yellow">
+                            <div className="text-sm font-bold text-gray-500">Sedes Activas</div>
                             <div className="text-2xl font-bold text-gray-800">{consolidatedData.locationStats?.length || 0}</div>
                         </div>
                     </div>
 
                     {/* Location Breakdown Grid */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-medium text-gray-700 mb-4">Desglose por Sede</h3>
+                    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+                        <h3 className="text-lg font-display font-bold text-brand-blue mb-4">Desglose por Sede</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {consolidatedData.locationStats?.map((loc: any) => (
-                                <div key={loc.locationId} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                <div key={loc.locationId} className="border rounded-lg p-4 hover:bg-brand-blue/5 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
-                                        <h4 className="font-bold text-gray-800">{loc.locationName}</h4>
-                                        <span className="text-xs font-semibold bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                                        <h4 className="font-bold text-brand-blue">{loc.locationName}</h4>
+                                        <span className="text-xs font-bold bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
                                             {loc.transactionCount} Tx
                                         </span>
                                     </div>
                                     <div className="space-y-1 text-sm">
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">Ingresos:</span>
-                                            <span className="font-medium text-green-600">${loc.totalIncome.toLocaleString()}</span>
+                                            <span className="text-gray-500 font-medium">Ingresos:</span>
+                                            <span className="font-bold text-brand-green">${loc.totalIncome.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">Neto:</span>
-                                            <span className="font-medium text-blue-600">${(loc.totalIncome - loc.totalExpenses).toLocaleString()}</span>
+                                            <span className="text-gray-500 font-medium">Neto:</span>
+                                            <span className="font-bold text-brand-blue">${(loc.totalIncome - loc.totalExpenses).toLocaleString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -229,22 +228,22 @@ export default function DashboardPage() {
             {occupancy && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {/* Cars */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-blue">
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-lg font-semibold text-gray-700">Ocupación Carros</h3>
-                            <span className="text-2xl font-bold text-blue-600">{occupancy.car.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.car.capacity : '∞'}</span></span>
+                            <h3 className="text-lg font-display font-bold text-brand-blue">Ocupación Carros</h3>
+                            <span className="text-2xl font-bold text-brand-blue">{occupancy.car.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.car.capacity : '∞'}</span></span>
                         </div>
                         {occupancy.checkEnabled && (
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div
                                     className={`h-2.5 rounded-full ${(occupancy.car.current / occupancy.car.capacity) > 0.9 ? 'bg-red-500' :
-                                        (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-yellow-500' : 'bg-blue-500'
+                                        (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-blue'
                                         }`}
                                     style={{ width: `${Math.min((occupancy.car.current / occupancy.car.capacity) * 100, 100)}%` }}
                                 ></div>
                             </div>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs font-bold text-gray-500 mt-2">
                             {occupancy.checkEnabled
                                 ? `${occupancy.car.capacity - occupancy.car.current} cupos disponibles`
                                 : 'Sin límite de capacidad'}
@@ -252,22 +251,22 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Motorcycles */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500">
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-yellow">
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-lg font-semibold text-gray-700">Ocupación Motos</h3>
-                            <span className="text-2xl font-bold text-orange-600">{occupancy.motorcycle.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.motorcycle.capacity : '∞'}</span></span>
+                            <h3 className="text-lg font-display font-bold text-brand-blue">Ocupación Motos</h3>
+                            <span className="text-2xl font-bold text-brand-yellow">{occupancy.motorcycle.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.motorcycle.capacity : '∞'}</span></span>
                         </div>
                         {occupancy.checkEnabled && (
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div
                                     className={`h-2.5 rounded-full ${(occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.9 ? 'bg-red-500' :
-                                        (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-yellow-500' : 'bg-orange-500'
+                                        (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-yellow'
                                         }`}
                                     style={{ width: `${Math.min((occupancy.motorcycle.current / occupancy.motorcycle.capacity) * 100, 100)}%` }}
                                 ></div>
                             </div>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs font-bold text-gray-500 mt-2">
                             {occupancy.checkEnabled
                                 ? `${occupancy.motorcycle.capacity - occupancy.motorcycle.current} cupos disponibles`
                                 : 'Sin límite de capacidad'}
@@ -280,10 +279,10 @@ export default function DashboardPage() {
             {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && stats && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     {/* Weekly Income */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
-                                <TrendingUp size={20} className="mr-2 text-green-500" />
+                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                                <TrendingUp size={20} className="mr-2 text-brand-green" />
                                 Ingresos Semanales
                             </h3>
                         </div>
@@ -297,17 +296,17 @@ export default function DashboardPage() {
                                         formatter={(value: any) => [`$${value.toLocaleString()}`, 'Ingresos']}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     />
-                                    <Area type="monotone" dataKey="amount" stroke="#10B981" fill="#D1FAE5" strokeWidth={2} />
+                                    <Area type="monotone" dataKey="amount" stroke="#28A745" fill="#D1FAE5" strokeWidth={2} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
                     {/* Transaction Types */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
-                                <Users size={20} className="mr-2 text-blue-500" />
+                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                                <Users size={20} className="mr-2 text-brand-blue" />
                                 Distribución de Ingresos
                             </h3>
                         </div>
@@ -320,7 +319,7 @@ export default function DashboardPage() {
                                         cy="50%"
                                         innerRadius={60}
                                         outerRadius={80}
-                                        fill="#8884d8"
+                                        fill="#1A3A5A"
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
@@ -336,9 +335,9 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Hourly Activity */}
-                    <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                    <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2 border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
+                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
                                 <Clock size={20} className="mr-2 text-purple-500" />
                                 Actividad por Hora (Últimos 30 días)
                             </h3>
@@ -352,7 +351,7 @@ export default function DashboardPage() {
                                         cursor={{ fill: '#F3F4F6' }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     />
-                                    <Bar dataKey="count" name="Vehículos" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -361,29 +360,29 @@ export default function DashboardPage() {
             )}
 
             {error && (
-                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg flex items-center">
+                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg flex items-center font-bold">
                     <AlertCircle className="mr-2" size={20} />
                     {error}
                 </div>
             )}
 
             {!activeShift ? (
-                <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-                    <h2 className="text-lg font-semibold mb-4">Iniciar Turno</h2>
+                <div className="bg-white p-6 rounded-lg shadow-md max-w-md border-l-4 border-gray-300">
+                    <h2 className="text-lg font-display font-bold mb-4 text-brand-blue">Iniciar Turno</h2>
                     <p className="text-gray-600 mb-4">Necesita un turno activo para registrar vehículos.</p>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Base de Caja</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Base de Caja</label>
                         <input
                             type="number"
                             value={baseAmount}
                             onChange={(e) => setBaseAmount(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-blue transition-shadow"
                             placeholder="0"
                         />
                     </div>
                     <button
                         onClick={handleOpenShift}
-                        className="w-full flex items-center justify-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                        className="w-full flex items-center justify-center bg-brand-green text-white py-2 rounded-lg hover:bg-green-600 font-bold shadow-md transition-transform active:scale-95"
                     >
                         <Play className="mr-2" size={20} />
                         Abrir Turno
@@ -391,14 +390,14 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                        <h2 className="text-lg font-semibold text-gray-700">Turno Activo</h2>
-                        <p className="text-gray-500 text-sm">Iniciado a las: {new Date(activeShift.startTime).toLocaleString()}</p>
-                        <p className="text-gray-500 text-sm mt-2">Base: ${Number(activeShift.baseAmount).toLocaleString()}</p>
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green">
+                        <h2 className="text-lg font-display font-bold text-brand-blue">Turno Activo</h2>
+                        <p className="text-gray-500 text-sm font-medium">Iniciado a las: {new Date(activeShift.startTime).toLocaleString()}</p>
+                        <p className="text-gray-500 text-sm mt-2 font-medium">Base: ${Number(activeShift.baseAmount).toLocaleString()}</p>
                         <div className="mt-4">
                             <button
                                 onClick={() => setShowCloseModal(true)}
-                                className="flex items-center text-red-600 hover:text-red-800 font-medium"
+                                className="flex items-center text-red-600 hover:text-red-800 font-bold transition-colors"
                             >
                                 <Square className="mr-2" size={18} /> Cerrar Turno
                             </button>
@@ -406,13 +405,13 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-lg font-semibold mb-4">Acciones Rápidas</h2>
+                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <h2 className="text-lg font-display font-bold text-brand-blue mb-4">Acciones Rápidas</h2>
                         <div className="space-y-3">
-                            <a href="/parking" className="block w-full text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                            <a href="/parking" className="block w-full text-center bg-brand-blue text-white py-2 rounded-lg hover:bg-blue-900 font-bold shadow-sm transition-all">
                                 Ir al Parqueo
                             </a>
-                            <a href="/reports" className="block w-full text-center bg-gray-100 text-gray-700 py-2 rounded hover:bg-gray-200">
+                            <a href="/reports" className="block w-full text-center bg-gray-100 text-brand-blue py-2 rounded-lg hover:bg-gray-200 font-bold transition-all">
                                 Ver Reportes
                             </a>
                         </div>

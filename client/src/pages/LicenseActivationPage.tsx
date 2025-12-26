@@ -107,7 +107,7 @@ export default function LicenseActivationPage() {
                             <Shield className="w-8 h-8 text-blue-600" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Activar Licencia</h1>
-                        <p className="text-gray-600">ParkingSof Desktop Edition</p>
+                        <p className="text-gray-600">Aparca Desktop Edition</p>
                     </div>
 
                     {/* License Key Input */}

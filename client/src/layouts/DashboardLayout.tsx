@@ -153,31 +153,29 @@ export default function DashboardLayout() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
-                <div className="flex h-16 items-center justify-between px-6 border-b flex-shrink-0">
-                    <span className="text-xl font-bold text-gray-800">Aparca</span>
-                    <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-gray-500">
+            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-brand-blue shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+                <div className="flex h-20 items-center justify-center px-6 border-b border-blue-800 flex-shrink-0">
+                    <img src="/LogoTexto.png" alt="Aparca" className="h-16 w-auto brightness-0 invert" />
+                    <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden absolute right-4 text-white">
                         <X size={24} />
                     </button>
-                    {/* Offline Indicator Desktop Sidebar (Visible only on large? No, kept original logic but removed redundant map) */}
-                    {/* We put indicator in header for mobile, maybe keep hidden here? No, design shows it in header. */}
                 </div>
 
-                <nav className="mt-4 px-4 space-y-2 flex-1 overflow-y-auto">
+                <nav className="mt-6 px-3 space-y-2 flex-1 overflow-y-auto">
                     {filteredGroups.map((group) => {
                         const isOpen = openGroups.includes(group.title);
                         return (
                             <div key={group.title} className="mb-2">
                                 <button
                                     onClick={() => toggleGroup(group.title)}
-                                    className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 focus:outline-none"
+                                    className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-blue-200 uppercase tracking-wider hover:text-white focus:outline-none"
                                 >
                                     <span>{group.title}</span>
                                     {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                 </button>
 
                                 {isOpen && (
-                                    <div className="space-y-1 mt-1 ml-1">
+                                    <div className="space-y-1 mt-1">
                                         {group.items.map((item) => {
                                             const Icon = item.icon;
                                             const isActive = location.pathname === item.href;
@@ -185,12 +183,12 @@ export default function DashboardLayout() {
                                                 <Link
                                                     key={item.name}
                                                     to={item.href}
-                                                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
-                                                        ? 'bg-blue-50 text-blue-700'
-                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
+                                                        ? 'bg-brand-yellow text-brand-blue shadow-md transform scale-[1.02]'
+                                                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
                                                         }`}
                                                 >
-                                                    <Icon className="mr-3 h-4 w-4" /> {/* Slightly smaller icons for compact list */}
+                                                    <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-brand-blue' : 'text-blue-300'}`} />
                                                     {item.name}
                                                 </Link>
                                             );
@@ -202,14 +200,14 @@ export default function DashboardLayout() {
                     })}
                 </nav>
 
-                <div className="w-full border-t p-4 flex-shrink-0 bg-white">
+                <div className="w-full border-t border-blue-800 p-4 flex-shrink-0 bg-brand-blue">
                     {/* Tenant Context Display */}
                     {currentTenant && (
-                        <div className="mb-2 px-4 py-2 bg-blue-50 rounded-lg">
+                        <div className="mb-2 px-4 py-2 bg-blue-900/50 rounded-lg border border-blue-700">
                             <div className="flex items-center text-xs">
-                                <Building2 className="mr-2 h-4 w-4 text-blue-600" />
+                                <Building2 className="mr-2 h-4 w-4 text-brand-yellow" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-blue-900 truncate">{currentTenant.name}</p>
+                                    <p className="font-semibold text-white truncate">{currentTenant.name}</p>
                                 </div>
                             </div>
                         </div>
@@ -217,33 +215,33 @@ export default function DashboardLayout() {
 
                     {/* Location Context Display */}
                     {currentLocation && (
-                        <div className="mb-3 px-4 py-2 bg-green-50 rounded-lg group cursor-pointer relative" onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}>
+                        <div className="mb-3 px-4 py-2 bg-brand-green/20 rounded-lg border border-brand-green/30 group cursor-pointer relative" onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}>
                             <div className="flex items-center text-xs">
-                                <MapPin className="mr-2 h-4 w-4 text-green-600" />
+                                <MapPin className="mr-2 h-4 w-4 text-brand-green" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-green-900 truncate">{currentLocation.name}</p>
+                                    <p className="font-semibold text-white truncate">{currentLocation.name}</p>
                                     {user?.locations && user.locations.length > 1 && (
-                                        <p className="text-green-600 text-[10px]">Cambiar Sede</p>
+                                        <p className="text-brand-green text-[10px] mt-0.5">Cambiar Sede</p>
                                     )}
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="flex items-center mb-4 px-4 text-sm text-gray-600">
+                    <div className="flex items-center mb-4 px-4 text-sm text-blue-100">
                         <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">{user?.username}</p>
-                            <p className="truncate text-xs">{user?.role}</p>
+                            <p className="font-medium text-white truncate">{user?.username}</p>
+                            <p className="truncate text-xs text-blue-300">{user?.role}</p>
                         </div>
                     </div>
                     <button
                         onClick={logout}
-                        className="flex w-full items-center px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                        className="flex w-full items-center px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-900/30 hover:text-red-200 rounded-lg transition-colors"
                     >
                         <LogOut className="mr-3 h-5 w-5" />
                         Cerrar Sesión
                     </button>
-                    <p className="text-xs text-gray-400 mt-2 text-center opacity-70">v0.0.4</p>
+                    <p className="text-[10px] text-blue-400 mt-4 text-center">v0.0.5 • Aparca SaaS</p>
                 </div>
             </div>
 
@@ -254,7 +252,7 @@ export default function DashboardLayout() {
                         <Menu size={24} />
                     </button>
                     <div className="flex flex-col items-center">
-                        <span className="font-semibold text-gray-800">Aparca</span>
+                        <img src="/LogoTexto.png" alt="Aparca" className="h-8 w-auto mb-1" />
                         {currentLocation && (
                             <span className="text-xs text-green-600 font-medium flex items-center">
                                 <MapPin size={10} className="mr-1" />
