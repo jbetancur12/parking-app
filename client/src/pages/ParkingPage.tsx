@@ -163,7 +163,15 @@ export default function ParkingPage() {
             setShowPrintConfirm(true);
             toast.success('Vehículo ingresado');
         } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Error al registrar entrada');
+            if (err.response?.status === 409) {
+                // Monthly Client Warning
+                toast.warning(err.response.data.message, {
+                    duration: 5000,
+                    style: { border: '2px solid #FFC107' }
+                });
+            } else {
+                toast.error(err.response?.data?.message || 'Error al registrar entrada');
+            }
         }
     };
 
@@ -351,10 +359,22 @@ export default function ParkingPage() {
                     onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && searchTerm) {
+                            e.preventDefault();
+                            // 1. Try exact match first
                             const exactMatch = sessions.find(s => s.plate === searchTerm);
+
                             if (exactMatch) {
                                 handleExitClick(exactMatch.plate);
                                 setSearchTerm('');
+                            } else {
+                                // 2. If no exact match, but filtering shows exactly one result, use that
+                                // We need to recalculate filtered because filteredSessions is outside this scope closure if we aren't careful, 
+                                // but actually filteredSessions is available in the render scope.
+                                const currentFiltered = sessions.filter(s => s.plate.includes(searchTerm));
+                                if (currentFiltered.length === 1) {
+                                    handleExitClick(currentFiltered[0].plate);
+                                    setSearchTerm('');
+                                }
                             }
                         }
                     }}

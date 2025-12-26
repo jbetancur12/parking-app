@@ -9,6 +9,7 @@ import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Loyalty } from '../entities/Loyalty';
+import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
@@ -98,6 +99,22 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
 
     if (existingSession) {
         return res.status(400).json({ message: 'Vehicle already has an active session in this location' });
+    }
+
+    // Check for Active Monthly Subscription
+    const monthlyClient = await em.findOne(MonthlyClient, {
+        plate,
+        isActive: true,
+        endDate: { $gte: new Date() },
+        tenant: shift.tenant // Scope to tenant? Yes.
+    });
+
+    if (monthlyClient) {
+        const endDateStr = new Date(monthlyClient.endDate).toLocaleDateString();
+        return res.status(409).json({
+            message: `Este vehículo tiene una mensualidad activa hasta el ${endDateStr}. No es necesario ingresar manual.`,
+            monthlyClient
+        });
     }
 
     const session = em.create(ParkingSession, {
