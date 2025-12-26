@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import obfuscator from 'rollup-plugin-javascript-obfuscator'
+import viteCompression from 'vite-plugin-compression'
 
 // Detect if we're building for Electron
 const isElectronMode = process.env.VITE_APP_MODE === 'electron';
@@ -11,8 +12,12 @@ const isElectronMode = process.env.VITE_APP_MODE === 'electron';
 // https://vite.dev/config/
 export default defineConfig({
   base: isElectronMode ? './' : '/',
+  esbuild: {
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
   plugins: [
     react(),
+    viteCompression(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['Logo.png', 'apple-touch-icon.png', 'masked-icon.svg'],
@@ -50,6 +55,13 @@ export default defineConfig({
           vite: {
             build: {
               rollupOptions: {
+                output: {
+                  manualChunks: {
+                    vendor: ['react', 'react-dom', 'react-router-dom'],
+                    ui: ['lucide-react', 'sonner', 'recharts'],
+                    utils: ['date-fns', 'date-fns-tz', 'xlsx', 'axios']
+                  }
+                },
                 plugins: [
                   process.env.NODE_ENV === 'production' && obfuscator({
                     compact: true,
