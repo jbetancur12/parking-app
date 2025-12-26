@@ -88,13 +88,14 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
             if (tenant) {
                 req.tenant = tenant;
 
-                // TRIAL CHECK logic
-                if (tenant.plan === 'free' && tenant.trialEndsAt) {
+                // Trial Expiration Check
+                if (tenant.plan === 'trial' && tenant.trialEndsAt) {
                     const now = new Date();
                     const trialEnd = new Date(tenant.trialEndsAt);
+
                     if (now > trialEnd) {
-                        return res.status(402).json({ // 402 Payment Required
-                            message: 'Tu periodo de prueba ha expirado. Por favor suscríbete para continuar.',
+                        return res.status(403).json({
+                            message: 'Tu periodo de prueba ha finalizado. Por favor actualiza tu plan para continuar.',
                             code: 'TRIAL_EXPIRED'
                         });
                     }
