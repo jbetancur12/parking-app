@@ -22,5 +22,5 @@ RUN npm run build
 # Expose the port the app runs on
 EXPOSE 3001
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (with optional DB reset)
+CMD ["sh", "-c", "if [ \"$RUN_DB_RESET\" = \"true\" ]; then echo '🔄 Running DB Reset...'; npm run db:reset:prod; fi && npm start"]
