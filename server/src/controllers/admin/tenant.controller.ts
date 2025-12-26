@@ -65,6 +65,7 @@ export const getAllTenants = async (req: Request, res: Response) => {
 
         const tenants = await em.find(Tenant, where, {
             populate: ['locations', 'users'],
+            filters: false // Disable filters to see counts correctly
         });
 
         // Map to include counts
@@ -98,6 +99,7 @@ export const getTenantById = async (req: Request, res: Response) => {
 
         const tenant = await em.findOne(Tenant, { id }, {
             populate: ['locations', 'users'],
+            filters: false // Disable filters to see ALL locations for this tenant
         });
 
         if (!tenant) {

@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
 import { Shift } from './Shift';
+import { BaseTenantEntity } from './BaseTenantEntity';
 
 export enum TransactionType {
     INCOME = 'INCOME', // General income (not parking)
@@ -15,7 +16,7 @@ export enum PaymentMethod {
 }
 
 @Entity()
-export class Transaction {
+export class Transaction extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
@@ -34,7 +35,7 @@ export class Transaction {
     @Enum(() => PaymentMethod)
     paymentMethod?: PaymentMethod; // Optional: only for income transactions
 
-    @Property({ onCreate: () => new Date() })
+    @Property()
     timestamp: Date = new Date();
 
     @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
@@ -46,10 +47,5 @@ export class Transaction {
     @ManyToOne(() => 'Agreement', { nullable: true })
     agreement?: any;
 
-    // SaaS Relationships
-    @ManyToOne(() => 'Tenant')
-    tenant!: any;
 
-    @ManyToOne(() => 'Location')
-    location!: any;
 }

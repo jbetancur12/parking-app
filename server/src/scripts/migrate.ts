@@ -135,7 +135,7 @@ async function migrate() {
                     vehicleType,
                     createdAt: new Date(),
                     updatedAt: new Date()
-                });
+                } as any);
 
                 em.persist(client);
                 count++;

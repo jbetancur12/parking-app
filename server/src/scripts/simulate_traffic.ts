@@ -67,7 +67,7 @@ const main = async () => {
         shift = em.create(Shift, {
             user, location, tenant, startTime: new Date(), isActive: true, baseAmount: 500000,
             totalIncome: 0, totalExpenses: 0, cashIncome: 0, transferIncome: 0, declaredAmount: 0
-        });
+        } as any);
         await em.persistAndFlush(shift);
         console.log(`✅ Opened Shift #${shift.id}`);
     }
@@ -102,7 +102,7 @@ const main = async () => {
                 tenant: tenant as any,
                 location: location as any,
                 notes: 'Simulated Entry'
-            });
+            } as any);
             await forkEm.persistAndFlush(session);
             console.log(`[TRAFFIC] 🚗 ENTRY: ${plate} (${vehicleType} - ${planType})`);
         } else {
@@ -127,7 +127,7 @@ const main = async () => {
                     description: `Exit: ${session.plate} (${duration}m)`,
                     amount: cost, paymentMethod: PaymentMethod.CASH, timestamp: new Date(),
                     discount: 0
-                });
+                } as any);
 
                 await forkEm.persistAndFlush([session, tx]);
                 console.log(`[TRAFFIC] 💰 EXIT: ${session.plate} - Paid $${cost}`);
@@ -156,7 +156,7 @@ const main = async () => {
             location: location as any,
             createdAt: new Date(),
             updatedAt: new Date()
-        });
+        } as any);
 
         const tx = forkEm.create(Transaction, {
             shift: currentShift as any,
@@ -166,7 +166,7 @@ const main = async () => {
             description: `Mensualidad: ${plate}`,
             amount: 80000, paymentMethod: PaymentMethod.TRANSFER, timestamp: new Date(),
             discount: 0
-        });
+        } as any);
 
         await forkEm.persistAndFlush([client, tx]);
         console.log(`[MONTHLY] 📅 New Client: ${client.name} (${plate}) - $80.000`);
@@ -190,7 +190,7 @@ const main = async () => {
                 description: `Ingreso Varios: Venta de productos`,
                 amount, paymentMethod: PaymentMethod.CASH, timestamp: new Date(),
                 discount: 0
-            });
+            } as any);
             await forkEm.persistAndFlush(tx);
             console.log(`[FINANCE] 💵 Income: $${amount}`);
         } else {
@@ -201,7 +201,7 @@ const main = async () => {
                 description: `Gasto Varios: Insumos de aseo`,
                 amount,
                 createdAt: new Date()
-            });
+            } as any);
             const tx = forkEm.create(Transaction, {
                 shift: currentShift as any,
                 tenant: tenant as any,
@@ -210,7 +210,7 @@ const main = async () => {
                 description: `Gasto: Insumos de aseo`,
                 amount, paymentMethod: PaymentMethod.CASH, timestamp: new Date(),
                 discount: 0
-            });
+            } as any);
             await forkEm.persistAndFlush([expense, tx]);
             console.log(`[FINANCE] 💸 Expense: $${amount}`);
         }

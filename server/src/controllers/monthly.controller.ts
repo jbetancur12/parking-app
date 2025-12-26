@@ -106,7 +106,7 @@ export class MonthlyClientController {
                         amount: monthlyRate || 0,
                         paymentMethod: PaymentMethod.CASH,
                         timestamp: new Date()
-                    });
+                    } as any);
                     em.persist(transaction);
                 }
 
@@ -133,7 +133,7 @@ export class MonthlyClientController {
                 updatedAt: new Date(),
                 tenant,
                 location
-            });
+            } as any);
 
             // Create initial payment record
             const payment = em.create(MonthlyPayment, {
@@ -161,7 +161,7 @@ export class MonthlyClientController {
                     amount: monthlyRate || 0,
                     paymentMethod: PaymentMethod.CASH,
                     timestamp: new Date()
-                });
+                } as any);
                 em.persist(transaction);
             }
 
@@ -233,7 +233,7 @@ export class MonthlyClientController {
                     amount: amount || client.monthlyRate,
                     paymentMethod: paymentMethod || PaymentMethod.CASH,
                     timestamp: new Date()
-                });
+                } as any);
                 em.persist(transaction);
             } else {
                 console.warn('Renewing monthly without active shift');

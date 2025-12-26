@@ -26,7 +26,7 @@ export class WashController {
 
             const { plate, serviceTypeId, operatorName, shiftId, price, paymentMethod } = req.body;
 
-            const shift = await em.findOne(Shift, { id: Number(shiftId) });
+            const shift = await em.findOne(Shift, { id: Number(shiftId) }, { populate: ['tenant', 'location'] });
             if (!shift || !shift.isActive) return res.status(400).json({ message: 'Shift closed or invalid' });
 
             const serviceType = await em.findOne(WashServiceType, { id: Number(serviceTypeId) });
@@ -39,21 +39,25 @@ export class WashController {
                 plate: plate.toUpperCase(),
                 serviceType,
                 shift,
+                tenant: shift.tenant,
+                location: shift.location,
                 operatorName,
                 cost: finalPrice,
                 status: 'Completed',
                 createdAt: new Date()
-            });
+            } as any);
 
             // Financial Transaction
             const transaction = em.create(Transaction, {
                 shift,
+                tenant: shift.tenant,
+                location: shift.location,
                 type: TransactionType.WASH_SERVICE, // Wash service
                 amount: finalPrice,
                 description: `Lavado: ${serviceType.name} (${plate})`,
                 paymentMethod: paymentMethod || 'CASH',
                 timestamp: new Date()
-            });
+            } as any);
 
             em.persist([washEntry, transaction]);
             await em.flush();

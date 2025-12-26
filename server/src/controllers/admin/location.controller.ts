@@ -77,6 +77,7 @@ export const getAllLocations = async (req: Request, res: Response) => {
 
         const locations = await em.find(Location, where, {
             populate: ['tenant'],
+            filters: userRole === 'SUPER_ADMIN' ? false : undefined
         });
 
         return res.json(locations);

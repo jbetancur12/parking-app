@@ -49,7 +49,7 @@ export const openShift = async (req: AuthRequest, res: Response) => {
         transferIncome: 0,
         declaredAmount: 0,
         isActive: true,
-    });
+    } as any);
 
     await em.persistAndFlush(shift);
     return res.status(201).json(shift);

@@ -107,7 +107,12 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Entity Manager not found' });
     }
 
-    const user = await em.findOne(User, { username }, { populate: ['tenants', 'locations', 'lastActiveLocation'] });
+    // Disable tenant filter for login as it is a global lookup (by username)
+    // and User entity might be affected by relations or if we add loose filters.
+    const user = await em.findOne(User, { username }, {
+        populate: ['tenants', 'locations', 'lastActiveLocation'],
+        filters: false // Disable all filters for this query to find the user globally
+    });
     console.log(user);
 
     if (!user) {

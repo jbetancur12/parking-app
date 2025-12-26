@@ -1,8 +1,9 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { User } from './User';
+import { BaseTenantEntity } from './BaseTenantEntity';
 
 @Entity()
-export class Shift {
+export class Shift extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
@@ -40,10 +41,5 @@ export class Shift {
     @Property()
     isActive: boolean = true;
 
-    // SaaS Relationships
-    @ManyToOne(() => 'Tenant')
-    tenant!: any;
 
-    @ManyToOne(() => 'Location')
-    location!: any;
 }

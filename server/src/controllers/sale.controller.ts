@@ -87,7 +87,7 @@ export class SaleController {
                 description: finalDescription,
                 amount: finalAmount,
                 timestamp: new Date()
-            });
+            } as any);
 
             await em.persistAndFlush(transaction);
             res.status(201).json(transaction);

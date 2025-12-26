@@ -35,7 +35,7 @@ export class ExpenseController {
                 tenant: shift.tenant,
                 location: shift.location,
                 createdAt: new Date()
-            });
+            } as any);
 
             // 2. Create Financial Transaction (Negative amount for cash flow?) 
             // Usually expenses reduce cash in hand.
@@ -51,7 +51,7 @@ export class ExpenseController {
                 amount: -Number(amount), // Negative for expense
                 description: `Egreso: ${description}`,
                 timestamp: new Date()
-            });
+            } as any);
 
             em.persist([expense, transaction]);
             await em.flush();

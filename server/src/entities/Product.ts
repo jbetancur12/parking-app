@@ -1,9 +1,10 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { Tenant } from './Tenant';
 import { Location } from './Location';
+import { BaseTenantEntity } from './BaseTenantEntity';
 
 @Entity()
-export class Product {
+export class Product extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
@@ -22,16 +23,5 @@ export class Product {
     @Property()
     isActive: boolean = true;
 
-    // SaaS Relationships
-    @ManyToOne(() => Tenant)
-    tenant!: Tenant;
 
-    @ManyToOne(() => Location)
-    location!: Location;
-
-    @Property({ onCreate: () => new Date() })
-    createdAt: Date = new Date();
-
-    @Property({ onUpdate: () => new Date() })
-    updatedAt: Date = new Date();
 }

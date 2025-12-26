@@ -62,13 +62,16 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
     if (tenantId) {
         em.setFilterParams('tenant', { tenantId });
     } else {
-        // If no tenant is present (e.g. SuperAdmin dashboard or login), we might want to disable the filter manually
-        // or just assume the filter returns empty or all (config dependent).
-        // Here, passing empty args to filter returns {}, effectively "all".
-        // But typically for SaaS we want strict isolation.
-        // Strategy: If public route, it manages itself. If protected route, auth middleware enforces tenant.
-        em.setFilterParams('tenant', {});
+        // Strict Isolation: If no tenant header is present (e.g. Login, Global Admin, Public Routes),
+        // we normally want to enforce strictness and return NOTHING.
+        // However, for Auth (Login), we need to check if the entity (User) has the filter enabled.
+        // The 'tenant' filter is defined on BaseTenantEntity. User might NOT be extending BaseTenantEntity directly, 
+        // but if it has relations to it, it might trigger.
+        // To be safe and strict: We set a dummy tenant ID so the filter returns nothing by default 
+        // unless the controller explicitly disables the filter.
+        em.setFilterParams('tenant', { tenantId: '00000000-0000-0000-0000-000000000000' });
     }
+
 
     if (locationId) {
         em.setFilterParams('location', { locationId });

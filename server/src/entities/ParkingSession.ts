@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
 import { Shift } from './Shift';
+import { BaseTenantEntity } from './BaseTenantEntity';
 
 export enum VehicleType {
     CAR = 'CAR',
@@ -19,7 +20,7 @@ export enum PlanType {
 }
 
 @Entity()
-export class ParkingSession {
+export class ParkingSession extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
@@ -64,10 +65,5 @@ export class ParkingSession {
     @ManyToOne(() => 'Agreement', { nullable: true })
     agreement?: any; // Avoiding circular dependency import for now or use require
 
-    // SaaS Relationships
-    @ManyToOne(() => 'Tenant')
-    tenant!: any;
 
-    @ManyToOne(() => 'Location')
-    location!: any;
 }

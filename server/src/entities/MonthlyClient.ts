@@ -1,7 +1,8 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
+import { BaseTenantEntity } from './BaseTenantEntity';
 
 @Entity()
-export class MonthlyClient {
+export class MonthlyClient extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
@@ -35,10 +36,5 @@ export class MonthlyClient {
     @Property({ onUpdate: () => new Date() })
     updatedAt: Date = new Date();
 
-    // SaaS Relationships
-    @ManyToOne(() => 'Tenant')
-    tenant!: any;
 
-    @ManyToOne(() => 'Location')
-    location!: any; // Required: Client is specific to a location
 }

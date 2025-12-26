@@ -1,8 +1,13 @@
-import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection, Cascade } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection, Cascade, Filter } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { Tenant } from './Tenant';
 import { User } from './User';
 
+@Filter({
+    name: 'tenant',
+    cond: (args) => ({ tenant: args.tenantId }),
+    default: true
+})
 @Entity()
 export class Location {
     @PrimaryKey({ type: 'uuid' })

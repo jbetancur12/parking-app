@@ -109,7 +109,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         tenant: shift.tenant,
         location: shift.location,
         notes,
-    });
+    } as any);
 
     await em.persistAndFlush(session);
     return res.status(201).json(session);
@@ -374,7 +374,7 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         discount: appliedDiscount > 0 ? appliedDiscount : undefined,
         discountReason: finalDiscountReason,
         agreement: appliedAgreement
-    });
+    } as any);
     em.persist(transaction);
 
     await em.flush();
