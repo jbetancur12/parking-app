@@ -425,7 +425,7 @@ export const publicStatus = async (req: Request, res: Response) => {
     const session = await em.findOne(ParkingSession, {
         id: Number(id),
         status: ParkingStatus.ACTIVE
-    });
+    }, { filters: false });
 
     if (!session) {
         // If not active, maybe it's completed? Check history?
