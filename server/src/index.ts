@@ -1,3 +1,7 @@
+import dns from 'node:dns';
+// Force IPv4 for Supabase connection (fixes ENETUNREACH on Render/Node 20)
+dns.setDefaultResultOrder('ipv4first');
+
 import express from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import config from './mikro-orm.config';
