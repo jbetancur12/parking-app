@@ -321,11 +321,11 @@ export default function ParkingPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-blue">Gestión de Parqueadero</h1>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left">Gestión de Parqueadero</h1>
                 <button
                     onClick={() => setIsEntryModalOpen(true)}
-                    className="flex items-center bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
+                    className="flex w-full md:w-auto justify-center items-center bg-brand-yellow text-brand-blue font-bold px-4 py-3 md:py-2 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
                     data-testid="btn-open-entry-modal"
                 >
                     <Plus className="mr-2" size={20} />

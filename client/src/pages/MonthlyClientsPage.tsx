@@ -313,46 +313,50 @@ export default function MonthlyClientsPage() {
                 )}
             </div>
 
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
-                    <Users className="mr-3" /> Clientes Mensuales
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left flex items-center justify-center md:justify-start">
+                    <Users className="mr-2" /> Clientes Mensuales
                 </h1>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md transition-all active:scale-95"
-                    data-testid="btn-open-new-client"
-                >
-                    <Plus className="mr-2" size={20} />
-                    Nuevo Cliente
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-center">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md flex items-center justify-center flex-1 md:flex-none whitespace-nowrap"
+                        data-testid="btn-new-client"
+                    >
+                        <Plus className="mr-2" size={18} />
+                        Nuevo Cliente
+                    </button>
+
+                    <button
+                        onClick={handleExport}
+                        className="text-brand-blue border border-brand-blue bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 font-medium flex-1 md:flex-none"
+                    >
+                        <Download size={18} />
+                        Exportar
+                    </button>
+                </div>
             </div>
 
             {/* Filter Buttons */}
-            <div className="mb-4 flex gap-2">
+            <div className="mb-4 flex flex-wrap gap-2">
                 <button
                     onClick={() => setFilterStatus('ALL')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ALL' ? 'bg-brand-blue text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ALL' ? 'bg-brand-blue text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
                 >
                     Todos
                 </button>
                 <button
                     onClick={() => setFilterStatus('ACTIVE')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ACTIVE' ? 'bg-brand-green text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ACTIVE' ? 'bg-brand-green text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
                 >
                     Activos
                 </button>
                 <button
                     onClick={() => setFilterStatus('EXPIRED')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'EXPIRED' ? 'bg-red-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'EXPIRED' ? 'bg-red-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
                 >
                     Vencidos
-                </button>
-                <button
-                    onClick={handleExport}
-                    className="ml-auto text-brand-blue border border-brand-blue bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2 font-medium"
-                >
-                    <Download size={18} />
-                    Exportar
                 </button>
             </div>
 
@@ -573,91 +577,149 @@ export default function MonthlyClientsPage() {
 
             {/* Clients List */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-brand-blue/5">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Cliente</th>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Contacto</th>
-                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                <>
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-brand-blue/5">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Cliente</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Contacto</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredClients.map((client) => {
+                                    const isExpired = new Date(client.endDate) < new Date();
+                                    return (
+                                        <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                                                <div className="text-sm text-gray-500 font-mono">{client.plate}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {client.phone || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    {client.isActive ? (
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                            {isExpired ? 'Vencido' : 'Activo'}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 w-fit">
+                                                            Desactivado
+                                                        </span>
+                                                    )}
+                                                    <div className="text-xs text-gray-400 mt-1">
+                                                        Vence: {new Date(client.endDate).toLocaleDateString()}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                <button
+                                                    onClick={() => handleHistory(client)}
+                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                                                >
+                                                    Historial
+                                                </button>
+
+                                                <button
+                                                    onClick={() => openRenewModal(client)}
+                                                    className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                                                    title="Renovar y Activar"
+                                                >
+                                                    <RefreshCw size={14} className="inline mr-1" />
+                                                    Renovar
+                                                </button>
+
+                                                {/* Deactivate/Activate button */}
+                                                {client.isActive ? (
+                                                    isExpired && (
+                                                        <button
+                                                            onClick={() => handleToggleStatus(client.id)}
+                                                            className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                                                        >
+                                                            Desactivar
+                                                        </button>
+                                                    )
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleToggleStatus(client.id)}
+                                                        className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                                                    >
+                                                        Activar
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {filteredClients.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                            No hay clientes {filterStatus === 'ACTIVE' ? 'activos' : filterStatus === 'EXPIRED' ? 'vencidos' : ''}.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile List View */}
+                    <div className="md:hidden divide-y divide-gray-100">
                         {filteredClients.map((client) => {
                             const isExpired = new Date(client.endDate) < new Date();
                             return (
-                                <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{client.name}</div>
-                                        <div className="text-sm text-gray-500 font-mono">{client.plate}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.phone || '-'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex flex-col">
-                                            {client.isActive ? (
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                                    {isExpired ? 'Vencido' : 'Activo'}
-                                                </span>
-                                            ) : (
-                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 w-fit">
-                                                    Desactivado
-                                                </span>
-                                            )}
-                                            <div className="text-xs text-gray-400 mt-1">
-                                                Vence: {new Date(client.endDate).toLocaleDateString()}
-                                            </div>
+                                <div key={client.id} className="p-4 flex flex-col gap-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-bold text-gray-900">{client.name}</h3>
+                                            <p className="text-sm text-gray-500 font-mono">{client.plate}</p>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                        {client.isActive ? (
+                                            <span className={`px-2 py-0.5 mt-1 text-xs font-semibold rounded-full ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                {isExpired ? 'Vencido' : 'Activo'}
+                                            </span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 mt-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                Desactivado
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="text-sm text-gray-600 flex justify-between">
+                                        <span>Vence: {new Date(client.endDate).toLocaleDateString()}</span>
+                                        <span>{client.phone || 'Sin télefono'}</span>
+                                    </div>
+
+                                    <div className="flex gap-2 justify-end mt-2 pt-2 border-t border-gray-50">
                                         <button
                                             onClick={() => handleHistory(client)}
-                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                                            className="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg text-xs font-medium flex-1 text-center"
                                         >
                                             Historial
                                         </button>
-
                                         <button
                                             onClick={() => openRenewModal(client)}
-                                            className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                            title="Renovar y Activar"
+                                            className="text-green-600 bg-green-50 px-3 py-2 rounded-lg text-xs font-bold flex-1 text-center"
                                         >
                                             <RefreshCw size={14} className="inline mr-1" />
                                             Renovar
                                         </button>
-
-                                        {/* Deactivate/Activate button */}
-                                        {client.isActive ? (
-                                            isExpired && (
-                                                <button
-                                                    onClick={() => handleToggleStatus(client.id)}
-                                                    className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                                >
-                                                    Desactivar
-                                                </button>
-                                            )
-                                        ) : (
-                                            <button
-                                                onClick={() => handleToggleStatus(client.id)}
-                                                className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                            >
-                                                Activar
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
+                                        {/* Simplified action menu for mobile can be added here if needed */}
+                                    </div>
+                                </div>
                             );
                         })}
                         {filteredClients.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                    No hay clientes {filterStatus === 'ACTIVE' ? 'activos' : filterStatus === 'EXPIRED' ? 'vencidos' : ''}.
-                                </td>
-                            </tr>
+                            <div className="p-8 text-center text-gray-500">
+                                No hay clientes coincidentes.
+                            </div>
                         )}
-                    </tbody>
-                </table>
+                    </div>
+                </>
             </div>
         </div>
     );

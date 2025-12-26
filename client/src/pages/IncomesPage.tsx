@@ -250,9 +250,10 @@ export default function IncomesPage() {
                 </div>
             </div>
 
-            <div className="flex-1 flex gap-6 overflow-hidden">
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden h-[calc(100vh-200px)] md:h-auto">
                 {/* Left Panel: Content */}
-                <div className="flex-1 overflow-y-auto pr-2">
+                <div className="flex-1 overflow-y-auto pr-0 md:pr-2 pb-20 md:pb-0">
                     {mode === 'MANUAL' ? (
                         <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green">
                             <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Ingreso Vario</h2>
@@ -334,7 +335,7 @@ export default function IncomesPage() {
                     )}
 
                     {/* Transaction History (Always visible below) */}
-                    <div className="mt-8">
+                    <div className="mt-8 hidden md:block">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">Historial Reciente</h3>
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -377,8 +378,13 @@ export default function IncomesPage() {
 
                 {/* Right Panel: Cart (Only in POS mode) */}
                 {mode === 'POS' && (
-                    <div className="w-80 bg-white shadow-lg rounded-xl flex flex-col h-full border border-gray-200">
-                        <div className="p-4 border-b bg-gray-50 rounded-t-xl">
+                    <div className="w-full md:w-80 bg-white shadow-lg rounded-xl flex flex-col h-auto md:h-full border border-gray-200 md:relative fixed bottom-0 left-0 z-20 max-h-[50vh] md:max-h-none">
+                        {/* Mobile Toggle Handle */}
+                        <div className="md:hidden w-full flex justify-center pt-2 pb-1 bg-gray-50 rounded-t-xl border-t border-gray-200">
+                            <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                        </div>
+
+                        <div className="p-4 border-b bg-gray-50 rounded-t-xl hidden md:block">
                             <h2 className="font-bold text-gray-800 flex items-center">
                                 <ShoppingCart className="mr-2" size={20} /> Pedido Actual
                             </h2>
@@ -386,7 +392,8 @@ export default function IncomesPage() {
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
                             {cart.length === 0 ? (
-                                <div className="text-center text-gray-400 py-10">
+                                <div className="text-center text-gray-400 py-4 md:py-10 text-sm md:text-base">
+                                    <ShoppingCart className="mx-auto mb-2 opacity-50 md:hidden" size={24} />
                                     Carro vacío
                                 </div>
                             ) : (
@@ -438,9 +445,9 @@ export default function IncomesPage() {
                                 onClick={handlePOSSubmit}
                                 disabled={cart.length === 0 || loading}
                                 data-testid="btn-confirm-pos-sale"
-                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 disabled:bg-gray-400 disabled:shadow-none transition-all active:scale-95"
+                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 disabled:bg-gray-400 disabled:shadow-none transition-all active:scale-95 flex justify-center items-center"
                             >
-                                Confirmar Venta
+                                {loading ? 'Procesando...' : 'Confirmar Venta'}
                             </button>
                         </div>
                     </div>

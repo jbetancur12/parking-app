@@ -71,8 +71,8 @@ export default function ExpensesPage() {
             {/* Create Form */}
             <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500 mb-8">
                 <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Nuevo Egreso</h2>
-                <form onSubmit={handleCreate} className="flex gap-4 items-end flex-wrap">
-                    <div className="flex-1 min-w-[200px]">
+                <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
+                    <div className="flex-1">
                         <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
                         <input
                             type="text"
@@ -85,7 +85,7 @@ export default function ExpensesPage() {
                             id="description"
                         />
                     </div>
-                    <div className="w-40">
+                    <div className="w-full md:w-40">
                         <label className="block text-sm font-bold text-gray-700 mb-1">Monto</label>
                         <input
                             type="number"
@@ -99,7 +99,7 @@ export default function ExpensesPage() {
                             id="amount"
                         />
                     </div>
-                    <div className="w-40">
+                    <div className="w-full md:w-40">
                         <label className="block text-sm font-bold text-gray-700 mb-1">Método de Pago</label>
                         <select
                             value={paymentMethod}
@@ -113,7 +113,7 @@ export default function ExpensesPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-brand-yellow text-brand-blue font-bold py-2 px-6 rounded-lg hover:bg-yellow-400 disabled:bg-gray-400 shadow-md transition-transform active:scale-95 flex items-center h-10"
+                        className="bg-brand-yellow text-brand-blue font-bold py-2 px-6 rounded-lg hover:bg-yellow-400 disabled:bg-gray-400 shadow-md transition-transform active:scale-95 flex items-center justify-center h-10 w-full md:w-auto mt-2 md:mt-0"
                     >
                         <Plus size={18} className="mr-2" />
                         Registrar
@@ -129,30 +129,50 @@ export default function ExpensesPage() {
                 {expenses.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No hay egresos registrados en este turno.</p>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-brand-blue/5">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hora</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Descripción</th>
-                                <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                    <>
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-brand-blue/5">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hora</th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Descripción</th>
+                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {expenses.map(exp => (
+                                        <tr key={exp.id}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {new Date(exp.createdAt).toLocaleTimeString()}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                                {exp.description}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold text-right">
+                                                - ${Number(exp.amount).toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden divide-y divide-gray-100">
                             {expenses.map(exp => (
-                                <tr key={exp.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(exp.createdAt).toLocaleTimeString()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                        {exp.description}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold text-right">
-                                        - ${Number(exp.amount).toLocaleString()}
-                                    </td>
-                                </tr>
+                                <div key={exp.id} className="p-4 flex flex-col gap-1">
+                                    <div className="flex justify-between items-start">
+                                        <span className="font-bold text-gray-800">{exp.description}</span>
+                                        <span className="text-red-600 font-bold">- ${Number(exp.amount).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>{new Date(exp.createdAt).toLocaleTimeString()}</span>
+                                        <span>{exp.paymentMethod || 'CASH'}</span>
+                                    </div>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

@@ -6,6 +6,7 @@ export interface Expense {
     amount: number;
     createdAt: string;
     shift: number;
+    paymentMethod?: 'CASH' | 'TRANSFER';
 }
 
 export const expenseService = {
