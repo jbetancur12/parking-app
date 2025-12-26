@@ -31,12 +31,12 @@ export const registerTenant = async (req: Request, res: Response) => {
     const tenant = em.create(Tenant, {
         name: companyName,
         slug,
-        plan: TenantPlan.FREE,
+        plan: TenantPlan.TRIAL,
         status: TenantStatus.ACTIVE,
         contactEmail: email || '',
         trialEndsAt: addDays(new Date(), 14), // 14 Days Trial
-        maxLocations: 1,
-        maxUsers: 5,
+        maxLocations: 10,
+        maxUsers: 20,
         createdAt: new Date(),
         updatedAt: new Date()
     });

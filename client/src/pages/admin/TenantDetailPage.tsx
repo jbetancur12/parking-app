@@ -34,6 +34,7 @@ interface User {
 
 const SAAS_PLANS: Record<string, { maxLocations: number; maxUsers: number; price: number; label: string }> = {
     free: { maxLocations: 1, maxUsers: 2, price: 0, label: 'Gratis' },
+    trial: { maxLocations: 10, maxUsers: 20, price: 0, label: 'Prueba (14 Días)' },
     pro: { maxLocations: 5, maxUsers: 10, price: 50000, label: 'Pro' },
     enterprise: { maxLocations: 100, maxUsers: 1000, price: 200000, label: 'Enterprise' }
 };
@@ -474,8 +475,8 @@ export default function TenantDetailPage() {
                                 <div
                                     key={key}
                                     className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === key
-                                            ? 'border-brand-blue bg-blue-50 ring-2 ring-brand-blue ring-opacity-20 transform scale-105 shadow-lg'
-                                            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                        ? 'border-brand-blue bg-blue-50 ring-2 ring-brand-blue ring-opacity-20 transform scale-105 shadow-lg'
+                                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                                         }`}
                                     onClick={() => setSelectedPlan(key)}
                                 >

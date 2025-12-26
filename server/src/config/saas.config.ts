@@ -7,6 +7,12 @@ export const SAAS_PLANS: Record<TenantPlan, { maxLocations: number; maxUsers: nu
         price: 0,
         label: 'Gratis'
     },
+    [TenantPlan.TRIAL]: {
+        maxLocations: 10,
+        maxUsers: 20,
+        price: 0,
+        label: 'Prueba (14 Días)'
+    },
     [TenantPlan.PRO]: {
         maxLocations: 5,
         maxUsers: 10,
