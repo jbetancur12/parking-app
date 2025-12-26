@@ -1,5 +1,6 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import Barcode from 'react-barcode';
 
 interface PrintTicketProps {
     session: {
@@ -82,6 +83,20 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         <QRCodeSVG value={`${window.location.origin}/ticket/${session.id}`} size={100} />
                     </div>
                 )}
+
+                {/* Barcode (Plate) for Legacy Scanners */}
+                <div className="flex justify-center mb-4">
+                    <Barcode
+                        value={session.plate}
+                        format="CODE128"
+                        width={1.6}
+                        height={40}
+                        fontSize={12}
+                        displayValue={true}
+                        background="transparent"
+                        margin={0}
+                    />
+                </div>
 
                 {/* Footer / Regulations */}
                 <div className="text-center text-[8pt] mt-2">
