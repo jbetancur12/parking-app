@@ -109,12 +109,12 @@ export default function TransactionsPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
                     <Receipt className="mr-3" /> Transacciones del Turno
                 </h1>
                 <button
                     onClick={handleExport}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    className="bg-brand-blue text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-800 shadow-md transition-all flex items-center gap-2"
                 >
                     <Download size={18} />
                     Exportar a Excel
@@ -122,20 +122,20 @@ export default function TransactionsPage() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-blue-50 mb-6">
                 <div className="flex items-center gap-4 mb-4">
-                    <Filter size={20} className="text-gray-500" />
-                    <span className="font-medium text-gray-700">Filtros:</span>
+                    <Filter size={20} className="text-brand-blue" />
+                    <span className="font-bold text-gray-700">Filtros:</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     {/* Type Filter */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Transacción</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Tipo de Transacción</label>
                         <select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-all"
                         >
                             <option value="ALL">Todos</option>
                             <option value="PARKING_REVENUE">Parqueo</option>
@@ -148,11 +148,11 @@ export default function TransactionsPage() {
 
                     {/* Payment Method Filter */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Método de Pago</label>
                         <select
                             value={filterPayment}
                             onChange={(e) => setFilterPayment(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-all"
                         >
                             <option value="ALL">Todos</option>
                             <option value="CASH">💵 Efectivo</option>
@@ -164,44 +164,44 @@ export default function TransactionsPage() {
 
             {/* Totals */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Total General</p>
-                    <p className="text-2xl font-bold text-blue-600">${totals.all.toLocaleString()}</p>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p className="text-sm font-bold text-brand-blue uppercase tracking-wider">Total General</p>
+                    <p className="text-3xl font-display font-bold text-brand-blue">${totals.all.toLocaleString()}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">💵 Efectivo</p>
-                    <p className="text-2xl font-bold text-green-600">${totals.cash.toLocaleString()}</p>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <p className="text-sm font-bold text-green-700 uppercase tracking-wider">💵 Efectivo</p>
+                    <p className="text-3xl font-display font-bold text-green-600">${totals.cash.toLocaleString()}</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">🏦 Transferencia</p>
-                    <p className="text-2xl font-bold text-purple-600">${totals.transfer.toLocaleString()}</p>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p className="text-sm font-bold text-purple-700 uppercase tracking-wider">🏦 Transferencia</p>
+                    <p className="text-3xl font-display font-bold text-purple-600">${totals.transfer.toLocaleString()}</p>
                 </div>
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
                 <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-brand-blue/5">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método Pago</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha/Hora</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Tipo</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Descripción</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Método Pago</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Monto</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Fecha/Hora</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {filteredTransactions.map((transaction) => (
-                            <tr key={transaction.id} className="hover:bg-gray-50">
+                            <tr key={transaction.id} className="hover:bg-blue-50/50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(transaction.type)}`}>
+                                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${getTypeColor(transaction.type)}`}>
                                         {getTypeLabel(transaction.type)}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{formatDescription(transaction.description)}</td>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-700">{formatDescription(transaction.description)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {transaction.paymentMethod ? (
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${transaction.paymentMethod === 'CASH'
+                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${transaction.paymentMethod === 'CASH'
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-blue-100 text-blue-800'
                                             }`}>
@@ -211,7 +211,7 @@ export default function TransactionsPage() {
                                         <span className="text-gray-400 text-xs">N/A</span>
                                     )}
                                 </td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-semibold ${transaction.type === 'EXPENSE' ? 'text-red-600' : 'text-green-600'
+                                <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${transaction.type === 'EXPENSE' ? 'text-red-500' : 'text-brand-green'
                                     }`}>
                                     {transaction.type === 'EXPENSE' ? '-' : '+'}${transaction.amount.toLocaleString()}
                                 </td>
@@ -222,7 +222,7 @@ export default function TransactionsPage() {
                         ))}
                         {filteredTransactions.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-medium">
                                     No hay transacciones que coincidan con los filtros.
                                 </td>
                             </tr>

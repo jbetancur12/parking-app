@@ -86,26 +86,26 @@ export default function ShiftHistoryPage() {
 
     return (
         <div>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Historial de Turnos</h1>
-                <p className="text-gray-600 mt-1">Consulta todos los turnos cerrados</p>
+            <div className="mb-8">
+                <h1 className="text-2xl font-display font-bold text-brand-blue">Historial de Turnos</h1>
+                <p className="text-gray-500 mt-1">Consulta y gestiona todos los turnos cerrados</p>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                 <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-brand-blue/5">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duración</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ingresos</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Egresos</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Esperado</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Declarado</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Diferencia</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acción</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">ID</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Usuario</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Fecha</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Duración</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Base</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Ingresos</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Egresos</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Esperado</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Declarado</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Diferencia</th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Acción</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -115,9 +115,9 @@ export default function ShiftHistoryPage() {
                             const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
 
                             return (
-                                <tr key={shift.id} className="hover:bg-gray-50">
+                                <tr key={shift.id} className="hover:bg-blue-50/50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm font-bold text-blue-600">#{shift.id}</span>
+                                        <span className="text-sm font-bold text-brand-blue">#{shift.id}</span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
@@ -126,7 +126,7 @@ export default function ShiftHistoryPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
+                                        <div className="text-sm font-medium text-gray-900">
                                             {new Date(shift.startTime).toLocaleDateString()}
                                         </div>
                                         <div className="text-xs text-gray-500">
@@ -142,20 +142,20 @@ export default function ShiftHistoryPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                                         ${shift.baseAmount.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600 font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600 font-bold">
                                         +${shift.totalIncome.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-bold">
                                         -${shift.totalExpenses.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
                                         ${shift.expectedCash.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                                         ${shift.declaredAmount.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <span className={`text-sm font-bold ${shift.difference >= 0 ? 'text-green-600' : 'text-red-600'
+                                        <span className={`text-sm font-black ${shift.difference >= 0 ? 'text-brand-green' : 'text-red-600'
                                             }`}>
                                             {shift.difference >= 0 ? '+' : ''}${shift.difference.toLocaleString()}
                                         </span>
@@ -163,7 +163,7 @@ export default function ShiftHistoryPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <button
                                             onClick={() => handlePrint(shift)}
-                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ml-auto"
+                                            className="text-brand-blue hover:text-white hover:bg-brand-blue bg-blue-50 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ml-auto"
                                             title="Imprimir resumen"
                                         >
                                             <Printer size={14} />
@@ -175,8 +175,8 @@ export default function ShiftHistoryPage() {
                         })}
                         {shifts.length === 0 && (
                             <tr>
-                                <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
-                                    No hay turnos cerrados
+                                <td colSpan={11} className="px-6 py-12 text-center text-gray-500 font-medium">
+                                    No hay turnos cerrados disponibles.
                                 </td>
                             </tr>
                         )}
