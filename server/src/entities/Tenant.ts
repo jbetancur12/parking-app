@@ -29,6 +29,9 @@ export class Tenant {
     @Property()
     maxUsers: number = 2; // Default small limit for FREE
 
+    @Property({ nullable: true })
+    trialEndsAt?: Date;
+
     @Property()
     createdAt = new Date();
 

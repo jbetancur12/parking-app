@@ -84,8 +84,21 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
             const tenant = await em.findOne(Tenant, { id: tenantId });
             if (tenant) {
                 req.tenant = tenant;
+
+                // TRIAL CHECK logic
+                if (tenant.plan === 'free' && tenant.trialEndsAt) {
+                    const now = new Date();
+                    const trialEnd = new Date(tenant.trialEndsAt);
+                    if (now > trialEnd) {
+                        return res.status(402).json({ // 402 Payment Required
+                            message: 'Tu periodo de prueba ha expirado. Por favor suscríbete para continuar.',
+                            code: 'TRIAL_EXPIRED'
+                        });
+                    }
+                }
+
                 // Check if tenant is active
-                if (tenant.status !== 'active') { // Assuming 'status' is a string enum in runtime
+                if (tenant.status !== 'active') {
                     // We might want to block suspended tenants here
                 }
             }

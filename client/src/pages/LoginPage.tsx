@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
 
 // Detect if running in Electron
@@ -129,8 +129,15 @@ export default function LoginPage() {
                     >
                         Ingresar
                     </button>
+
+                    <div className="mt-6 text-center text-sm">
+                        <span className="text-gray-600">¿No tienes cuenta? </span>
+                        <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                            Regístrate Gratis
+                        </Link>
+                    </div>
                 </form>
             </div>
-        </div>
+        </div >
     );
 }

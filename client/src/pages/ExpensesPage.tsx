@@ -79,6 +79,8 @@ export default function ExpensesPage() {
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border"
                             placeholder="e.j. Jabón, Almuerzo"
                             required
+                            name="description"
+                            id="description"
                         />
                     </div>
                     <div className="w-40">
@@ -91,6 +93,8 @@ export default function ExpensesPage() {
                             placeholder="0.00"
                             min="0"
                             required
+                            name="amount"
+                            id="amount"
                         />
                     </div>
                     <button

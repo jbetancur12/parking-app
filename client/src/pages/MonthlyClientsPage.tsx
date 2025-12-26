@@ -320,6 +320,7 @@ export default function MonthlyClientsPage() {
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    data-testid="btn-open-new-client"
                 >
                     <Plus className="mr-2" size={20} />
                     Nuevo Cliente
@@ -385,6 +386,8 @@ export default function MonthlyClientsPage() {
                                     onChange={(e) => setPlate(e.target.value)}
                                     className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 uppercase focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     required
+                                    name="plate"
+                                    id="plate"
                                 />
                             </div>
                             <div>
@@ -395,6 +398,8 @@ export default function MonthlyClientsPage() {
                                     onChange={(e) => setName(e.target.value)}
                                     className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     required
+                                    name="name"
+                                    id="name"
                                 />
                             </div>
                             <div>
@@ -404,6 +409,8 @@ export default function MonthlyClientsPage() {
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    name="phone"
+                                    id="phone"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -432,6 +439,7 @@ export default function MonthlyClientsPage() {
                             <button
                                 type="submit"
                                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors mt-2"
+                                data-testid="btn-create-client"
                             >
                                 Crear Cliente
                             </button>

@@ -326,6 +326,7 @@ export default function ParkingPage() {
                 <button
                     onClick={() => setIsEntryModalOpen(true)}
                     className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    data-testid="btn-open-entry-modal"
                 >
                     <Plus className="mr-2" size={20} />
                     Nueva Entrada
@@ -587,12 +588,14 @@ export default function ParkingPage() {
                             <button
                                 onClick={() => setPreviewData(null)}
                                 className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                                data-testid="btn-cancel-exit"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={confirmExit}
                                 className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
+                                data-testid="btn-confirm-exit"
                             >
                                 Confirmar Salida
                             </button>
@@ -681,6 +684,8 @@ export default function ParkingPage() {
                                         className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 uppercase"
                                         placeholder="ABC-123"
                                         required
+                                        name="plate"
+                                        id="plate"
                                     />
                                 </div>
                                 <div>
@@ -694,6 +699,7 @@ export default function ParkingPage() {
                                             <button
                                                 type="button"
                                                 key={type}
+                                                data-testid={`btn-type-${type}`}
                                                 onClick={() => setVehicleType(type)}
                                                 className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${vehicleType === type
                                                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm transform scale-[1.02]'
@@ -736,6 +742,7 @@ export default function ParkingPage() {
                                 <button
                                     type="submit"
                                     className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                                    data-testid="btn-register-entry"
                                 >
                                     Registrar Entrada
                                 </button>
@@ -793,6 +800,7 @@ export default function ParkingPage() {
                                             <button
                                                 onClick={() => handleExitClick(session.plate)}
                                                 className="text-red-600 hover:text-red-900 bg-red-50 text-xs px-3 py-1 rounded-full font-medium"
+                                                data-testid="btn-request-exit"
                                             >
                                                 Salida
                                             </button>
@@ -852,6 +860,7 @@ export default function ParkingPage() {
                             <button
                                 onClick={() => handleExitClick(session.plate)}
                                 className="flex items-center justify-center gap-2 bg-red-100 text-red-700 py-2 rounded-lg font-medium text-sm active:bg-red-200"
+                                data-testid="btn-request-exit"
                             >
                                 <X size={16} /> Salida
                             </button>

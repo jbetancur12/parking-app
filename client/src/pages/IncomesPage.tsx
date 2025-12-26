@@ -81,6 +81,8 @@ export default function IncomesPage() {
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border"
                             placeholder="e.j. Gaseosa, Aceite"
                             required
+                            name="description"
+                            id="description"
                         />
                     </div>
                     <div className="w-40">
@@ -93,6 +95,8 @@ export default function IncomesPage() {
                             placeholder="0.00"
                             min="0"
                             required
+                            name="amount"
+                            id="amount"
                         />
                     </div>
                     <button

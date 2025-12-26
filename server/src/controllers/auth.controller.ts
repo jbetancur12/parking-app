@@ -1,12 +1,97 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { User, UserRole } from '../entities/User';
-import { Tenant } from '../entities/Tenant';
+import { Tenant, TenantPlan, TenantStatus } from '../entities/Tenant';
 import { Location } from '../entities/Location';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { addDays } from 'date-fns';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'supersecret_parking_app_key';
+
+export const registerTenant = async (req: Request, res: Response) => {
+    const { companyName, username, password, email } = req.body;
+
+    if (!companyName || !username || !password) {
+        return res.status(400).json({ message: 'Company Name, Username and Password are required' });
+    }
+
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'No EM' });
+
+    // 1. Check uniqueness
+    const existingUser = await em.findOne(User, { username });
+    if (existingUser) return res.status(409).json({ message: 'Username already taken' });
+
+    const slug = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const existingTenant = await em.findOne(Tenant, { slug });
+    if (existingTenant) return res.status(409).json({ message: 'Company name already registered' });
+
+    // 2. Create Tenant (Trial)
+    const tenant = em.create(Tenant, {
+        name: companyName,
+        slug,
+        plan: TenantPlan.FREE,
+        status: TenantStatus.ACTIVE,
+        contactEmail: email || '',
+        trialEndsAt: addDays(new Date(), 14), // 14 Days Trial
+        maxLocations: 1,
+        maxUsers: 5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    // 3. Create Default Location
+    const location = em.create(Location, {
+        name: 'Sede Principal',
+        address: 'Dirección Principal',
+        isActive: true,
+        tenant,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    // 4. Create Admin User
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = em.create(User, {
+        username,
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+        isActive: true,
+        tenants: [tenant],
+        locations: [location],
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    await em.persistAndFlush([tenant, location, user]);
+
+    // 5. Login immediately
+    const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        SECRET_KEY,
+        { expiresIn: '12h' }
+    );
+
+    return res.status(201).json({
+        token,
+        user: {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            tenants: [{
+                id: tenant.id,
+                name: tenant.name,
+                slug: tenant.slug,
+                plan: tenant.plan,
+                status: tenant.status,
+                trialEndsAt: tenant.trialEndsAt
+            }],
+            locations: [{ id: location.id, name: location.name }],
+            lastActiveLocation: null
+        }
+    });
+};
 
 export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
@@ -47,7 +132,14 @@ export const login = async (req: Request, res: Response) => {
             id: user.id,
             username: user.username,
             role: user.role,
-            tenants: user.tenants.getItems().map(t => ({ id: t.id, name: t.name, slug: t.slug })), // Return available tenants
+            tenants: user.tenants.getItems().map(t => ({
+                id: t.id,
+                name: t.name,
+                slug: t.slug,
+                plan: t.plan,
+                status: t.status,
+                trialEndsAt: t.trialEndsAt
+            })), // Return available tenants
             locations: user.locations.getItems().map(l => ({ id: l.id, name: l.name })), // Return available locations
             lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
         },

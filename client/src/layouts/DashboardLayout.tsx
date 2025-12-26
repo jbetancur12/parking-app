@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, Crown, MapPin } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, Crown, MapPin, Rocket } from 'lucide-react';
 import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
@@ -268,6 +268,33 @@ export default function DashboardLayout() {
 
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                    {/* Trial Banner */}
+                    {currentTenant && (currentTenant as any).plan === 'free' && (currentTenant as any).trialEndsAt && (
+                        (() => {
+                            const end = new Date((currentTenant as any).trialEndsAt);
+                            const now = new Date();
+                            const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
+
+                            return (
+                                <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white shadow-lg flex justify-between items-center">
+                                    <div>
+                                        <h3 className="font-bold text-lg flex items-center">
+                                            <Rocket className="mr-2 h-5 w-5" />
+                                            Prueba Gratuita Activa
+                                        </h3>
+                                        <p className="text-indigo-100 text-sm mt-1">
+                                            Te quedan <span className="font-bold text-white text-lg">{diff} días</span> de prueba.
+                                            {diff <= 3 && " ¡Actualiza pronto para no perder acceso!"}
+                                        </p>
+                                    </div>
+                                    <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
+                                        Elegir Plan
+                                    </button>
+                                </div>
+                            );
+                        })()
+                    )}
+
                     <Outlet />
                 </main>
             </div>

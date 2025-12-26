@@ -1,4 +1,5 @@
 import React from 'react';
+import RegisterPage from './pages/RegisterPage';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -54,7 +55,10 @@ function App() {
               {/* Setup route only available in Electron */}
               {isElectron && <Route path="/setup" element={<SetupPage />} />}
 
+
+
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/select-location" element={
                 <ProtectedRoute>
                   <LocationSelectionPage />

@@ -10,7 +10,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "seed": "npx ts-node src/scripts/seed_full.ts",
-    "seed:saas": "npx ts-node src/scripts/seed_saas.ts"
+    "seed:saas": "npx ts-node src/scripts/seed_saas.ts",
+    "db:reset": "npx ts-node src/scripts/reset_superadmin.ts"
   },
   "keywords": [],
   "author": "",
