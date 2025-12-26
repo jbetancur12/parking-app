@@ -227,34 +227,35 @@ export default function DashboardLayout() {
                     )}
 
                     {/* Location Context Display */}
-                    {currentLocation && (
-                        <div className="mb-3 px-4 py-2 bg-brand-green/20 rounded-lg border border-brand-green/30 group cursor-pointer relative" onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}>
-                            <div className="flex items-center text-xs">
-                                <MapPin className="mr-2 h-4 w-4 text-brand-green" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-white truncate">{currentLocation.name}</p>
-                                    {user?.locations && user.locations.length > 1 && (
-                                        <p className="text-brand-green text-[10px] mt-0.5">Cambiar Sede</p>
-                                    )}
-                                </div>
+                    {/* Compact Footer */}
+                    <div className="mt-auto border-t border-blue-800/30 bg-blue-900/20 p-3 space-y-2">
+                        {currentLocation && (
+                            <div
+                                className="flex items-center gap-2 text-xs text-blue-200 cursor-pointer hover:text-white transition-colors"
+                                onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}
+                                title="Cambiar Sede"
+                            >
+                                <MapPin size={12} className="text-brand-green shrink-0" />
+                                <span className="font-semibold truncate flex-1">{currentLocation.name}</span>
+                                {user?.locations && user.locations.length > 1 && <ChevronRight size={10} />}
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div className="flex items-center mb-4 px-4 text-sm text-blue-100">
-                        <div className="flex-1 min-w-0">
-                            <p className="font-medium text-white truncate">{user?.username}</p>
-                            <p className="truncate text-xs text-blue-300">{user?.role}</p>
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-white truncate">{user?.username}</p>
+                                <p className="text-[10px] text-blue-300 truncate">{user?.role === 'SUPER_ADMIN' ? 'Super Admin' : user?.role === 'ADMIN' ? 'Admin' : 'Operador'}</p>
+                            </div>
+                            <button
+                                onClick={logout}
+                                className="p-1.5 text-red-300 hover:text-red-100 hover:bg-red-900/30 rounded-md transition-colors"
+                                title="Cerrar Sesión"
+                            >
+                                <LogOut size={16} />
+                            </button>
                         </div>
+                        <div className="text-[9px] text-center text-blue-500/50 select-none">v0.0.5</div>
                     </div>
-                    <button
-                        onClick={logout}
-                        className="flex w-full items-center px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-900/30 hover:text-red-200 rounded-lg transition-colors"
-                    >
-                        <LogOut className="mr-3 h-5 w-5" />
-                        Cerrar Sesión
-                    </button>
-                    <p className="text-[10px] text-blue-400 mt-4 text-center">v0.0.5 • Aparca SaaS</p>
                 </div>
             </div>
 
