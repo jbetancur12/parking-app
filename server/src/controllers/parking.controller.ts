@@ -9,6 +9,7 @@ import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Loyalty } from '../entities/Loyalty';
+import { cacheService } from '../services/CacheService';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // Map tariffs for easy access
@@ -228,15 +229,30 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ message: 'No active parking session found for this plate in this location' });
     }
 
-    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
-    // Fetch Settings hierarchical (Global < Tenant < Location)
-    const allSettings = await em.find(SystemSetting, {
-        $or: [
-            { tenant: null, location: null }, // Global
-            { tenant: shift.tenant.id, location: null }, // Tenant
-            { tenant: shift.tenant.id, location: shift.location.id } // Location
-        ]
-    });
+    // Check Cache for Tariffs
+    const tariffCacheKey = `tariffs_${session.vehicleType}_${shift.tenant.id}`;
+    let tariffs = cacheService.get<Tariff[]>(tariffCacheKey);
+
+    if (!tariffs) {
+        tariffs = await em.find(Tariff, { vehicleType: session.vehicleType, tenant: shift.tenant });
+        cacheService.set(tariffCacheKey, tariffs);
+    }
+
+    // Check Cache for Settings
+    const settingsCacheKey = `settings_${shift.tenant.id}_${shift.location.id}`;
+    let allSettings = cacheService.get<SystemSetting[]>(settingsCacheKey);
+
+    if (!allSettings) {
+        // Fetch Settings hierarchical (Global < Tenant < Location)
+        allSettings = await em.find(SystemSetting, {
+            $or: [
+                { tenant: null, location: null }, // Global
+                { tenant: shift.tenant.id, location: null }, // Tenant
+                { tenant: shift.tenant.id, location: shift.location.id } // Location
+            ]
+        });
+        cacheService.set(settingsCacheKey, allSettings);
+    }
 
     const settings: Record<string, string> = {};
 
