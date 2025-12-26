@@ -7,6 +7,7 @@ import React from 'react';
 import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+import { Skeleton } from '../components/Skeleton';
 
 interface Shift {
     id: number;
@@ -165,7 +166,25 @@ export default function DashboardPage() {
         }
     }
 
-    if (loading) return <div className="p-8">Cargando...</div>;
+    if (loading) return (
+        <div>
+            <Skeleton className="h-10 w-64 mb-6" />
+
+            {/* Stats Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Skeleton className="h-32 w-full rounded-lg" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+            </div>
+
+            {/* Main Content Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Skeleton className="h-64 w-full rounded-lg" />
+                <Skeleton className="h-64 w-full rounded-lg" />
+            </div>
+        </div>
+    );
     return (
         <div>
             <h1 className="text-3xl font-display font-bold text-brand-blue mb-6">Bienvenido, {user?.username}</h1>
