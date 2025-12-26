@@ -95,6 +95,7 @@ function App() {
                 <Route path="admin/tenants/:id/edit" element={<TenantFormPage />} />
                 <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
                 <Route path="admin/locations" element={<LocationsPage />} />
+                <Route path="admin/audit-logs" element={<AuditLogsPage />} />
                 {/* Add other nested routes here */}
               </Route>
             </Routes>

@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Tenant, TenantStatus, TenantPlan } from '../../entities/Tenant';
 import { Location } from '../../entities/Location';
 import { User } from '../../entities/User';
+import { AuditService } from '../../services/AuditService';
 
 // Create new tenant
 export const createTenant = async (req: Request, res: Response) => {
@@ -12,12 +13,11 @@ export const createTenant = async (req: Request, res: Response) => {
     try {
         const { name, slug, contactEmail, plan } = req.body;
 
-        // Validate required fields
+        // ... validation ...
         if (!name || !slug) {
             return res.status(400).json({ message: 'Name and slug are required' });
         }
 
-        // Validate slug format (lowercase, no spaces, URL-safe)
         const slugRegex = /^[a-z0-9-]+$/;
         if (!slugRegex.test(slug)) {
             return res.status(400).json({
@@ -25,7 +25,6 @@ export const createTenant = async (req: Request, res: Response) => {
             });
         }
 
-        // Check if slug already exists
         const existing = await em.findOne(Tenant, { slug });
         if (existing) {
             return res.status(409).json({ message: 'Slug already exists' });
@@ -43,12 +42,26 @@ export const createTenant = async (req: Request, res: Response) => {
 
         await em.persistAndFlush(tenant);
 
+        await AuditService.log(
+            em,
+            'CREATE_TENANT',
+            'Tenant',
+            tenant.id,
+            (req as any).user,
+            { name, slug, plan },
+            req
+        );
+
         return res.status(201).json(tenant);
     } catch (error) {
         console.error('Error creating tenant:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+// ... getAllTenants ...
+
+// Toggle Tenant Status (update logic needs to be found in file, but I'm just adding import and create log first)
 
 // Get all tenants
 export const getAllTenants = async (req: Request, res: Response) => {
@@ -157,6 +170,16 @@ export const updateTenant = async (req: Request, res: Response) => {
 
         await em.flush();
 
+        await AuditService.log(
+            em,
+            'UPDATE_TENANT',
+            'Tenant',
+            tenant.id,
+            (req as any).user,
+            { name, slug, plan, contactEmail },
+            req
+        );
+
         return res.json(tenant);
     } catch (error) {
         console.error('Error updating tenant:', error);
@@ -182,8 +205,19 @@ export const updateTenantStatus = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Tenant not found' });
         }
 
+        const oldStatus = tenant.status;
         tenant.status = status;
         await em.flush();
+
+        await AuditService.log(
+            em,
+            'UPDATE_TENANT_STATUS',
+            'Tenant',
+            tenant.id,
+            (req as any).user,
+            { oldStatus, newStatus: status },
+            req
+        );
 
         return res.json(tenant);
     } catch (error) {

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Location } from '../../entities/Location';
 import { Tenant } from '../../entities/Tenant';
+import { AuditService } from '../../services/AuditService';
 
 // Create new location
 export const createLocation = async (req: Request, res: Response) => {
@@ -21,7 +22,7 @@ export const createLocation = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Tenant not found' });
         }
 
-        // Check SaaS Limits (Max Locations)
+        // ... (Limit check omitted for brevity in diff, keep usage) ...
         const currentLocationsCount = await em.count(Location, { tenant });
         if (currentLocationsCount >= tenant.maxLocations) {
             return res.status(403).json({
@@ -41,6 +42,16 @@ export const createLocation = async (req: Request, res: Response) => {
         } as any);
 
         await em.persistAndFlush(location);
+
+        await AuditService.log(
+            em,
+            'CREATE_LOCATION',
+            'Location',
+            location.id,
+            (req as any).user,
+            { name, tenantId, address },
+            req
+        );
 
         return res.status(201).json(location);
     } catch (error) {

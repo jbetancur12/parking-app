@@ -63,8 +63,10 @@ export default function LoginPage() {
             const userData = response.data.user;
             login(response.data.token, userData);
 
-            // Redirect based on locations
-            if (userData.locations && userData.locations.length > 1) {
+            // Redirect based on role and locations
+            if (userData.role === 'SUPER_ADMIN') {
+                navigate('/admin/tenants');
+            } else if (userData.locations && userData.locations.length > 1) {
                 navigate('/select-location');
             } else {
                 navigate('/');

@@ -23,7 +23,9 @@ export default function DashboardLayout() {
     const { user, logout } = useAuth();
     const { currentTenant, currentLocation, availableTenants } = useSaas(); // Destructure currentLocation
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [openGroups, setOpenGroups] = useState<string[]>(['Operación', 'Finanzas']); // Default open
+    const [openGroups, setOpenGroups] = useState<string[]>(
+        user?.role === 'SUPER_ADMIN' ? ['SaaS Management'] : ['Operación', 'Finanzas']
+    );
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -80,14 +82,15 @@ export default function DashboardLayout() {
         );
     };
 
-    const navigationGroups: NavGroup[] = [
+    // Navigation for Tenant/Operation Users (ADMIN, USER)
+    const tenantNavigationGroups: NavGroup[] = [
         {
             title: 'Operación',
             items: [
                 { name: 'Inicio', href: '/', icon: LayoutDashboard },
                 { name: 'Parqueo', href: '/parking', icon: Car },
                 { name: 'Lavadero', href: '/wash', icon: Droplets },
-                { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN', 'SUPER_ADMIN'] },
+                { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Mensualidades', href: '/monthly-clients', icon: Users },
             ]
         },
@@ -96,32 +99,39 @@ export default function DashboardLayout() {
             items: [
                 { name: 'Egresos', href: '/expenses', icon: TrendingDown },
                 { name: 'Ingresos', href: '/incomes', icon: DollarSign },
-                { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Historial Turnos', href: '/shift-history', icon: History, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN', 'SUPER_ADMIN'] },
+                { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Historial Turnos', href: '/shift-history', icon: History, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
             ]
         },
         {
             title: 'Administración',
             items: [
-                { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Auditoría', href: '/audit', icon: Shield, roles: ['ADMIN', 'SUPER_ADMIN'] },
-                { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN', 'SUPER_ADMIN'] },
-            ]
-        },
-        {
-            title: 'SuperAdmin',
-            items: [
-                { name: 'Empresas', href: '/admin/tenants', icon: Building2, roles: ['SUPER_ADMIN'] },
-                { name: 'Sedes', href: '/admin/locations', icon: Crown, roles: ['SUPER_ADMIN'] },
+                { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Auditoría', href: '/audit', icon: Shield, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
             ]
         }
     ];
 
-    // Filter groups and items based on permissions
-    const filteredGroups = navigationGroups.map(group => {
+    // Navigation for SaaS SuperAdmin
+    const saasNavigationGroups: NavGroup[] = [
+        {
+            title: 'SaaS Management',
+            items: [
+                { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
+                { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard }, // Assuming this is general audit
+            ]
+        }
+    ];
+
+    // Select based on role
+    const activeGroups = user?.role === 'SUPER_ADMIN' ? saasNavigationGroups : tenantNavigationGroups;
+
+    // Filter groups and items based on permissions (though activeGroups is already role-separated)
+    const filteredGroups = activeGroups.map(group => {
         const filteredItems = group.items.filter(item => {
             if (!item.roles) return true;
             return item.roles.includes(user?.role || '');
@@ -156,6 +166,9 @@ export default function DashboardLayout() {
             <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-brand-blue shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
                 <div className="flex h-20 items-center justify-center px-6 border-b border-blue-800 flex-shrink-0">
                     <img src="/LogoTexto.png" alt="Aparca" className="h-16 w-auto brightness-0 invert" />
+                    {user?.role === 'SUPER_ADMIN' && (
+                        <span className="absolute bottom-2 right-4 text-[10px] font-bold text-brand-yellow tracking-widest bg-brand-blue px-1 rounded">SAAS</span>
+                    )}
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden absolute right-4 text-white">
                         <X size={24} />
                     </button>

@@ -40,9 +40,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // Only clear session if it's a 401/403 from a protected endpoint (not login)
-        if ((error.response?.status === 401 || error.response?.status === 403) &&
-            !error.config?.url?.includes('/auth/login')) {
+        // Only clear session if it's a 401 from a protected endpoint (not login)
+        // We DO NOT redirect on 403 (Forbidden) because that might be a permission issue or business rule (limit reached)
+        // and we don't want to log the user out in that case.
+        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
             // Clear auth data and SaaS context, then redirect to login
             localStorage.removeItem('token');
             localStorage.removeItem('user');

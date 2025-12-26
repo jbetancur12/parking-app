@@ -44,6 +44,27 @@ export default function TenantDetailPage() {
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUser, setNewUser] = useState({ username: '', password: '', role: 'OPERATOR' });
 
+    // Location management state
+    const [showAddLocationModal, setShowAddLocationModal] = useState(false);
+    const [newLocation, setNewLocation] = useState({ name: '', address: '', phone: '' });
+
+    const createLocation = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.post('/admin/locations', {
+                ...newLocation,
+                tenantId: id
+            });
+            toast.success('Sede creada exitosamente');
+            setShowAddLocationModal(false);
+            setNewLocation({ name: '', address: '', phone: '' });
+            fetchTenantDetails();
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Error al crear sede';
+            toast.error(message);
+        }
+    };
+
     useEffect(() => {
         if (user?.role !== 'SUPER_ADMIN') {
             navigate('/');
@@ -129,8 +150,8 @@ export default function TenantDetailPage() {
                         <ArrowLeft className="h-6 w-6" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{tenant.name}</h1>
-                        <p className="text-sm text-gray-600">@{tenant.slug}</p>
+                        <h1 className="text-3xl font-display font-bold text-brand-blue">{tenant.name}</h1>
+                        <p className="text-sm font-medium text-gray-500">@{tenant.slug}</p>
                     </div>
                 </div>
                 <button
@@ -189,35 +210,36 @@ export default function TenantDetailPage() {
                 {activeTab === 'locations' && (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">Sedes</h3>
+                            <h3 className="text-xl font-display font-bold text-brand-blue">Sedes</h3>
                             <button
-                                onClick={() => navigate('/admin/locations')}
-                                className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                                onClick={() => setShowAddLocationModal(true)}
+                                className="flex items-center px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md transition-transform active:scale-95"
                             >
-                                <Plus className="mr-2 h-4 w-4" />
+                                <Plus className="mr-2 h-5 w-5" />
                                 Nueva Sede
                             </button>
                         </div>
-                        {tenant.locations.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">No hay sedes registradas</p>
-                        ) : (
-                            <div className="space-y-2">
-                                {tenant.locations.map((location) => (
-                                    <div
-                                        key={location.id}
-                                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                                    >
+
+                        {/* Location List */}
+                        {tenant.locations && tenant.locations.length > 0 ? (
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {tenant.locations.map(loc => (
+                                    <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start">
                                         <div>
-                                            <p className="font-medium text-gray-900">{location.name}</p>
-                                            <p className="text-sm text-gray-500">{location.address || 'Sin dirección'}</p>
+                                            <h4 className="font-bold text-gray-900">{loc.name}</h4>
+                                            <p className="text-sm text-gray-500 flex items-center mt-1">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {loc.address || 'Sin dirección'}
+                                            </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${location.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                            {location.isActive ? 'Activa' : 'Inactiva'}
+                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {loc.isActive ? 'Activa' : 'Inactiva'}
                                         </span>
                                     </div>
                                 ))}
                             </div>
+                        ) : (
+                            <p className="text-gray-500 italic">No hay sedes registradas para esta empresa.</p>
                         )}
                     </div>
                 )}
@@ -262,69 +284,128 @@ export default function TenantDetailPage() {
             </div>
 
             {/* Create User Modal */}
-            {showAddUserModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">Crear y Asignar Usuario</h3>
-                        <form onSubmit={createAndAssignUser} className="space-y-4">
+            {
+                showAddUserModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                            <h3 className="text-lg font-semibold mb-4">Crear y Asignar Usuario</h3>
+                            <form onSubmit={createAndAssignUser} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Username *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newUser.username}
+                                        onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="admin.empresa"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Password *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={newUser.password}
+                                        onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Rol *
+                                    </label>
+                                    <select
+                                        value={newUser.role}
+                                        onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="ADMIN">ADMIN</option>
+                                        <option value="OPERATOR">OPERATOR</option>
+                                    </select>
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="submit"
+                                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    >
+                                        Crear Usuario
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddUserModal(false)}
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Add Location Modal */}
+            {showAddLocationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 m-4">
+                        <h3 className="text-xl font-display font-bold text-brand-blue mb-4">Nueva Sede</h3>
+                        <form onSubmit={createLocation} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Username *
-                                </label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Sede</label>
                                 <input
                                     type="text"
-                                    value={newUser.username}
-                                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                                     required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="admin.empresa"
+                                    value={newLocation.name}
+                                    onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                    placeholder="Ej. Sede Norte"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Password *
-                                </label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Dirección</label>
                                 <input
-                                    type="password"
-                                    value={newUser.password}
-                                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    value={newLocation.address}
+                                    onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                    placeholder="Ej. Calle 123 #45-67"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Rol *
-                                </label>
-                                <select
-                                    value={newUser.role}
-                                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="OPERATOR">OPERATOR</option>
-                                </select>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
+                                <input
+                                    type="text"
+                                    value={newLocation.phone}
+                                    onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                    placeholder="Ej. 300 123 4567"
+                                />
                             </div>
-                            <div className="flex gap-3 pt-4">
-                                <button
-                                    type="submit"
-                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                >
-                                    Crear Usuario
-                                </button>
+                            <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddUserModal(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                    onClick={() => setShowAddLocationModal(false)}
+                                    className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium"
                                 >
                                     Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                >
+                                    Crear Sede
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-        </div>
+        </div >
     );
 }
