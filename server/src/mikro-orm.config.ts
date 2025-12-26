@@ -23,6 +23,10 @@ const config: Options = {
     entitiesTs: [path.join(__dirname, 'entities/**/*.ts')],
     debug: true,
     allowGlobalContext: true,
+    pool: {
+        min: 2,
+        max: 10
+    },
     schemaGenerator: {
         ignoreSchema: ['storage', 'auth', 'extensions', 'graphql', 'realtime', 'vault', 'supabase_functions'],
     },
