@@ -6,6 +6,7 @@ import express from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import config from './mikro-orm.config';
 import cors from 'cors';
+import compression from 'compression';
 import authRoutes from './routes/auth.routes';
 import shiftRoutes from './routes/shift.routes';
 import parkingRoutes from './routes/parking.routes';
@@ -37,6 +38,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 
 const startServer = async () => {
