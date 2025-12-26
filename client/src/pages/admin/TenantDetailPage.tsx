@@ -34,7 +34,7 @@ interface User {
 
 const SAAS_PLANS: Record<string, { maxLocations: number; maxUsers: number; price: number; label: string }> = {
     free: { maxLocations: 1, maxUsers: 2, price: 0, label: 'Gratis' },
-    trial: { maxLocations: 10, maxUsers: 20, price: 0, label: 'Prueba (14 Días)' },
+    trial: { maxLocations: 1, maxUsers: 5, price: 0, label: 'Prueba (14 Días)' },
     pro: { maxLocations: 5, maxUsers: 10, price: 50000, label: 'Pro' },
     enterprise: { maxLocations: 100, maxUsers: 1000, price: 200000, label: 'Enterprise' }
 };
