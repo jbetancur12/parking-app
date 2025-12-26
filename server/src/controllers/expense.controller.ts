@@ -11,7 +11,7 @@ export class ExpenseController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager' });
 
-            const { description, amount, shiftId } = req.body;
+            const { description, amount, shiftId, paymentMethod } = req.body;
             const user = (req as any).user;
 
             if (!description || !amount || !shiftId) {
@@ -47,7 +47,7 @@ export class ExpenseController {
                 tenant: shift.tenant,
                 location: shift.location,
                 type: TransactionType.EXPENSE,
-                paymentMethod: PaymentMethod.CASH,
+                paymentMethod: paymentMethod || PaymentMethod.CASH,
                 amount: -Number(amount), // Negative for expense
                 description: `Egreso: ${description}`,
                 timestamp: new Date()

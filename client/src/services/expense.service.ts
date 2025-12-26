@@ -9,8 +9,8 @@ export interface Expense {
 }
 
 export const expenseService = {
-    create: async (shiftId: number, description: string, amount: number) => {
-        const response = await api.post('/expenses', { shiftId, description, amount });
+    create: async (shiftId: number, description: string, amount: number, paymentMethod: 'CASH' | 'TRANSFER' = 'CASH') => {
+        const response = await api.post('/expenses', { shiftId, description, amount, paymentMethod });
         return response.data;
     },
 

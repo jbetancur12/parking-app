@@ -10,6 +10,7 @@ export default function WashPage() {
     const [selectedType, setSelectedType] = useState<number | ''>('');
     const [price, setPrice] = useState('');
     const [operator, setOperator] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [activeShift, setActiveShift] = useState<any>(null);
@@ -78,12 +79,14 @@ export default function WashPage() {
                 plate,
                 serviceTypeId: Number(selectedType),
                 operatorName: operator,
-                price: price ? Number(price) : undefined
+                price: price ? Number(price) : undefined,
+                paymentMethod
             });
             setMessage('Lavado registrado!');
             setPlate('');
             setSelectedType('');
             setOperator('');
+            setPaymentMethod('CASH');
             setTimeout(() => setMessage(''), 3000);
             fetchHistory();
         } catch (error) {
@@ -112,7 +115,7 @@ export default function WashPage() {
             {/* Form */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-cyan-500">
                 <h2 className="text-lg font-semibold mb-4 text-gray-700">Nuevo Servicio</h2>
-                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Placa</label>
                         <input
@@ -124,7 +127,7 @@ export default function WashPage() {
                             required
                         />
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Servicio</label>
                         <select
                             value={selectedType}
@@ -160,10 +163,21 @@ export default function WashPage() {
                             placeholder="Nombre"
                         />
                     </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Pago</label>
+                        <select
+                            value={paymentMethod}
+                            onChange={e => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
+                            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white"
+                        >
+                            <option value="CASH">Efectivo</option>
+                            <option value="TRANSFER">Transf.</option>
+                        </select>
+                    </div>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan-700 flex items-center justify-center h-10"
+                        className="bg-cyan-600 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan-700 flex items-center justify-center h-10 md:col-start-6"
                     >
                         <Plus size={18} className="mr-2" />
                         Registrar

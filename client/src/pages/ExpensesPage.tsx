@@ -8,6 +8,7 @@ export default function ExpensesPage() {
     const [loading, setLoading] = useState(false);
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
     const [activeShift, setActiveShift] = useState<any>(null);
 
     useEffect(() => {
@@ -45,9 +46,10 @@ export default function ExpensesPage() {
 
         setLoading(true);
         try {
-            await expenseService.create(activeShift.id, description, Number(amount));
+            await expenseService.create(activeShift.id, description, Number(amount), paymentMethod);
             setDescription('');
             setAmount('');
+            setPaymentMethod('CASH');
             fetchExpenses();
         } catch (error) {
             alert('Error al registrar egreso');
@@ -69,8 +71,8 @@ export default function ExpensesPage() {
             {/* Create Form */}
             <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500 mb-8">
                 <h2 className="text-lg font-semibold mb-4 text-gray-700">Registrar Nuevo Egreso</h2>
-                <form onSubmit={handleCreate} className="flex gap-4 items-end">
-                    <div className="flex-1">
+                <form onSubmit={handleCreate} className="flex gap-4 items-end flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                         <input
                             type="text"
@@ -96,6 +98,17 @@ export default function ExpensesPage() {
                             name="amount"
                             id="amount"
                         />
+                    </div>
+                    <div className="w-40">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
+                        <select
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white"
+                        >
+                            <option value="CASH">Efectivo</option>
+                            <option value="TRANSFER">Transferencia</option>
+                        </select>
                     </div>
                     <button
                         type="submit"

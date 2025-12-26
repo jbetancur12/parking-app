@@ -24,7 +24,7 @@ export class WashController {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
-            const { plate, serviceTypeId, operatorName, shiftId, price } = req.body;
+            const { plate, serviceTypeId, operatorName, shiftId, price, paymentMethod } = req.body;
 
             const shift = await em.findOne(Shift, { id: Number(shiftId) });
             if (!shift || !shift.isActive) return res.status(400).json({ message: 'Shift closed or invalid' });
@@ -51,6 +51,7 @@ export class WashController {
                 type: TransactionType.WASH_SERVICE, // Wash service
                 amount: finalPrice,
                 description: `Lavado: ${serviceType.name} (${plate})`,
+                paymentMethod: paymentMethod || 'CASH',
                 timestamp: new Date()
             });
 

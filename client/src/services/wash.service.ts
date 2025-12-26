@@ -7,6 +7,14 @@ export interface WashServiceType {
     vehicleType: string;
 }
 
+export interface WashEntryCreate {
+    plate: string;
+    serviceTypeId: number;
+    operatorName?: string;
+    price?: number;
+    paymentMethod?: 'CASH' | 'TRANSFER';
+}
+
 export interface WashEntry {
     id: number;
     plate: string;
@@ -21,7 +29,7 @@ export const washService = {
         return response.data;
     },
 
-    createEntry: async (shiftId: number, data: { plate: string; serviceTypeId: number; operatorName?: string; price?: number }) => {
+    createEntry: async (shiftId: number, data: WashEntryCreate) => {
         const response = await api.post('/wash/entries', { ...data, shiftId });
         return response.data;
     },

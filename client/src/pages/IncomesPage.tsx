@@ -8,6 +8,7 @@ export default function IncomesPage() {
     const [loading, setLoading] = useState(false);
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
     const [activeShift, setActiveShift] = useState<any>(null);
 
     useEffect(() => {
@@ -45,9 +46,10 @@ export default function IncomesPage() {
 
         setLoading(true);
         try {
-            await saleService.create(description, Number(amount));
+            await saleService.create(description, Number(amount), paymentMethod);
             setDescription('');
             setAmount('');
+            setPaymentMethod('CASH');
             alert('Ingreso registrado!');
             fetchTransactions();
         } catch (error) {
@@ -71,8 +73,8 @@ export default function IncomesPage() {
             {/* Create Form */}
             <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 mb-8">
                 <h2 className="text-lg font-semibold mb-4 text-gray-700">Registrar Nuevo Ingreso</h2>
-                <form onSubmit={handleSubmit} className="flex gap-4 items-end">
-                    <div className="flex-1">
+                <form onSubmit={handleSubmit} className="flex gap-4 items-end flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                         <input
                             type="text"
@@ -99,6 +101,17 @@ export default function IncomesPage() {
                             id="amount"
                         />
                     </div>
+                    <div className="w-40">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
+                        <select
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border bg-white"
+                        >
+                            <option value="CASH">Efectivo</option>
+                            <option value="TRANSFER">Transferencia</option>
+                        </select>
+                    </div>
                     <button
                         type="submit"
                         disabled={loading}
@@ -123,6 +136,7 @@ export default function IncomesPage() {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                             </tr>
                         </thead>
@@ -134,6 +148,9 @@ export default function IncomesPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                         {t.description}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {t.paymentMethod === 'TRANSFER' ? 'Transferencia' : 'Efectivo'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold text-right">
                                         + ${Number(t.amount).toLocaleString()}
