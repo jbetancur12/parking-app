@@ -10,7 +10,7 @@ const isElectronMode = process.env.VITE_APP_MODE === 'electron';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  base: isElectronMode ? './' : '/',
   plugins: [
     react(),
     VitePWA({
