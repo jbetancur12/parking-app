@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToOne, Index } from '@mikro-orm/core';
 import { Shift } from './Shift';
 import { BaseTenantEntity } from './BaseTenantEntity';
 
@@ -20,6 +20,7 @@ export class Transaction extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
+    @Index()
     @ManyToOne(() => Shift)
     shift!: Shift;
 

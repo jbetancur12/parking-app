@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne, Index } from '@mikro-orm/core';
 import { Shift } from './Shift';
 
 @Entity()
@@ -6,6 +6,7 @@ export class Expense {
     @PrimaryKey()
     id!: number;
 
+    @Index()
     @ManyToOne(() => Shift)
     shift!: Shift;
 

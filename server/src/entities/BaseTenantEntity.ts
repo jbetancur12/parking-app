@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, Filter, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, Filter, Property, Index } from '@mikro-orm/core';
 import { Tenant } from './Tenant';
 import { Location } from './Location';
 
@@ -10,9 +10,11 @@ import { Location } from './Location';
 @Entity({ abstract: true })
 export abstract class BaseTenantEntity {
 
+    @Index()
     @ManyToOne(() => Tenant)
     tenant!: Tenant;
 
+    @Index()
     @ManyToOne(() => Location)
     location!: Location;
 
