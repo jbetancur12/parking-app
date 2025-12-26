@@ -1,62 +1,40 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
-import { Tenant, TenantStatus, TenantPlan } from '../../entities/Tenant';
-import { Location } from '../../entities/Location';
-import { User } from '../../entities/User';
-import { AuditService } from '../../services/AuditService';
+import { SAAS_PLANS } from '../../config/saas.config';
 
-// Create new tenant
-export const createTenant = async (req: Request, res: Response) => {
-    const em = RequestContext.getEntityManager();
-    if (!em) return res.status(500).json({ message: 'Database context missing' });
+// ... inside createTenant
+const selectedPlan = plan || TenantPlan.FREE;
+const planConfig = SAAS_PLANS[selectedPlan as TenantPlan] || SAAS_PLANS[TenantPlan.FREE];
 
-    try {
-        const { name, slug, contactEmail, plan } = req.body;
+const tenant = em.create(Tenant, {
+    name,
+    slug,
+    contactEmail,
+    plan: selectedPlan,
+    maxLocations: planConfig.maxLocations,
+    maxUsers: planConfig.maxUsers,
+    status: TenantStatus.ACTIVE,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+} as any);
 
-        // ... validation ...
-        if (!name || !slug) {
-            return res.status(400).json({ message: 'Name and slug are required' });
-        }
+await em.persistAndFlush(tenant);
 
-        const slugRegex = /^[a-z0-9-]+$/;
-        if (!slugRegex.test(slug)) {
-            return res.status(400).json({
-                message: 'Slug must be lowercase alphanumeric with hyphens only'
-            });
-        }
+await AuditService.log(
+    em,
+    'CREATE_TENANT',
+    'Tenant',
+    tenant.id,
+    (req as any).user,
+    { name, slug, plan },
+    req
+);
 
-        const existing = await em.findOne(Tenant, { slug });
-        if (existing) {
-            return res.status(409).json({ message: 'Slug already exists' });
-        }
-
-        const tenant = em.create(Tenant, {
-            name,
-            slug,
-            contactEmail,
-            plan: plan || TenantPlan.FREE,
-            status: TenantStatus.ACTIVE,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        } as any);
-
-        await em.persistAndFlush(tenant);
-
-        await AuditService.log(
-            em,
-            'CREATE_TENANT',
-            'Tenant',
-            tenant.id,
-            (req as any).user,
-            { name, slug, plan },
-            req
-        );
-
-        return res.status(201).json(tenant);
+return res.status(201).json(tenant);
     } catch (error) {
-        console.error('Error creating tenant:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
+    console.error('Error creating tenant:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+}
 };
 
 // ... getAllTenants ...

@@ -131,6 +131,22 @@ export const login = async (req: Request, res: Response) => {
         { expiresIn: '12h' }
     );
 
+    // Determines available locations based on Role
+    let availableLocations = user.locations.getItems();
+
+    // If User is ADMIN (Tenant Owner), they should have access to ALL locations of their Tenant(s)
+    // regardless of explicit assignment. "The Admin has keys to all rooms".
+    if (user.role === UserRole.ADMIN && user.tenants.length > 0) {
+        const tenantIds = user.tenants.getItems().map(t => t.id);
+        const allTenantLocations = await em.find(Location, {
+            tenant: { $in: tenantIds },
+            isActive: true
+        }, {
+            filters: false
+        });
+        availableLocations = allTenantLocations;
+    }
+
     return res.json({
         token,
         user: {
@@ -145,7 +161,7 @@ export const login = async (req: Request, res: Response) => {
                 status: t.status,
                 trialEndsAt: t.trialEndsAt
             })), // Return available tenants
-            locations: user.locations.getItems().map(l => ({ id: l.id, name: l.name })), // Return available locations
+            locations: availableLocations.map(l => ({ id: l.id, name: l.name })), // Return available locations
             lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
         },
     });
