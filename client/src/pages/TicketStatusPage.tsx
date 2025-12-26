@@ -17,7 +17,7 @@ interface TicketStatus {
 }
 
 export default function TicketStatusPage() {
-    const { id } = useParams();
+    const { ticketId } = useParams();
     const [status, setStatus] = useState<TicketStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -28,7 +28,7 @@ export default function TicketStatusPage() {
                 // Direct axios call to bypass auth interceptor if configured globally
                 // But our interceptor only adds token if present, so it should be fine.
                 // However, we need to ensure we hit the public endpoint.
-                const response = await axios.get(`${API_URL}/parking/public/status/${id}`);
+                const response = await axios.get(`${API_URL}/parking/public/status/${ticketId}`);
                 setStatus(response.data);
             } catch (err) {
                 console.error(err);
@@ -38,13 +38,13 @@ export default function TicketStatusPage() {
             }
         };
 
-        if (id) {
+        if (ticketId) {
             fetchStatus();
             // Poll every minute for real-time updates
             const interval = setInterval(fetchStatus, 60000);
             return () => clearInterval(interval);
         }
-    }, [id]);
+    }, [ticketId]);
 
     if (loading) {
         return (

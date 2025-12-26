@@ -40,5 +40,18 @@ export const washService = {
 
     seed: async () => {
         await api.post('/wash/seed');
+    },
+
+    // Management
+    createType: async (data: Omit<WashServiceType, 'id'>) => {
+        const response = await api.post<WashServiceType>('/wash/types', data);
+        return response.data;
+    },
+    updateType: async (id: number, data: Partial<WashServiceType>) => {
+        const response = await api.put<WashServiceType>(`/wash/types/${id}`, data);
+        return response.data;
+    },
+    deleteType: async (id: number) => {
+        await api.delete(`/wash/types/${id}`);
     }
 };

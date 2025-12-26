@@ -132,4 +132,88 @@ export class WashController {
             res.status(500).json({ message: 'Failed to seed wash services' });
         }
     }
+
+    // CRUD for Service Types
+
+    async createType(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EM' });
+
+            const { name, price, vehicleType } = req.body;
+            const tenantId = req.headers['x-tenant-id'];
+            const locationIdRaw = req.headers['x-location-id'];
+            const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+            if (!tenantId || !locationId) {
+                return res.status(400).json({ message: 'Tenant and Location context required' });
+            }
+
+            const tenant = await em.getReference('Tenant', tenantId);
+            const location = await em.getReference('Location', locationId);
+
+            const newType = em.create(WashServiceType, {
+                name,
+                price: Number(price),
+                vehicleType,
+                isActive: true,
+                tenant,
+                location
+            });
+
+            await em.persistAndFlush(newType);
+            res.status(201).json(newType);
+        } catch (error) {
+            console.error('Create Wash Type Error:', error);
+            res.status(500).json({ message: 'Error creating wash service type' });
+        }
+    }
+
+    async updateType(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EM' });
+
+            const { id } = req.params;
+            const { name, price, vehicleType, isActive } = req.body;
+
+            const serviceType = await em.findOne(WashServiceType, { id: Number(id) });
+            if (!serviceType) return res.status(404).json({ message: 'Service type not found' });
+
+            if (name) serviceType.name = name;
+            if (price) serviceType.price = Number(price);
+            if (vehicleType) serviceType.vehicleType = vehicleType;
+            if (typeof isActive === 'boolean') serviceType.isActive = isActive;
+
+            await em.flush();
+            res.json(serviceType);
+        } catch (error) {
+            console.error('Update Wash Type Error:', error);
+            res.status(500).json({ message: 'Error updating wash service type' });
+        }
+    }
+
+    async deleteType(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EM' });
+
+            const { id } = req.params;
+            const serviceType = await em.findOne(WashServiceType, { id: Number(id) });
+
+            if (!serviceType) return res.status(404).json({ message: 'Service type not found' });
+
+            // Hard delete or Soft delete? Soft delete via isActive is safer, but user asked for configuration.
+            // Let's go with hard delete but wrap in try-catch in case of FK constraints (which shouldn't happen if we didn't link entries strictly or if we cascade).
+            // Actually, WashEntry links to WashServiceType. If we delete, it might fail or nullify.
+            // Best practice: Soft delete (isActive = false).
+            serviceType.isActive = false;
+            await em.flush();
+
+            res.json({ message: 'Service type deactivated' });
+        } catch (error) {
+            console.error('Delete Wash Type Error:', error);
+            res.status(500).json({ message: 'Error deleting wash service type' });
+        }
+    }
 }

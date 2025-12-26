@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Plus } from 'lucide-react';
+import { Car, Plus, Settings } from 'lucide-react';
 import { washService, type WashServiceType, type WashEntry } from '../services/wash.service';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { WashServicesModal } from '../components/dashboard/WashServicesModal';
 
 export default function WashPage() {
+    const { user } = useAuth();
+    const [modalOpen, setModalOpen] = useState(false);
     const [types, setTypes] = useState<WashServiceType[]>([]);
     const [entries, setEntries] = useState<WashEntry[]>([]);
     const [plate, setPlate] = useState('');
@@ -102,9 +106,26 @@ export default function WashPage() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-display font-bold text-brand-blue mb-6 flex items-center">
-                <Car className="mr-2" /> Lavadero de Autos
-            </h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
+                    <Car className="mr-2" /> Lavadero de Autos
+                </h1>
+                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                    <button
+                        onClick={() => setModalOpen(true)}
+                        className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg flex items-center font-medium transition-colors"
+                    >
+                        <Settings size={18} className="mr-2" />
+                        Configurar Servicios
+                    </button>
+                )}
+            </div>
+
+            <WashServicesModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onUpdate={loadTypes}
+            />
 
             {message && (
                 <div className="mb-4 bg-brand-green/10 text-brand-green p-3 rounded-lg text-sm text-center font-bold border border-brand-green/20">
