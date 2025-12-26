@@ -20,11 +20,11 @@ export const registerTenant = async (req: Request, res: Response) => {
     if (!em) return res.status(500).json({ message: 'No EM' });
 
     // 1. Check uniqueness
-    const existingUser = await em.findOne(User, { username });
+    const existingUser = await em.findOne(User, { username }, { filters: false });
     if (existingUser) return res.status(409).json({ message: 'Username already taken' });
 
     const slug = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const existingTenant = await em.findOne(Tenant, { slug });
+    const existingTenant = await em.findOne(Tenant, { slug }, { filters: false });
     if (existingTenant) return res.status(409).json({ message: 'Company name already registered' });
 
     // 2. Create Tenant (Trial)
