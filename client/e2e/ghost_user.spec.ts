@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const TARGET_URL = 'http://localhost:5173';
 const USERNAME = 'oper.test';
 const PASSWORD = 'oper123';
-const LOCATION_NAME = 'Sede Test';
+const LOCATION_NAME = 'La 38';
 
 // Configuration
 const RUN_DURATION_MS = 30 * 60 * 1000; // 1 Hour

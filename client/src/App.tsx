@@ -23,6 +23,7 @@ import UsersPage from './pages/UsersPage';
 import AgreementsPage from './pages/AgreementsPage';
 import ShiftHistoryPage from './pages/ShiftHistoryPage';
 import TransactionsPage from './pages/TransactionsPage';
+import { InventoryPage } from './pages/InventoryPage';
 import TicketStatusPage from './pages/TicketStatusPage';
 import LicenseActivationPage from './pages/LicenseActivationPage';
 import TenantsPage from './pages/admin/TenantsPage';
@@ -82,6 +83,7 @@ function App() {
                 <Route path="expenses" element={<ExpensesPage />} />
                 <Route path="incomes" element={<IncomesPage />} />
                 <Route path="wash" element={<WashPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="audit" element={<AuditLogsPage />} />
                 <Route path="agreements" element={<AgreementsPage />} />
