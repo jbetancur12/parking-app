@@ -34,7 +34,7 @@ async function updateTenant() {
         console.log(`Current Plan: ${tenant.plan}, Created: ${tenant.createdAt.toISOString()}`);
 
         // Update Data
-        const newCreatedDate = new Date('2025-12-13T10:00:00Z');
+        const newCreatedDate = new Date('2025-12-10T10:00:00Z');
         const newTrialEnd = new Date(newCreatedDate);
         newTrialEnd.setDate(newCreatedDate.getDate() + 14); // 14 Days from creation
 

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Clock, DollarSign, Calendar, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api'; // Hardcoded for public access or use env
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 interface TicketStatus {
     id: number;

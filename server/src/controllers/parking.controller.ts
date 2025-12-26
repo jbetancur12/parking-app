@@ -422,10 +422,14 @@ export const publicStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Support ID or Plate? QR usually uses ID for uniqueness. ID is safer for simple lookup.
+    // Support ID or Plate? QR usually uses ID for uniqueness. ID is safer for simple lookup.
     const session = await em.findOne(ParkingSession, {
         id: Number(id),
         status: ParkingStatus.ACTIVE
-    }, { filters: false });
+    }, {
+        filters: false,
+        populate: ['tenant']
+    });
 
     if (!session) {
         // If not active, maybe it's completed? Check history?
@@ -433,8 +437,17 @@ export const publicStatus = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'No active session found or ticket invalid.' });
     }
 
-    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
-    const settingsList = await em.find(SystemSetting, {});
+    const tariffs = await em.find(Tariff, {
+        vehicleType: session.vehicleType,
+        tenant: session.tenant
+    }, { filters: false });
+
+    // Check if SystemSetting is tenant-scoped (it usually is in this SaaS architecture)
+    // If it throws the same error, we must disable filters and pass tenant manually
+    const settingsList = await em.find(SystemSetting, {
+        tenant: session.tenant
+    }, { filters: false });
+
     const settings: Record<string, string> = {};
     settingsList.forEach(s => settings[s.key] = s.value);
     const gracePeriod = Number(settings['grace_period'] || 5);

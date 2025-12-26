@@ -93,7 +93,11 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                     const now = new Date();
                     const trialEnd = new Date(tenant.trialEndsAt);
 
-                    if (now > trialEnd) {
+                    console.log(`[Trial Check] Tenant: ${tenant.name}, Plan: ${tenant.plan}, Ends: ${trialEnd.toISOString()}, Now: ${now.toISOString()}`);
+
+                    // Block if expired AND NOT SuperAdmin
+                    if (now > trialEnd && authReq.user?.role !== UserRole.SUPER_ADMIN) {
+                        console.log('BLOCKED: Trial Expired');
                         return res.status(403).json({
                             message: 'Tu periodo de prueba ha finalizado. Por favor actualiza tu plan para continuar.',
                             code: 'TRIAL_EXPIRED'

@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
@@ -258,7 +258,7 @@ export default function DashboardLayout() {
                 </div>
             </div>
 
-            {/* Main Content */}
+            {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="flex h-16 items-center justify-between bg-white px-6 shadow-sm lg:hidden">
                     <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
@@ -278,37 +278,68 @@ export default function DashboardLayout() {
                     </div>
                 </header>
 
+                {/* Trial Expired Blocking Overlay */}
+                {currentTenant && (currentTenant as any).plan === 'trial' && (currentTenant as any).trialEndsAt && (() => {
+                    const end = new Date((currentTenant as any).trialEndsAt);
+                    const now = new Date();
+                    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                    {/* Trial Banner */}
-                    {currentTenant && ((currentTenant as any).plan === 'free' || (currentTenant as any).plan === 'trial') && (currentTenant as any).trialEndsAt && (
-                        (() => {
-                            const end = new Date((currentTenant as any).trialEndsAt);
-                            const now = new Date();
-                            const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
-
-                            return (
-                                <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white shadow-lg flex justify-between items-center">
-                                    <div>
-                                        <h3 className="font-bold text-lg flex items-center">
-                                            <Rocket className="mr-2 h-5 w-5" />
-                                            Prueba Gratuita Activa
-                                        </h3>
-                                        <p className="text-indigo-100 text-sm mt-1">
-                                            Te quedan <span className="font-bold text-white text-lg">{diff} días</span> de prueba.
-                                            {diff <= 3 && " ¡Actualiza pronto para no perder acceso!"}
-                                        </p>
+                    if (diff < 0 && user?.role !== 'SUPER_ADMIN') {
+                        return (
+                            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 text-center">
+                                <div className="max-w-md">
+                                    <div className="text-red-600 mb-4 flex justify-center">
+                                        <AlertCircle size={64} />
                                     </div>
-                                    <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
-                                        Elegir Plan
+                                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Periodo de Prueba Finalizado</h1>
+                                    <p className="text-gray-600 mb-6">
+                                        Tu prueba gratuita de 14 días ha expirado.
+                                        Para continuar disfrutando de todas las funcionalidades y recuperar el acceso a tus datos,
+                                        por favor elige un plan.
+                                    </p>
+                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow transition-colors">
+                                        Actualizar Plan Ahora
                                     </button>
                                 </div>
-                            );
-                        })()
-                    )}
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
-                    <Outlet />
-                </main>
+                {/* Main Content (Hidden if expired, unless SuperAdmin) */}
+                {(!(currentTenant && (currentTenant as any).plan === 'trial' && (currentTenant as any).trialEndsAt && new Date((currentTenant as any).trialEndsAt) < new Date()) || user?.role === 'SUPER_ADMIN') && (
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                        {/* Trial Banner */}
+                        {currentTenant && ((currentTenant as any).plan === 'free' || (currentTenant as any).plan === 'trial') && (currentTenant as any).trialEndsAt && user?.role !== 'SUPER_ADMIN' && (
+                            (() => {
+                                const end = new Date((currentTenant as any).trialEndsAt);
+                                const now = new Date();
+                                const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
+
+                                return (
+                                    <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white shadow-lg flex justify-between items-center">
+                                        <div>
+                                            <h3 className="font-bold text-lg flex items-center">
+                                                <Rocket className="mr-2 h-5 w-5" />
+                                                Prueba Gratuita Activa
+                                            </h3>
+                                            <p className="text-indigo-100 text-sm mt-1">
+                                                Te quedan <span className="font-bold text-white text-lg">{diff} días</span> de prueba.
+                                                {diff <= 3 && " ¡Actualiza pronto para no perder acceso!"}
+                                            </p>
+                                        </div>
+                                        <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
+                                            Elegir Plan
+                                        </button>
+                                    </div>
+                                );
+                            })()
+                        )}
+
+                        <Outlet />
+                    </main>
+                )}
             </div>
 
             {/* Tenant Selector Modal - shown when user has multiple tenants and none selected */}
