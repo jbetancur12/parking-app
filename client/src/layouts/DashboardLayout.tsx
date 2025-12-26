@@ -281,7 +281,7 @@ export default function DashboardLayout() {
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                     {/* Trial Banner */}
-                    {currentTenant && (currentTenant as any).plan === 'free' && (currentTenant as any).trialEndsAt && (
+                    {currentTenant && ((currentTenant as any).plan === 'free' || (currentTenant as any).plan === 'trial') && (currentTenant as any).trialEndsAt && (
                         (() => {
                             const end = new Date((currentTenant as any).trialEndsAt);
                             const now = new Date();
