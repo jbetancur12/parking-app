@@ -1,10 +1,20 @@
 import api from './api';
 
+export type PricingModel = 'MINUTE' | 'BLOCKS' | 'TRADITIONAL';
+
 export interface Tariff {
     id: number;
     vehicleType: 'CAR' | 'MOTORCYCLE' | 'OTHER';
     tariffType: 'MINUTE' | 'HOUR' | 'DAY' | 'NIGHT' | 'MONTH';
     cost: number;
+    pricingModel?: PricingModel;
+    basePrice?: number;
+    baseTimeMinutes?: number;
+    extraFracPrice?: number;
+    extraFracTimeMinutes?: number;
+    dayMaxPrice?: number;
+    dayMinHours?: number;
+    description?: string;
 }
 
 export const tariffService = {

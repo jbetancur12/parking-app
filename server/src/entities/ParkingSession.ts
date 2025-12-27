@@ -15,6 +15,7 @@ export enum ParkingStatus {
 }
 
 export enum PlanType {
+    MINUTE = 'MINUTE',
     HOUR = 'HOUR',
     DAY = 'DAY'
 }

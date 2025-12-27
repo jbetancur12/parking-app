@@ -130,23 +130,11 @@ export default function DashboardLayout() {
     // Select based on role
     const activeGroups = user?.role === 'SUPER_ADMIN' ? saasNavigationGroups : tenantNavigationGroups;
 
-    // Filter groups and items based on permissions (though activeGroups is already role-separated) and PLAN
+    // Filter groups and items based on permissions (though activeGroups is already role-separated)
     const filteredGroups = activeGroups.map(group => {
         const filteredItems = group.items.filter(item => {
-            // 1. Role Check
-            if (item.roles && !item.roles.includes(user?.role || '')) {
-                return false;
-            }
-
-            // 2. Plan Feature Check (Feature Gating)
-            // If the current tenant is on BASIC, hide complex features
-            if (currentTenant && (currentTenant as any).plan === 'basic') {
-                if (item.href === '/wash') return false;
-                if (item.href === '/inventory') return false;
-                if (item.href === '/agreements') return false; // Hide Convenios/Fidelización
-            }
-
-            return true;
+            if (!item.roles) return true;
+            return item.roles.includes(user?.role || '');
         });
         return { ...group, items: filteredItems };
     }).filter(group => group.items.length > 0);

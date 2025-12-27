@@ -91,60 +91,21 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     // 2. Weekly Income
     // 3. Pie Chart (Cash vs Transfer)
 
-    // Check Plan Limits for Reports
-    const authReq = req as any;
-    const tenant = authReq.tenant;
-
-    // Default limit: Unlimited
-    let maxDaysLookback = Infinity;
-
-    // Enforce limits for Basic Plan
-    if (tenant && tenant.plan === 'basic') {
-        maxDaysLookback = 60; // Max 2 months
-    }
-
-    const thirtyDaysAgo = subDays(new Date(), Math.min(30, maxDaysLookback)); // Default view is 30, but cap at limit just in case
-
-    // If user requests a custom range in future, we would validate it here:
-    // const { startDate } = req.query;
-    // if (plan === 'basic' && daysBetween(startDate,  now) > 60) throw new Error("Upgrade to Pro to see older reports");
-
+    const thirtyDaysAgo = subDays(new Date(), 30);
     const transactions = await em.find(Transaction, {
         type: TransactionType.PARKING_REVENUE,
         timestamp: { $gte: thirtyDaysAgo }
     });
 
-    // Hourly Activity (Peak Hours) - Last 30 Days Exits
-    // Reuse thirtyDaysAgo from above or just remove if I want to be clean.
-    // The previous block (lines 94-98) ALREADY declared it.
-    // I will just remove the second declaration line.
-
-    // Use ParkingSession for granular vehicle type data
-    const sessions = await em.find(ParkingSession, {
-        exitTime: { $gte: thirtyDaysAgo },
-        status: ParkingStatus.COMPLETED
+    // Hourly
+    const hoursDistribution = Array(24).fill(0);
+    transactions.forEach(t => {
+        const hour = new Date(t.timestamp).getHours();
+        hoursDistribution[hour]++;
     });
-
-    const hoursDistribution = Array(24).fill(null).map(() => ({ count: 0, CAR: 0, MOTORCYCLE: 0 }));
-
-    sessions.forEach(s => {
-        if (!s.exitTime) return;
-        const hour = new Date(s.exitTime).getHours();
-
-        hoursDistribution[hour].count++;
-
-        if (s.vehicleType === VehicleType.CAR) {
-            hoursDistribution[hour].CAR++;
-        } else if (s.vehicleType === VehicleType.MOTORCYCLE) {
-            hoursDistribution[hour].MOTORCYCLE++;
-        }
-    });
-
-    const hourlyData = hoursDistribution.map((stats, hour) => ({
+    const hourlyData = hoursDistribution.map((count, hour) => ({
         hour: `${hour}:00`,
-        count: stats.count,
-        car: stats.CAR,
-        motorcycle: stats.MOTORCYCLE
+        count
     }));
 
     // Weekly Income (Last 7 days)

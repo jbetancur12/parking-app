@@ -14,6 +14,12 @@ export enum TariffType {
     MONTH = 'MONTH'
 }
 
+export enum PricingModel {
+    MINUTE = 'MINUTE',
+    BLOCKS = 'BLOCKS',
+    TRADITIONAL = 'TRADITIONAL'
+}
+
 @Entity()
 export class Tariff {
     @PrimaryKey()
@@ -27,6 +33,27 @@ export class Tariff {
 
     @Property({ type: 'decimal', precision: 10, scale: 2 })
     cost!: number;
+
+    @Enum(() => PricingModel)
+    pricingModel: PricingModel = PricingModel.BLOCKS; // Default to old style (simple) or Blocks
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    basePrice: number = 0;
+
+    @Property({ type: 'integer', default: 60 })
+    baseTimeMinutes: number = 60; // e.g. 60 min for "First Hour"
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    extraFracPrice: number = 0;
+
+    @Property({ type: 'integer', default: 15 })
+    extraFracTimeMinutes: number = 15;
+
+    @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    dayMaxPrice?: number;
+
+    @Property({ type: 'integer', nullable: true })
+    dayMinHours?: number; // Minimum hours before flat rate applies
 
     // Optional: for "Full Day" definition or similar
     @Property({ nullable: true })

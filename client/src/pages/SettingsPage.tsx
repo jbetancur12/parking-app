@@ -124,6 +124,20 @@ export default function SettingsPage() {
         }
     };
 
+    // Helper function to get tariff by vehicle type
+    const getTariff = (vehicleType: string) => {
+        return tariffs.find(t => t.vehicleType === vehicleType && t.tariffType === 'HOUR');
+    };
+
+    // Helper function to update tariff fields
+    const handleTariffChange = (vehicleType: string, field: string, value: number) => {
+        setTariffs(prev => prev.map(t =>
+            (t.vehicleType === vehicleType && t.tariffType === 'HOUR')
+                ? { ...t, [field]: value }
+                : t
+        ));
+    };
+
     const handleSaveAll = async () => {
         setLoading(true);
         try {
@@ -194,9 +208,7 @@ export default function SettingsPage() {
         }
     };
 
-    const updateCost = (id: number, val: string) => {
-        setTariffs(prev => prev.map(t => t.id == id ? { ...t, cost: Number(val) } : t));
-    };
+
 
     const handleDownloadBackup = async () => {
         try {
@@ -218,15 +230,7 @@ export default function SettingsPage() {
         }
     };
 
-    const carTariffs = tariffs.filter(t => t.vehicleType === 'CAR' && t.tariffType !== 'MINUTE');
-    const motoTariffs = tariffs.filter(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType !== 'MINUTE');
 
-    const tariffLabels: Record<string, string> = {
-        'MINUTE': 'Minuto',
-        'HOUR': 'Hora / Fracción',
-        'DAY': 'Día (24h)',
-        'MONTH': 'Mensualidad'
-    };
 
     return (
         <div className="max-w-7xl mx-auto pb-12">
@@ -290,6 +294,41 @@ export default function SettingsPage() {
 
                     {/* Tariffs Section */}
                     <div className="md:col-span-2 space-y-6">
+                        {/* Global Pricing Model Selector */}
+                        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div>
+                                    <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                                        <Settings size={18} className="text-gray-600" />
+                                        Modelo de Tarificación Global
+                                    </h3>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Este modelo se aplicará a todos los tipos de vehículos.
+                                    </p>
+                                </div>
+                                <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
+                                    {[
+                                        { value: 'MINUTE', label: 'Por Minuto' },
+                                        { value: 'BLOCKS', label: 'Por Bloques' },
+                                        { value: 'TRADITIONAL', label: 'Tradicional' }
+                                    ].map(({ value, label }) => (
+                                        <button
+                                            key={value}
+                                            onClick={() => {
+                                                setTariffs(prev => prev.map(t => ({ ...t, pricingModel: value as any })));
+                                            }}
+                                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${tariffs[0]?.pricingModel === value
+                                                ? 'bg-blue-600 text-white shadow-sm'
+                                                : 'text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <div>
@@ -310,20 +349,248 @@ export default function SettingsPage() {
                                         <Car className="mr-2" size={18} /> Automóviles
                                     </div>
                                     <div className="space-y-3">
-                                        {carTariffs.map(t => (
-                                            <div key={t.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                                                <label className="text-gray-600 text-sm font-medium capitalize">{tariffLabels[t.tariffType] || t.tariffType}</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                                    <input
-                                                        type="number"
-                                                        value={t.cost}
-                                                        onChange={(e) => updateCost(t.id, e.target.value)}
-                                                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                                                    />
+                                        {getTariff('CAR')?.pricingModel === 'TRADITIONAL' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-blue-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-blue-700">
+                                                                Activa para limitar el cobro por hora. Si se supera el tiempo configurado, se cobra solo la tarifa plena.
+                                                            </p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('CAR')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 1000);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('CAR')?.dayMaxPrice || 0) > 0 ? (
+                                                    // Flat Rate Active - Show price and minimum hours
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    // Flat Rate Inactive - Show day price option
+                                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-3">
+                                                        <div className="flex justify-between items-center">
+                                                            <label className="text-gray-600 text-sm font-medium">Día Completo (24h)</label>
+                                                            <div className="relative">
+                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tariffs.find(t => t.vehicleType === 'CAR' && t.tariffType === 'DAY')?.cost || 0}
+                                                                    onChange={(e) => {
+                                                                        setTariffs(prev => prev.map(t =>
+                                                                            (t.vehicleType === 'CAR' && t.tariffType === 'DAY')
+                                                                                ? { ...t, cost: Number(e.target.value) }
+                                                                                : t
+                                                                        ));
+                                                                    }}
+                                                                    className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-2">Usuario elige "Por Hora" o "Por Día" al ingresar</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Hour Price - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Hora / Fracción</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('CAR')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('CAR', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {getTariff('CAR')?.pricingModel === 'MINUTE' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-blue-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-blue-700">Activa para limitar el cobro. Si se superan las horas, se cobra solo la tarifa plena.</p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('CAR')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 1000);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('CAR')?.dayMaxPrice || 0) > 0 && (
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Price per minute - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Por Minuto</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('CAR')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('CAR', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {getTariff('CAR')?.pricingModel === 'BLOCKS' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-blue-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-blue-700">Activa para limitar el cobro. Si se superan las horas, se cobra solo la tarifa plena.</p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('CAR')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('CAR', 'dayMaxPrice', 1000);
+                                                                        handleTariffChange('CAR', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('CAR')?.dayMaxPrice || 0) > 0 && (
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('CAR')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('CAR', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Block prices - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors mb-2">
+                                                    <label className="text-gray-600 text-sm font-medium">Precio Base</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('CAR')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('CAR', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Extra Fracción</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('CAR')?.extraFracPrice || 0}
+                                                            onChange={(e) => handleTariffChange('CAR', 'extraFracPrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -333,20 +600,244 @@ export default function SettingsPage() {
                                         <Bike className="mr-2" size={18} /> Motocicletas
                                     </div>
                                     <div className="space-y-3">
-                                        {motoTariffs.map(t => (
-                                            <div key={t.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
-                                                <label className="text-gray-600 text-sm font-medium capitalize">{tariffLabels[t.tariffType] || t.tariffType}</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                                    <input
-                                                        type="number"
-                                                        value={t.cost}
-                                                        onChange={(e) => updateCost(t.id, e.target.value)}
-                                                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                                                    />
+                                        {getTariff('MOTORCYCLE')?.pricingModel === 'TRADITIONAL' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-yellow-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-yellow-800">Activa para limitar el cobro por hora. Si se supera el tiempo, se cobra solo la tarifa plena.</p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 500);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0 ? (
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-3">
+                                                        <div className="flex justify-between items-center">
+                                                            <label className="text-gray-600 text-sm font-medium">Día Completo (24h)</label>
+                                                            <div className="relative">
+                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tariffs.find(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType === 'DAY')?.cost || 0}
+                                                                    onChange={(e) => {
+                                                                        setTariffs(prev => prev.map(t =>
+                                                                            (t.vehicleType === 'MOTORCYCLE' && t.tariffType === 'DAY')
+                                                                                ? { ...t, cost: Number(e.target.value) }
+                                                                                : t
+                                                                        ));
+                                                                    }}
+                                                                    className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-2">Usuario elige "Por Hora" o "Por Día" al ingresar</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Hour Price - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Hora / Fracción</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('MOTORCYCLE')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('MOTORCYCLE', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {getTariff('MOTORCYCLE')?.pricingModel === 'MINUTE' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-yellow-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-yellow-800">Activa para limitar el cobro. Si se superan las horas, se cobra solo la tarifa plena.</p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 500);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0 && (
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Price per minute - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Por Minuto</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('MOTORCYCLE')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('MOTORCYCLE', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {getTariff('MOTORCYCLE')?.pricingModel === 'BLOCKS' && (
+                                            <>
+                                                {/* Toggle for Flat Rate */}
+                                                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold text-yellow-900 mb-1">Tarifa Plena (Cap Opcional)</p>
+                                                            <p className="text-xs text-yellow-800">Activa para limitar el cobro. Si se superan las horas, se cobra solo la tarifa plena.</p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0}
+                                                                onChange={(e) => {
+                                                                    if (!e.target.checked) {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 0);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 0);
+                                                                    } else {
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMaxPrice', 500);
+                                                                        handleTariffChange('MOTORCYCLE', 'dayMinHours', 6);
+                                                                    }
+                                                                }}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Conditional Fields */}
+                                                {(getTariff('MOTORCYCLE')?.dayMaxPrice || 0) > 0 && (
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMaxPrice || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMaxPrice', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                            <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={getTariff('MOTORCYCLE')?.dayMinHours || 0}
+                                                                onChange={(e) => handleTariffChange('MOTORCYCLE', 'dayMinHours', Number(e.target.value))}
+                                                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Block prices - Always visible */}
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors mb-2">
+                                                    <label className="text-gray-600 text-sm font-medium">Precio Base</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('MOTORCYCLE')?.basePrice || 0}
+                                                            onChange={(e) => handleTariffChange('MOTORCYCLE', 'basePrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                    <label className="text-gray-600 text-sm font-medium">Extra Fracción</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                        <input
+                                                            type="number"
+                                                            value={getTariff('MOTORCYCLE')?.extraFracPrice || 0}
+                                                            onChange={(e) => handleTariffChange('MOTORCYCLE', 'extraFracPrice', Number(e.target.value))}
+                                                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entities/ParkingSession';
 import { Shift } from '../entities/Shift';
-import { Tariff, TariffType } from '../entities/Tariff';
+import { Tariff, TariffType, PricingModel } from '../entities/Tariff';
 import { Agreement, AgreementType } from '../entities/Agreement';
 import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
@@ -13,9 +13,15 @@ import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
-    // Map tariffs for easy access
-    const rateMap: Record<string, number> = {};
-    tariffs.forEach(t => rateMap[t.tariffType] = Number(t.cost));
+    // We now expect 'tariffs' to potentially contain a single configuration per vehicle type,
+    // OR distinct rows. With the new model, we likely look for a Tariff record that defines the rules.
+    // For backward compatibility or mixed usage, we'll try to find a relevant Tariff record.
+    // In the new UI, we save ONE Tariff record per VehicleType with the specific fields.
+
+    // Find the tariff configuration for this vehicle type
+    const tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType);
+    // Fallback: if multiple (old style), we might need to rely on old logic. 
+    // But let's assume the new UI saves a unified config.
 
     const exitTime = new Date();
     const durationMs = exitTime.getTime() - session.entryTime.getTime();
@@ -23,30 +29,54 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
 
     let cost = 0;
 
-    if (session.planType === PlanType.DAY) {
-        // Simple day calculation: 1 day = 24 hours (1440 mins)
-        // Adjust logic if "Day" means calendar day vs 24h block
-        // Assuming 24h blocks for simplicity given current rate map usage
-        // But if 'days' calculation logic is strictly ceil(duration / 1440), it's 24h blocks.
-        const days = Math.ceil(durationMinutes / 1440);
-        cost = days * (rateMap['DAY'] || 15000);
-    } else {
-        const hourRate = rateMap['HOUR'] || 3000;
-        const fullHours = Math.floor(durationMinutes / 60);
-        const remainderMinutes = durationMinutes % 60;
-
-        let chargeableHours = fullHours;
-
-        if (remainderMinutes > gracePeriod) {
-            chargeableHours += 1;
-        }
-
-        if (chargeableHours === 0) {
-            chargeableHours = 1;
-        }
-
-        cost = chargeableHours * hourRate;
+    if (!tariffConfig) {
+        // Fallback or Error
+        return { cost: 0, durationMinutes, exitTime };
     }
+
+    if (session.planType === PlanType.DAY) {
+        // Explicit Day plan override? 
+        // Or just use dayMaxPrice? Usually 'PlanType.DAY' implies a flat fee?
+        // Let's stick to the 'DAY' tariff type if it exists in the old way, OR use dayMaxPrice?
+        // User requested: "Tarifa Plena (Día Único)" option in UI.
+        // If user Selected "Dia Unico" (PlanType.DAY), we charge the Day Rate.
+        // Where is the Day Rate stored now? 
+        // In 'dayMaxPrice' or 'basePrice' of a TariffType.DAY?
+        // Let's assume for PlanType.DAY we look for a specific Day Tariff or use dayMaxPrice.
+        const dayTariff = tariffs.find(t => t.tariffType === TariffType.DAY);
+        cost = dayTariff ? Number(dayTariff.cost) : (tariffConfig.dayMaxPrice || 15000);
+
+        // Multi-day logic
+        const days = Math.ceil(durationMinutes / 1440);
+        cost = days * cost;
+
+    } else {
+        // Normal Calculation (Minute or Blocks) based on Configuration
+        if (tariffConfig.pricingModel === PricingModel.MINUTE) {
+            // Bogotá Style: Minute * Price
+            // Price is likely in 'basePrice' (per minute) or 'cost'.
+            const pricePerMinute = Number(tariffConfig.basePrice || tariffConfig.cost || 0);
+            cost = durationMinutes * pricePerMinute;
+        } else if (tariffConfig.pricingModel === PricingModel.BLOCKS) {
+            // Shopping Center Style: First Block (Hour) + Fractions
+            if (durationMinutes <= tariffConfig.baseTimeMinutes) {
+                cost = Number(tariffConfig.basePrice);
+            } else {
+                const extraMinutes = durationMinutes - tariffConfig.baseTimeMinutes;
+                // Let's us simple block math first:
+                const extraBlocks = Math.ceil(extraMinutes / tariffConfig.extraFracTimeMinutes);
+                cost = Number(tariffConfig.basePrice) + (extraBlocks * Number(tariffConfig.extraFracPrice));
+            }
+        }
+
+        // Apply Day Max Price limit (Tope Diario)
+        if (tariffConfig.dayMaxPrice && cost > Number(tariffConfig.dayMaxPrice)) {
+            cost = Number(tariffConfig.dayMaxPrice);
+        }
+    }
+
+    // Ensure no negative cost
+    cost = Math.max(0, cost);
 
     return { cost, durationMinutes, exitTime };
 };

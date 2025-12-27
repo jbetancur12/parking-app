@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useOffline } from '../context/OfflineContext';
 import { Skeleton } from '../components/Skeleton';
 import { useShift } from '../context/ShiftContext';
+import { tariffService, type Tariff } from '../services/tariff.service';
 
 interface ParkingSession {
     id: number;
@@ -21,6 +22,7 @@ interface ParkingSession {
 export default function ParkingPage() {
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
     const [settings, setSettings] = useState<any>(null);
+    const [tariffs, setTariffs] = useState<Tariff[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,6 +36,15 @@ export default function ParkingPage() {
     const [plate, setPlate] = useState('');
     const [vehicleType, setVehicleType] = useState('CAR');
     const [planType, setPlanType] = useState('HOUR');
+
+    // Auto-select plan type logic
+    useEffect(() => {
+        const currentTariff = tariffs.find(t => t.vehicleType === vehicleType);
+        // If NOT traditional, force HOUR (Standard) plan
+        if (currentTariff && currentTariff.pricingModel !== 'TRADITIONAL') {
+            setPlanType('HOUR');
+        }
+    }, [vehicleType, tariffs]);
 
 
     // Exit State
@@ -68,6 +79,7 @@ export default function ParkingPage() {
     useEffect(() => {
         fetchSessions();
         fetchSettings();
+        fetchTariffs();
 
 
         // Fetch active agreements
@@ -84,6 +96,15 @@ export default function ParkingPage() {
             setSettings(data);
         } catch (error) {
             console.error('Error loading settings', error);
+        }
+    };
+
+    const fetchTariffs = async () => {
+        try {
+            const data = await tariffService.getAll();
+            setTariffs(data);
+        } catch (error) {
+            console.error('Error loading tariffs', error);
         }
     };
 
@@ -197,14 +218,6 @@ export default function ParkingPage() {
     };
 
     const handleExitClick = async (plate: string) => {
-        if (!activeShift) {
-            toast.error('Debe abrir un turno antes de registrar salidas', {
-                duration: 4000,
-                style: { border: '2px solid #EF4444' }
-            });
-            return;
-        }
-
         // Offline Handling
         if (!isOnline) {
             setPreviewData({
@@ -355,8 +368,19 @@ export default function ParkingPage() {
         session.plate.includes(searchTerm.toUpperCase())
     );
 
-    const carCount = allSessions.filter(s => s.vehicleType === 'CAR').length;
-    const motoCount = allSessions.filter(s => s.vehicleType === 'MOTORCYCLE').length;
+    // Helper to get plan label based on pricing model
+    const getPlanLabel = (session: ParkingSession) => {
+        const tariff = tariffs.find(t => t.vehicleType === session.vehicleType);
+        if (!tariff) return 'Por Hora';
+
+        if (tariff.pricingModel === 'TRADITIONAL') {
+            return session.planType === 'DAY' ? 'Por Día' : 'Por Hora';
+        } else if (tariff.pricingModel === 'MINUTE') {
+            return 'Por Minuto';
+        } else {
+            return 'Por Bloques';
+        }
+    };
 
     const handleOpenEntryModal = () => {
         if (!activeShift) {
@@ -372,20 +396,7 @@ export default function ParkingPage() {
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <h1 className="text-2xl font-display font-bold text-brand-blue text-center md:text-left">Gestión de Parqueadero</h1>
-                    <div className="flex gap-2 justify-center md:justify-start">
-                        <span className="flex items-center text-sm font-bold bg-blue-50 text-brand-blue px-3 py-1.5 rounded-full border border-blue-100 shadow-sm" title="Carros Parqueados">
-                            <Car size={16} className="mr-1.5" />
-                            {carCount} Autos
-                        </span>
-                        <span className="flex items-center text-sm font-bold bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full border border-yellow-100 shadow-sm" title="Motos Parqueadas">
-                            <Bike size={16} className="mr-1.5" />
-                            {motoCount} Motos
-                        </span>
-                    </div>
-                </div>
-
+                <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left">Gestión de Parqueadero</h1>
                 <div className="flex flex-col items-center md:items-end w-full md:w-auto">
                     <button
                         onClick={handleOpenEntryModal}
@@ -449,7 +460,17 @@ export default function ParkingPage() {
                         <h2 className="text-xl font-bold mb-4 text-gray-800">Confirmar Salida</h2>
                         <div className="space-y-3 mb-6">
                             <p className="text-lg"><strong>Placa:</strong> {previewData.plate}</p>
-                            <p className="text-lg"><strong>Plan:</strong> {previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
+                            <p className="text-lg"><strong>Plan:</strong> {(() => {
+                                const tariff = tariffs.find(t => t.vehicleType === previewData.vehicleType);
+                                if (!tariff) return 'Por Hora';
+                                if (tariff.pricingModel === 'TRADITIONAL') {
+                                    return previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora';
+                                } else if (tariff.pricingModel === 'MINUTE') {
+                                    return 'Por Minuto';
+                                } else {
+                                    return 'Por Bloques';
+                                }
+                            })()}</p>
                             <p className="text-lg"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
 
                             {/* Loyalty Badge */}
@@ -700,7 +721,17 @@ export default function ParkingPage() {
                         <div className="space-y-2 mb-6">
                             <p><strong>Placa:</strong> {pendingPrintSession.plate}</p>
                             <p><strong>Tipo:</strong> {pendingPrintSession.vehicleType === 'CAR' ? 'Carro' : 'Moto'}</p>
-                            <p><strong>Plan:</strong> {pendingPrintSession.planType === 'DAY' ? 'Por Día' : 'Por Hora'}</p>
+                            <p><strong>Plan:</strong> {(() => {
+                                const tariff = tariffs.find(t => t.vehicleType === pendingPrintSession.vehicleType);
+                                if (!tariff) return 'Por Hora';
+                                if (tariff.pricingModel === 'TRADITIONAL') {
+                                    return pendingPrintSession.planType === 'DAY' ? 'Por Día' : 'Por Hora';
+                                } else if (tariff.pricingModel === 'MINUTE') {
+                                    return 'Por Minuto';
+                                } else {
+                                    return 'Por Bloques';
+                                }
+                            })()}</p>
                         </div>
                         <p className="text-gray-600 mb-6">¿Desea imprimir el ticket de entrada?</p>
                         <div className="flex space-x-3">
@@ -800,33 +831,36 @@ export default function ParkingPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Plan de Facturación</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => setPlanType('HOUR')}
-                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                                                : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            <Clock size={24} className="mb-1" />
-                                            <span className="text-xs font-bold">Por Hora</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPlanType('DAY')}
-                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
-                                                ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm'
-                                                : 'border-gray-200 bg-white text-gray-500 hover:border-purple-200 hover:bg-purple-50'
-                                                }`}
-                                        >
-                                            <Calendar size={24} className="mb-1" />
-                                            <span className="text-xs font-bold">Por Día</span>
-                                        </button>
+
+                                {tariffs.find(t => t.vehicleType === vehicleType)?.pricingModel === 'TRADITIONAL' && (
+                                    <div className="animate-fade-in">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Plan de Facturación</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPlanType('HOUR')}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                                                    : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                <Clock size={24} className="mb-1" />
+                                                <span className="text-xs font-bold">Por Hora</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPlanType('DAY')}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
+                                                    ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm'
+                                                    : 'border-gray-200 bg-white text-gray-500 hover:border-purple-200 hover:bg-purple-50'
+                                                    }`}
+                                            >
+                                                <Calendar size={24} className="mb-1" />
+                                                <span className="text-xs font-bold">Por Día</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
@@ -884,7 +918,7 @@ export default function ParkingPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${session.planType === 'DAY' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
-                                                {session.planType === 'DAY' ? 'Por Día' : 'Por Hora'}
+                                                {getPlanLabel(session)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -961,7 +995,7 @@ export default function ParkingPage() {
                                     </div>
                                 </div>
                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${session.planType === 'DAY' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
-                                    {session.planType === 'DAY' ? 'Día' : 'Hora'}
+                                    {getPlanLabel(session).replace('Por ', '')}
                                 </span>
                             </div>
 

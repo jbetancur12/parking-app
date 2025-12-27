@@ -403,16 +403,8 @@ export default function DashboardPage() {
                                                 <Tooltip
                                                     cursor={{ fill: '#F3F4F6' }}
                                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                                    labelStyle={{ color: '#6B7280', fontWeight: 600, marginBottom: '4px' }}
                                                 />
-                                                <Legend
-                                                    iconType="circle"
-                                                    height={36}
-                                                    verticalAlign="top"
-                                                    wrapperStyle={{ paddingBottom: '10px' }}
-                                                />
-                                                <Bar dataKey="car" name="Carros" stackId="a" fill="#003B5C" radius={[0, 0, 4, 4]} barSize={20} />
-                                                <Bar dataKey="motorcycle" name="Motos" stackId="a" fill="#FFC72C" radius={[4, 4, 0, 0]} barSize={20} />
+                                                <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
