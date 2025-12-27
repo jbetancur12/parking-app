@@ -18,10 +18,13 @@ interface Shift {
 
 import { useSaas } from '../context/SaasContext';
 
+import { useShift } from '../context/ShiftContext';
+
 export default function DashboardPage() {
     const { user } = useAuth();
     const { currentLocation } = useSaas();
-    const [activeShift, setActiveShift] = useState<Shift | null>(null);
+    // Use global shift state instead of local
+    const { activeShift, checkActiveShift } = useShift();
     const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [baseAmount, setBaseAmount] = useState('');
@@ -51,7 +54,7 @@ export default function DashboardPage() {
             return;
         }
 
-        checkActiveShift();
+        // Initial fetch handled by Context, but we can force refresh specific dashboard data
         fetchOccupancy();
         fetchSettings();
 
@@ -63,6 +66,10 @@ export default function DashboardPage() {
             fetchStats();
             fetchConsolidatedStats();
         }
+
+        // Ensure accurate state on mount
+        checkActiveShift().finally(() => setLoading(false));
+
         return () => clearInterval(interval);
     }, [user, currentLocation]);
 
@@ -103,16 +110,7 @@ export default function DashboardPage() {
         }
     };
 
-    const checkActiveShift = async () => {
-        try {
-            const response = await api.get('/shifts/current');
-            setActiveShift(response.data);
-        } catch (err) {
-            setActiveShift(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Removed local checkActiveShift in favor of context method
 
     const handleOpenShift = async () => {
         if (!currentLocation) {
@@ -121,11 +119,12 @@ export default function DashboardPage() {
         }
 
         try {
-            const response = await api.post('/shifts/open', {
+            await api.post('/shifts/open', {
                 baseAmount: Number(baseAmount),
                 locationId: currentLocation.id
             });
-            setActiveShift(response.data);
+            // Update global context
+            await checkActiveShift();
             setError('');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to open shift');
@@ -157,7 +156,9 @@ export default function DashboardPage() {
             setSummaryData(summary);
             setShowSummaryModal(true);
 
-            setActiveShift(null);
+            // Update global context
+            await checkActiveShift();
+
             setShowCloseModal(false);
             setDeclaredAmount('');
             setNotes('');
