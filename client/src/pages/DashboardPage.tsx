@@ -261,7 +261,7 @@ export default function DashboardPage() {
                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div
                                         className={`h-2 rounded-full transition-all duration-500 ${(occupancy.car.current / occupancy.car.capacity) > 0.9 ? 'bg-red-500' :
-                                                (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-blue'
+                                            (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-blue'
                                             }`}
                                         style={{ width: `${occupancy.checkEnabled ? Math.min((occupancy.car.current / occupancy.car.capacity) * 100, 100) : 100}%` }}
                                     ></div>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div
                                         className={`h-2 rounded-full transition-all duration-500 ${(occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.9 ? 'bg-red-500' :
-                                                (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-yellow'
+                                            (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-yellow'
                                             }`}
                                         style={{ width: `${occupancy.checkEnabled ? Math.min((occupancy.motorcycle.current / occupancy.motorcycle.capacity) * 100, 100) : 100}%` }}
                                     ></div>
@@ -403,8 +403,16 @@ export default function DashboardPage() {
                                                 <Tooltip
                                                     cursor={{ fill: '#F3F4F6' }}
                                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    labelStyle={{ color: '#6B7280', fontWeight: 600, marginBottom: '4px' }}
                                                 />
-                                                <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
+                                                <Legend
+                                                    iconType="circle"
+                                                    height={36}
+                                                    verticalAlign="top"
+                                                    wrapperStyle={{ paddingBottom: '10px' }}
+                                                />
+                                                <Bar dataKey="car" name="Carros" stackId="a" fill="#003B5C" radius={[0, 0, 4, 4]} barSize={20} />
+                                                <Bar dataKey="motorcycle" name="Motos" stackId="a" fill="#FFC72C" radius={[4, 4, 0, 0]} barSize={20} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
