@@ -6,20 +6,32 @@ import { AuditService } from '../services/AuditService';
 export class TariffController {
 
     // Get all tariffs
-    async getAll(req: Request, res: Response) {
+    getAll = async (req: Request, res: Response) => {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
 
             const locationIdRaw = req.headers['x-location-id'];
+            const tenantIdRaw = req.headers['x-tenant-id']; // Needed for seeding
             const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+            const tenantId = Array.isArray(tenantIdRaw) ? tenantIdRaw[0] : tenantIdRaw;
 
             const filter: any = {};
             if (locationId) {
                 filter.location = locationId;
             }
 
-            const tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
+            let tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
+
+            // Auto-seed if empty and context is available
+            if (tariffs.length === 0 && locationId && tenantId) {
+                const tenant = await em.getReference('Tenant', tenantId);
+                const location = await em.getReference('Location', locationId);
+                await this._seedDefaults(em, tenant, location, locationId);
+                // Fetch again
+                tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
+            }
+
             res.json(tariffs);
         } catch (error) {
             console.error(error);
@@ -28,7 +40,7 @@ export class TariffController {
     }
 
     // Update or Create Tariff
-    async update(req: Request, res: Response) {
+    update = async (req: Request, res: Response) => {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
@@ -83,8 +95,8 @@ export class TariffController {
         }
     }
 
-    // Initialize default tariffs (Helper for seed)
-    async seedDefaults(req: Request, res: Response) {
+    // Manual Seed Endpoint (still useful for reset)
+    seedDefaults = async (req: Request, res: Response) => {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EM' });
@@ -95,35 +107,41 @@ export class TariffController {
 
             if (!tenantId || !locationId) return res.status(400).json({ message: 'Context required' });
 
-            const defaults = [
-                { vehicleType: VehicleType.CAR, tariffType: TariffType.MINUTE, cost: 100 },
-                { vehicleType: VehicleType.CAR, tariffType: TariffType.HOUR, cost: 3000 },
-                { vehicleType: VehicleType.CAR, tariffType: TariffType.DAY, cost: 15000 },
-                { vehicleType: VehicleType.CAR, tariffType: TariffType.MONTH, cost: 150000 },
-                { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MINUTE, cost: 50 },
-                { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.HOUR, cost: 2000 },
-                { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.DAY, cost: 8000 },
-                { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MONTH, cost: 50000 },
-            ];
-
             const tenant = await em.getReference('Tenant', tenantId);
             const location = await em.getReference('Location', locationId);
 
-            for (const d of defaults) {
-                const exists = await em.findOne(Tariff, {
-                    vehicleType: d.vehicleType,
-                    tariffType: d.tariffType,
-                    location: locationId
-                });
-                if (!exists) {
-                    em.persist(em.create(Tariff, { ...d, tenant, location }));
-                }
-            }
-            await em.flush();
+            await this._seedDefaults(em, tenant, location, locationId);
+
             res.json({ message: 'Seeded' });
         } catch (e) {
             console.error(e);
             res.status(500).json({ message: 'Error seeding' });
         }
+    }
+
+    // Internal helper for seeding
+    private _seedDefaults = async (em: any, tenant: any, location: any, locationId: string) => {
+        const defaults = [
+            { vehicleType: VehicleType.CAR, tariffType: TariffType.MINUTE, cost: 100 },
+            { vehicleType: VehicleType.CAR, tariffType: TariffType.HOUR, cost: 3000 },
+            { vehicleType: VehicleType.CAR, tariffType: TariffType.DAY, cost: 15000 },
+            { vehicleType: VehicleType.CAR, tariffType: TariffType.MONTH, cost: 150000 },
+            { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MINUTE, cost: 50 },
+            { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.HOUR, cost: 2000 },
+            { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.DAY, cost: 8000 },
+            { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MONTH, cost: 50000 },
+        ];
+
+        for (const d of defaults) {
+            const exists = await em.findOne(Tariff, {
+                vehicleType: d.vehicleType,
+                tariffType: d.tariffType,
+                location: locationId
+            });
+            if (!exists) {
+                em.persist(em.create(Tariff, { ...d, tenant, location }));
+            }
+        }
+        await em.flush();
     }
 }

@@ -29,7 +29,7 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
     const authReq = req as AuthRequest;
     if (authReq.user) {
         try {
-            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['locations'] });
+            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['locations'], filters: false });
 
             // If locationId provided in header, verify user has access to it (unless Admin/SuperAdmin)
             if (locationId) {
