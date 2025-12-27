@@ -9,12 +9,7 @@ import { PrintShiftSummary } from '../components/PrintShiftSummary';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Skeleton } from '../components/Skeleton';
 
-interface Shift {
-    id: number;
-    startTime: string;
-    isActive: boolean;
-    baseAmount: number;
-}
+
 
 import { useSaas } from '../context/SaasContext';
 
