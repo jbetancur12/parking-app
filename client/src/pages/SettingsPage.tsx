@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Settings, Save, RefreshCw, Shield, Download, Receipt, Building2, Upload } from 'lucide-react';
+import {
+    Settings, Save, RefreshCw, Shield, Download, Receipt, Building2, Upload,
+    Car, Bike, Clock, AlertCircle, Globe, Award, Database, Lock
+} from 'lucide-react';
 import api from '../services/api';
 import { tariffService } from '../services/tariff.service';
 import { settingService } from '../services/setting.service';
@@ -32,7 +35,7 @@ export default function SettingsPage() {
     };
 
     // Tab State
-    const [activeTab, setActiveTab] = useState<'tariffs' | 'ticket' | 'license'>('tariffs');
+    const [activeTab, setActiveTab] = useState<'operational' | 'business' | 'system'>('operational');
 
     // General Settings
     const [gracePeriod, setGracePeriod] = useState('5');
@@ -62,7 +65,8 @@ export default function SettingsPage() {
     if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
         return (
             <div className="p-8">
-                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center">
+                    <AlertCircle className="mr-2" />
                     No tienes permisos para acceder a esta página.
                 </div>
             </div>
@@ -120,9 +124,10 @@ export default function SettingsPage() {
         }
     };
 
-    const handleSaveGeneral = async () => {
+    const handleSaveAll = async () => {
         setLoading(true);
         try {
+            // 1. General Settings
             await settingService.update({
                 grace_period: gracePeriod,
                 check_capacity: String(checkCapacity),
@@ -133,18 +138,9 @@ export default function SettingsPage() {
                 loyalty_reward_type: loyaltyRewardType,
                 loyalty_reward_hours: loyaltyRewardHours
             });
+            // 2. Tariffs
             await tariffService.update(tariffs);
-            toast.success('Configuración general guardada');
-        } catch (error) {
-            toast.error('Error guardando ajustes generales');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSaveTicket = async () => {
-        setLoading(true);
-        try {
+            // 3. Ticket Settings
             const settingsToUpdate: any = {
                 company_name: companyName,
                 company_nit: companyNit,
@@ -156,15 +152,15 @@ export default function SettingsPage() {
                 show_print_dialog: showPrintDialog,
                 company_logo: logoPreview || ''
             };
-
             regulations.forEach((reg, index) => {
                 settingsToUpdate[`regulation_text_${index + 1}`] = reg;
             });
-
             await settingService.update(settingsToUpdate);
-            toast.success('Configuración de ticket guardada');
+
+            toast.success('¡Configuración guardada exitosamente!');
         } catch (error) {
-            toast.error('Error guardando configuración de ticket');
+            console.error(error);
+            toast.error('Error guardando configuración');
         } finally {
             setLoading(false);
         }
@@ -221,429 +217,485 @@ export default function SettingsPage() {
             setLoading(false);
         }
     };
+
     const carTariffs = tariffs.filter(t => t.vehicleType === 'CAR' && t.tariffType !== 'MINUTE');
     const motoTariffs = tariffs.filter(t => t.vehicleType === 'MOTORCYCLE' && t.tariffType !== 'MINUTE');
 
-    return (
-        <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-6">
-                <Settings className="mr-3" /> Configuración
-            </h1>
+    const tariffLabels: Record<string, string> = {
+        'MINUTE': 'Minuto',
+        'HOUR': 'Hora / Fracción',
+        'DAY': 'Día (24h)',
+        'MONTH': 'Mensualidad'
+    };
 
-            {/* Tabs Navigation */}
-            <div className="flex border-b border-gray-200 mb-6">
+    return (
+        <div className="max-w-7xl mx-auto pb-12">
+
+            {/* Header & Main Save Button */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                        <Settings className="mr-3 text-brand-blue" size={32} /> Configuración
+                    </h1>
+                    <p className="text-gray-500 mt-1 ml-11">Gestiona todos los parámetros de tu sistema.</p>
+                </div>
+
                 <button
-                    onClick={() => setActiveTab('tariffs')}
-                    className={`flex items-center py-2 px-4 font-medium text-sm border-b-2 transition-colors ${activeTab === 'tariffs'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
+                    onClick={handleSaveAll}
+                    disabled={loading}
+                    className={`bg-brand-blue text-white px-6 py-3 rounded-xl hover:bg-opacity-90 flex items-center shadow-lg transition-all ${loading ? 'opacity-50 cursor-not-allowed scale-95' : 'hover:scale-105 active:scale-95'}`}
                 >
-                    <Settings className="mr-2" size={16} />
-                    Tarifas y Cupos
+                    <Save className="mr-2" size={20} />
+                    {loading ? 'Guardando...' : 'Guardar Todo'}
                 </button>
-                <button
-                    onClick={() => setActiveTab('ticket')}
-                    className={`flex items-center py-2 px-4 font-medium text-sm border-b-2 transition-colors ${activeTab === 'ticket'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
-                >
-                    <Receipt className="mr-2" size={16} />
-                    Ticket y Empresa
-                </button>
-                {isElectron && (
-                    <button
-                        onClick={() => setActiveTab('license')}
-                        className={`flex items-center py-2 px-4 font-medium text-sm border-b-2 transition-colors ${activeTab === 'license'
-                            ? 'border-blue-500 text-blue-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                    >
-                        <Shield className="mr-2" size={16} />
-                        Licencia
-                    </button>
-                )}
             </div>
 
-            {/* TAB CONTENT: TARIFFS & GENERAL */}
-            {
-                activeTab === 'tariffs' && (
-                    <div className="animate-fade-in">
-                        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold text-gray-700">Tarifas de Parqueo</h2>
-                                <button onClick={handleSeed} className="text-sm text-blue-600 hover:underline flex items-center">
-                                    <RefreshCw size={14} className="mr-1" /> Restablecer Valores
+            {/* Navigation Tabs */}
+            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
+                <button
+                    onClick={() => setActiveTab('operational')}
+                    className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'operational'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                >
+                    <Car className="mr-2" size={18} />
+                    Operación
+                </button>
+                <button
+                    onClick={() => setActiveTab('business')}
+                    className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'business'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                >
+                    <Building2 className="mr-2" size={18} />
+                    Negocio
+                </button>
+                <button
+                    onClick={() => setActiveTab('system')}
+                    className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                >
+                    <Settings className="mr-2" size={18} />
+                    Sistema
+                </button>
+            </div>
+
+            {/* --- TAB: OPERATIONAL --- */}
+            {activeTab === 'operational' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+
+                    {/* Tariffs Section */}
+                    <div className="md:col-span-2 space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Receipt className="mr-2 text-brand-blue" size={20} /> Tarifas de Parqueo
+                                    </h2>
+                                    <p className="text-sm text-gray-500">Define los precios por fracción para cada vehículo.</p>
+                                </div>
+                                <button onClick={handleSeed} className="text-xs text-blue-600 hover:text-blue-800 flex items-center bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                                    <RefreshCw size={12} className="mr-1" /> Restablecer
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Carros */}
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Carros</h3>
-                                    {carTariffs.map(t => (
-                                        <div key={t.id} className="flex justify-between items-center mb-3">
-                                            <label className="text-gray-600 capitalize">{t.tariffType.toLowerCase()}</label>
-                                            <div className="flex items-center">
-                                                <span className="text-gray-500 mr-2">$</span>
-                                                <input
-                                                    type="number"
-                                                    value={t.cost}
-                                                    onChange={(e) => updateCost(t.id, e.target.value)}
-                                                    className="w-24 border rounded px-2 py-1 text-right"
-                                                />
+                                    <div className="flex items-center mb-4 text-brand-blue font-medium bg-blue-50 p-2 rounded-lg w-fit">
+                                        <Car className="mr-2" size={18} /> Automóviles
+                                    </div>
+                                    <div className="space-y-3">
+                                        {carTariffs.map(t => (
+                                            <div key={t.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
+                                                <label className="text-gray-600 text-sm font-medium capitalize">{tariffLabels[t.tariffType] || t.tariffType}</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input
+                                                        type="number"
+                                                        value={t.cost}
+                                                        onChange={(e) => updateCost(t.id, e.target.value)}
+                                                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
+
+                                {/* Motos */}
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">Motos</h3>
-                                    {motoTariffs.map(t => (
-                                        <div key={t.id} className="flex justify-between items-center mb-3">
-                                            <label className="text-gray-600 capitalize">{t.tariffType.toLowerCase()}</label>
-                                            <div className="flex items-center">
-                                                <span className="text-gray-500 mr-2">$</span>
-                                                <input
-                                                    type="number"
-                                                    value={t.cost}
-                                                    onChange={(e) => updateCost(t.id, e.target.value)}
-                                                    className="w-24 border rounded px-2 py-1 text-right"
-                                                />
+                                    <div className="flex items-center mb-4 text-brand-yellow font-medium bg-yellow-50 p-2 rounded-lg w-fit text-yellow-800">
+                                        <Bike className="mr-2" size={18} /> Motocicletas
+                                    </div>
+                                    <div className="space-y-3">
+                                        {motoTariffs.map(t => (
+                                            <div key={t.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-yellow-200 transition-colors">
+                                                <label className="text-gray-600 text-sm font-medium capitalize">{tariffLabels[t.tariffType] || t.tariffType}</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input
+                                                        type="number"
+                                                        value={t.cost}
+                                                        onChange={(e) => updateCost(t.id, e.target.value)}
+                                                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                            <h2 className="text-xl font-semibold text-gray-700 mb-4">Ajustes Generales</h2>
-                            <div className="flex items-center mb-6 border-b pb-4">
-                                <label className="text-gray-700 w-48 font-medium">Tiempo de Gracia (Min):</label>
-                                <input
-                                    type="number"
-                                    value={gracePeriod}
-                                    onChange={(e) => setGracePeriod(e.target.value)}
-                                    className="w-24 border rounded px-2 py-1"
-                                />
-                                <span className="ml-3 text-gray-500 text-sm">Minutos libres después de cumplir la hora.</span>
+                    {/* Capacity & Control */}
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-5 border-b border-gray-100 bg-gray-50/50">
+                                <h2 className="text-base font-semibold text-gray-900 flex items-center">
+                                    <Clock className="mr-2 text-gray-500" size={18} /> Tiempos y Cupos
+                                </h2>
                             </div>
-
-                            <div className="mb-6">
-                                <h3 className="text-lg font-medium text-gray-800 mb-3">Gestión de Cupos</h3>
-                                <div className="flex items-center mb-4">
-                                    <input
-                                        type="checkbox"
-                                        checked={checkCapacity}
-                                        onChange={(e) => setCheckCapacity(e.target.checked)}
-                                        className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
-                                    />
-                                    <label className="text-gray-700 font-medium">Limitar entrada (verificar cupo disponible)</label>
-                                </div>
-                                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!checkCapacity ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    <div className="flex items-center">
-                                        <label className="text-gray-700 w-32">Cupo Carros:</label>
-                                        <input type="number" value={capacityCar} onChange={(e) => setCapacityCar(e.target.value)} className="w-24 border rounded px-2 py-1" />
-                                    </div>
-                                    <div className="flex items-center">
-                                        <label className="text-gray-700 w-32">Cupo Motos:</label>
-                                        <input type="number" value={capacityMoto} onChange={(e) => setCapacityMoto(e.target.value)} className="w-24 border rounded px-2 py-1" />
-                                    </div>
-                                </div>
+                            <div className="p-5 space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Zona Horaria (Reportes)</label>
-                                    <select
-                                        value={timezone}
-                                        onChange={(e) => setTimezone(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
-                                    >
-                                        <option value="America/Bogota">America/Bogota (Colombia)</option>
-                                        <option value="America/New_York">America/New_York (USA ET)</option>
-                                        <option value="Europe/Madrid">Europe/Madrid (España)</option>
-                                        <option value="UTC">UTC (Universal)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div className="mb-6 border-t pt-6 bg-white rounded-lg shadow-md p-6">
-                            <h3 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                                <span className="mr-2">🎁</span> Fidelización de Clientes
-                            </h3>
-                            <div className="flex items-center mb-4">
-                                <input
-                                    type="checkbox"
-                                    checked={loyaltyEnabled}
-                                    onChange={(e) => setLoyaltyEnabled(e.target.checked)}
-                                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
-                                />
-                                <label className="text-gray-700 font-medium">Activar Sistema de Puntos</label>
-                            </div>
-                            <div className={`flex flex-col space-y-4 ${!loyaltyEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <div className="flex items-center">
-                                    <label className="text-gray-700 w-48">Meta para Premio (Visitas):</label>
-                                    <input
-                                        type="number"
-                                        value={loyaltyTarget}
-                                        onChange={(e) => setLoyaltyTarget(e.target.value)}
-                                        className="w-24 border rounded px-2 py-1"
-                                        placeholder="Ej: 10"
-                                    />
-                                    <span className="ml-3 text-gray-500 text-sm">Visitas requeridas para canjear.</span>
-                                </div>
-
-                                <div className="flex items-center">
-                                    <label className="text-gray-700 w-48">Tipo de Premio:</label>
-                                    <select
-                                        value={loyaltyRewardType}
-                                        onChange={(e) => setLoyaltyRewardType(e.target.value)}
-                                        className="w-48 border rounded px-2 py-1 bg-white"
-                                    >
-                                        <option value="FULL">Salida Gratis (100%)</option>
-                                        <option value="HOURS">Horas Gratis</option>
-                                    </select>
-                                </div>
-
-                                {loyaltyRewardType === 'HOURS' && (
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo de Gracia (Minutos)</label>
                                     <div className="flex items-center">
-                                        <label className="text-gray-700 w-48">Cantidad Horas:</label>
                                         <input
                                             type="number"
-                                            value={loyaltyRewardHours}
-                                            onChange={(e) => setLoyaltyRewardHours(e.target.value)}
-                                            className="w-24 border rounded px-2 py-1"
-                                            placeholder="Ej: 2"
+                                            value={gracePeriod}
+                                            onChange={(e) => setGracePeriod(e.target.value)}
+                                            className="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                         />
-                                        <span className="ml-3 text-gray-500 text-sm">Horas a descontar del total.</span>
+                                        <span className="ml-3 text-xs text-gray-400">Libres tras cumplir la hora.</span>
                                     </div>
-                                )}
+                                </div>
+
+                                <div className="pt-4 border-t border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-sm font-medium text-gray-700">Control de Aforo</span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked={checkCapacity} onChange={(e) => setCheckCapacity(e.target.checked)} className="sr-only peer" />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+
+                                    <div className={`space-y-3 transition-opacity ${!checkCapacity ? 'opacity-40 pointer-events-none' : ''}`}>
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-sm text-gray-600 flex items-center"><Car size={14} className="mr-1" /> Cupo Carros</label>
+                                            <input type="number" value={capacityCar} onChange={(e) => setCapacityCar(e.target.value)} className="w-20 border rounded-md px-2 py-1 text-right text-sm" />
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-sm text-gray-600 flex items-center"><Bike size={14} className="mr-1" /> Cupo Motos</label>
+                                            <input type="number" value={capacityMoto} onChange={(e) => setCapacityMoto(e.target.value)} className="w-20 border rounded-md px-2 py-1 text-right text-sm" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="flex justify-end mb-6">
-                            <button onClick={handleSaveGeneral} disabled={loading} className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                <Save className="mr-2" size={20} /> {loading ? 'Guardando...' : 'Guardar Cambios'}
-                            </button>
-                        </div>
-
-                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h2 className="text-xl font-semibold mb-6 flex items-center text-gray-800 border-b pb-2">
-                                    <Shield className="mr-2 text-purple-600" size={24} /> Seguridad y Datos
-                                </h2>
-                                <button onClick={handleDownloadBackup} disabled={loading} className={`flex items-center justify-center w-full md:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                    <Download size={16} className="mr-2" /> {loading ? 'Generando...' : 'Descargar Copia de Seguridad'}
-                                </button>
-                            </div>
-                        )}
                     </div>
-                )
-            }
+                    {/* Loyalty Section (Moved here) */}
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                    <Award className="mr-2 text-yellow-500" size={20} /> Fidelización
+                                </h2>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={loyaltyEnabled} onChange={(e) => setLoyaltyEnabled(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+                            <div className={`p-6 space-y-4 transition-opacity ${!loyaltyEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Meta de Visitas</label>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="number"
+                                            value={loyaltyTarget}
+                                            onChange={(e) => setLoyaltyTarget(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg py-2 px-3"
+                                            placeholder="Ej: 10"
+                                        />
+                                        <span className="ml-3 text-sm text-gray-500 flex-shrink-0">visitas para premio</span>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Premio</label>
+                                        <select
+                                            value={loyaltyRewardType}
+                                            onChange={(e) => setLoyaltyRewardType(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg py-2 px-3"
+                                        >
+                                            <option value="FULL">Salida Gratis</option>
+                                            <option value="HOURS">Horas Gratis</option>
+                                        </select>
+                                    </div>
+                                    {loyaltyRewardType === 'HOURS' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Cant. Horas</label>
+                                            <input
+                                                type="number"
+                                                value={loyaltyRewardHours}
+                                                onChange={(e) => setLoyaltyRewardHours(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg py-2 px-3"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-            {/* TAB CONTENT: TICKET & COMPANY */}
-            {
-                activeTab === 'ticket' && (
-                    <div className="bg-white rounded-lg shadow-md p-6 animate-fade-in grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Left Column: Form */}
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-gray-700 flex items-center mb-4">
-                                <Building2 className="mr-2" /> Datos de Empresa
+            {/* --- TAB: BUSINESS --- */}
+            {activeTab === 'business' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
+                    {/* Left Column: identity */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                <Building2 className="mr-2 text-brand-blue" size={20} /> Identidad del Negocio
                             </h2>
-
+                            <p className="text-sm text-gray-500">Esta información aparecerá en el encabezado del ticket.</p>
+                        </div>
+                        <div className="p-6 space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Nombre / Razón Social</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre / Razón Social</label>
                                 <input
                                     type="text"
                                     value={companyName}
                                     onChange={(e) => setCompanyName(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="block w-full border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Ej: Aparca Parking"
                                 />
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">NIT / Identificación</label>
-                                <input
-                                    type="text"
-                                    value={companyNit}
-                                    onChange={(e) => setCompanyNit(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Ej: 900.123.456-7"
-                                />
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">NIT / ID</label>
+                                    <input
+                                        type="text"
+                                        value={companyNit}
+                                        onChange={(e) => setCompanyNit(e.target.value)}
+                                        className="block w-full border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Ej: 900.123.456"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input
+                                        type="text"
+                                        value={companyPhone}
+                                        onChange={(e) => setCompanyPhone(e.target.value)}
+                                        className="block w-full border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Ej: 300 123 4567"
+                                    />
+                                </div>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección Física</label>
                                 <input
                                     type="text"
                                     value={companyAddress}
                                     onChange={(e) => setCompanyAddress(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="block w-full border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Ej: Calle 123 # 45-67"
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                                <input
-                                    type="text"
-                                    value={companyPhone}
-                                    onChange={(e) => setCompanyPhone(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Ej: 300 123 4567"
-                                />
-                            </div>
-
-                            <div className="pt-4 border-t">
-                                <h3 className="text-lg font-medium text-gray-900 mb-3">Personalización Ticket</h3>
-
-                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Ancho Papel</label>
-                                        <select
-                                            value={ticketWidth}
-                                            onChange={(e) => setTicketWidth(e.target.value)}
-                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                        >
-                                            <option value="58mm">58mm (Estándar)</option>
-                                            <option value="80mm">80mm (Grande)</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Mostrar QR</label>
-                                        <select
-                                            value={enableQr}
-                                            onChange={(e) => setEnableQr(e.target.value)}
-                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                        >
-                                            <option value="true">Sí, mostrar QR</option>
-                                            <option value="false">No</option>
-                                        </select>
-                                    </div>
-                                    <div className="mt-4 col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700">Diálogo de Impresión</label>
-                                        <select
-                                            value={showPrintDialog}
-                                            onChange={(e) => setShowPrintDialog(e.target.value)}
-                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                        >
-                                            <option value="true">Mostrar diálogo (Seleccionar impresora)</option>
-                                            <option value="false">Impresión directa (Silenciosa)</option>
-                                        </select>
-                                        <p className="mt-1 text-xs text-gray-500">
-                                            "Impresión directa" usará la impresora predeterminada del sistema sin preguntar.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Logo Ticket (Opcional)</label>
-                                    <div className="flex items-center space-x-4">
-                                        {logoPreview && (
-                                            <img src={logoPreview} alt="Logo Preview" className="h-16 w-16 object-contain border rounded bg-gray-50" />
-                                        )}
-                                        <label className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
-                                            <Upload className="h-4 w-4 inline-block mr-1" />
-                                            Subir Logo
+                            <div className="pt-4 border-t border-gray-100">
+                                <label className="block text-sm font-medium text-gray-700 mb-3">Logo del Ticket</label>
+                                <div className="flex items-center p-4 border-2 border-dashed border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                    {logoPreview ? (
+                                        <div className="relative group mr-4">
+                                            <img src={logoPreview} alt="Logo" className="h-16 w-16 object-contain bg-white rounded-lg border p-1" />
+                                            <button onClick={() => setLogoPreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="w-3 h-3 flex items-center justify-center">x</div>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center mr-4 text-gray-400">
+                                            <Upload size={24} />
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <label className="cursor-pointer bg-white py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors inline-block text-center w-full">
+                                            Subir Imagen
                                             <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
                                         </label>
-                                        {logoPreview && (
-                                            <button onClick={() => setLogoPreview(null)} className="text-red-600 text-xs hover:underline">Eliminar</button>
-                                        )}
+                                        <p className="text-xs text-gray-400 mt-2 text-center">Recomendado: Imagen B/N pequeña.</p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Recomendado: Imagen B/N pequeña.</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Right Column: Regulations & Preview */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-medium text-gray-900 mb-3">Reglamento (Letra pequeña)</h3>
-                            <p className="text-xs text-gray-500 mb-2">Estas líneas aparecerán al final del ticket.</p>
-
-                            {regulations.map((reg, idx) => (
-                                <div key={idx}>
-                                    <label className="block text-xs font-medium text-gray-500">Línea {idx + 1}</label>
-                                    <input
-                                        type="text"
-                                        value={reg}
-                                        onChange={(e) => handleRegulationChange(idx, e.target.value)}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-3 text-sm"
-                                        placeholder={`Texto reglamento línea ${idx + 1}...`}
-                                    />
-                                </div>
-                            ))}
-
-                            <div className="pt-6 flex justify-end">
-                                <button
-                                    onClick={handleSaveTicket}
-                                    disabled={loading}
-                                    className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    <Save className="mr-2" size={20} />
-                                    {loading ? 'Guardando...' : 'Guardar Ticket'}
-                                </button>
                             </div>
                         </div>
                     </div>
-                )
-            }
-            {/* TAB CONTENT: LICENSE (Electron Only) */}
-            {
-                activeTab === 'license' && isElectron && licenseDetails && (
-                    <div className="bg-white rounded-lg shadow-md p-6 animate-fade-in">
-                        <h2 className="text-xl font-semibold text-gray-700 mb-6 flex items-center border-b pb-2">
-                            <Shield className="mr-2 text-green-600" size={24} /> Información de Licencia
-                        </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-500">Cliente</label>
-                                    <p className="text-lg font-medium text-gray-900">{licenseDetails.customerName}</p>
+                    {/* Right Column: Ticket Customization */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                <Receipt className="mr-2 text-purple-600" size={20} /> Personalización del Ticket
+                            </h2>
+                            <p className="text-sm text-gray-500">Ajustes de impresión y leyendas legales.</p>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ancho Papel</label>
+                                    <select
+                                        value={ticketWidth}
+                                        onChange={(e) => setTicketWidth(e.target.value)}
+                                        className="block w-full pl-3 pr-8 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                    >
+                                        <option value="58mm">58mm (Estándar)</option>
+                                        <option value="80mm">80mm (Grande)</option>
+                                    </select>
                                 </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-500">Tipo de Licencia</label>
-                                    <p className="text-lg font-medium text-gray-900">
-                                        {licenseDetails.type === 'trial' ? 'Prueba (Trial)' : 'Licencia Completa'}
-                                    </p>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-500">Clave de Producto</label>
-                                    <p className="text-sm font-mono bg-gray-100 p-2 rounded border break-all">
-                                        {licenseDetails.licenseKey}
-                                    </p>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Código QR</label>
+                                    <select
+                                        value={enableQr}
+                                        onChange={(e) => setEnableQr(e.target.value)}
+                                        className="block w-full pl-3 pr-8 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                    >
+                                        <option value="true">Mostrar QR</option>
+                                        <option value="false">Ocultar</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-500">Fecha de Expiración</label>
-                                    <p className={`text-lg font-bold ${new Date(licenseDetails.expiresAt) < new Date() ? 'text-red-600' : 'text-green-600'}`}>
-                                        {new Date(licenseDetails.expiresAt).toLocaleDateString()}
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                        {Math.ceil((new Date(licenseDetails.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} días restantes
-                                    </p>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-500">Hardware ID (Binding)</label>
-                                    <p className="text-xs font-mono text-gray-400 break-all">
-                                        {licenseDetails.hardwareId}
-                                    </p>
-                                </div>
 
-                                <button
-                                    onClick={() => (window as any).electronAPI.validateLicense().then(() => toast.success('Licencia validada correctamente')).catch(() => toast.error('Error validando licencia'))}
-                                    className="mt-4 flex items-center justify-center w-full px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Validar Ahora
-                                </button>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Modo Impresión</label>
+                                <div className="mt-1 flex rounded-md shadow-sm">
+                                    <button
+                                        onClick={() => setShowPrintDialog('true')}
+                                        className={`flex-1 py-2 text-sm font-medium rounded-l-lg border ${showPrintDialog === 'true' ? 'bg-blue-50 border-blue-200 text-blue-700 z-10' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                                    >
+                                        Diálogo
+                                    </button>
+                                    <button
+                                        onClick={() => setShowPrintDialog('false')}
+                                        className={`flex-1 py-2 text-sm font-medium rounded-r-lg border-t border-b border-r ${showPrintDialog === 'false' ? 'bg-blue-50 border-blue-200 text-blue-700 z-10' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                                    >
+                                        Silenciosa
+                                    </button>
+                                </div>
+                                <p className="mt-1 text-xs text-gray-400">
+                                    {showPrintDialog === 'false' ? 'Imprime directamente a la impresora predeterminada.' : 'Muestra el selector de impresora en cada ticket.'}
+                                </p>
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-4">
+                                <label className="block text-sm font-medium text-gray-900 mb-3">Reglamento (Letra pequeña)</label>
+                                <div className="space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    {regulations.map((reg, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center">
+                                            <span className="text-xs text-gray-400 w-4 text-right">{idx + 1}</span>
+                                            <input
+                                                type="text"
+                                                value={reg}
+                                                onChange={(e) => handleRegulationChange(idx, e.target.value)}
+                                                className="block w-full border-none bg-white rounded-md shadow-sm py-1.5 px-3 text-sm focus:ring-1 focus:ring-blue-500"
+                                                placeholder={`Línea ${idx + 1} del reglamento...`}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
+
+            {/* --- TAB: SYSTEM --- */}
+            {activeTab === 'system' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+
+                    {/* Localization & Loyalty */}
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                    <Globe className="mr-2 text-indigo-500" size={20} /> Regional
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Zona Horaria</label>
+                                <select
+                                    value={timezone}
+                                    onChange={(e) => setTimezone(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2.5 px-4"
+                                >
+                                    <option value="America/Bogota">America/Bogota (Colombia)</option>
+                                    <option value="America/New_York">America/New_York (USA ET)</option>
+                                    <option value="Europe/Madrid">Europe/Madrid (España)</option>
+                                    <option value="UTC">UTC (Universal)</option>
+                                </select>
+                                <p className="text-xs text-gray-500 mt-2">Afecta la hora impresa en los tickets y reportes.</p>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    {/* Security & License */}
+                    <div className="space-y-6">
+                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                    <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Database className="mr-2 text-green-600" size={20} /> Datos y Seguridad
+                                    </h2>
+                                </div>
+                                <div className="p-6">
+                                    <p className="text-sm text-gray-600 mb-4">Descarga una copia completa de tu base de datos local.</p>
+                                    <button onClick={handleDownloadBackup} disabled={loading} className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors">
+                                        <Download size={18} className="mr-2" />
+                                        {loading ? 'Generando...' : 'Descargar Backup (.json)'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {isElectron && licenseDetails && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                    <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Shield className="mr-2 text-red-600" size={20} /> Licencia
+                                    </h2>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-sm text-gray-500">Cliente</span>
+                                        <span className="text-sm font-medium text-gray-900">{licenseDetails.customerName}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-sm text-gray-500">Tipo</span>
+                                        <span className="text-sm font-medium text-gray-900">{licenseDetails.type === 'trial' ? 'Prueba' : 'Pro'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2">
+                                        <span className="text-sm text-gray-500">Vence</span>
+                                        <div className="text-right">
+                                            <div className={`text-sm font-bold ${new Date(licenseDetails.expiresAt) < new Date() ? 'text-red-600' : 'text-green-600'}`}>
+                                                {new Date(licenseDetails.expiresAt).toLocaleDateString()}
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                                {Math.ceil((new Date(licenseDetails.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} días días
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div >
     );
 }
