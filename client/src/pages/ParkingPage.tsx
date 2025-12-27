@@ -197,6 +197,14 @@ export default function ParkingPage() {
     };
 
     const handleExitClick = async (plate: string) => {
+        if (!activeShift) {
+            toast.error('Debe abrir un turno antes de registrar salidas', {
+                duration: 4000,
+                style: { border: '2px solid #EF4444' }
+            });
+            return;
+        }
+
         // Offline Handling
         if (!isOnline) {
             setPreviewData({
@@ -368,8 +376,8 @@ export default function ParkingPage() {
                         disabled={!activeShift}
                         title={!activeShift ? "Debe iniciar turno para registrar vehículos" : "Registrar nueva entrada"}
                         className={`flex w-full md:w-auto justify-center items-center font-bold px-4 py-3 md:py-2 rounded-lg shadow-md transform transition-all ${activeShift
-                                ? 'bg-brand-yellow text-brand-blue hover:bg-yellow-400 active:scale-95 cursor-pointer'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            ? 'bg-brand-yellow text-brand-blue hover:bg-yellow-400 active:scale-95 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             }`}
                         data-testid="btn-open-entry-modal"
                     >
