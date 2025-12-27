@@ -355,6 +355,9 @@ export default function ParkingPage() {
         session.plate.includes(searchTerm.toUpperCase())
     );
 
+    const carCount = allSessions.filter(s => s.vehicleType === 'CAR').length;
+    const motoCount = allSessions.filter(s => s.vehicleType === 'MOTORCYCLE').length;
+
     const handleOpenEntryModal = () => {
         if (!activeShift) {
             toast.error('Debe abrir un turno antes de registrar entradas', {
@@ -369,7 +372,20 @@ export default function ParkingPage() {
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left">Gestión de Parqueadero</h1>
+                <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                    <h1 className="text-2xl font-display font-bold text-brand-blue text-center md:text-left">Gestión de Parqueadero</h1>
+                    <div className="flex gap-2 justify-center md:justify-start">
+                        <span className="flex items-center text-sm font-bold bg-blue-50 text-brand-blue px-3 py-1.5 rounded-full border border-blue-100 shadow-sm" title="Carros Parqueados">
+                            <Car size={16} className="mr-1.5" />
+                            {carCount} Autos
+                        </span>
+                        <span className="flex items-center text-sm font-bold bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full border border-yellow-100 shadow-sm" title="Motos Parqueadas">
+                            <Bike size={16} className="mr-1.5" />
+                            {motoCount} Motos
+                        </span>
+                    </div>
+                </div>
+
                 <div className="flex flex-col items-center md:items-end w-full md:w-auto">
                     <button
                         onClick={handleOpenEntryModal}
