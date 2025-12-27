@@ -97,15 +97,37 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         timestamp: { $gte: thirtyDaysAgo }
     });
 
-    // Hourly
-    const hoursDistribution = Array(24).fill(0);
-    transactions.forEach(t => {
-        const hour = new Date(t.timestamp).getHours();
-        hoursDistribution[hour]++;
+    // Hourly Activity (Peak Hours) - Last 30 Days Exits
+    // Reuse thirtyDaysAgo from above or just remove if I want to be clean.
+    // The previous block (lines 94-98) ALREADY declared it.
+    // I will just remove the second declaration line.
+
+    // Use ParkingSession for granular vehicle type data
+    const sessions = await em.find(ParkingSession, {
+        exitTime: { $gte: thirtyDaysAgo },
+        status: ParkingStatus.COMPLETED
     });
-    const hourlyData = hoursDistribution.map((count, hour) => ({
+
+    const hoursDistribution = Array(24).fill(null).map(() => ({ count: 0, CAR: 0, MOTORCYCLE: 0 }));
+
+    sessions.forEach(s => {
+        if (!s.exitTime) return;
+        const hour = new Date(s.exitTime).getHours();
+
+        hoursDistribution[hour].count++;
+
+        if (s.vehicleType === VehicleType.CAR) {
+            hoursDistribution[hour].CAR++;
+        } else if (s.vehicleType === VehicleType.MOTORCYCLE) {
+            hoursDistribution[hour].MOTORCYCLE++;
+        }
+    });
+
+    const hourlyData = hoursDistribution.map((stats, hour) => ({
         hour: `${hour}:00`,
-        count
+        count: stats.count,
+        car: stats.CAR,
+        motorcycle: stats.MOTORCYCLE
     }));
 
     // Weekly Income (Last 7 days)
