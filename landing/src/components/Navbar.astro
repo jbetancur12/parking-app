@@ -1,5 +1,6 @@
 ---
 import MobileMenu from './MobileMenu';
+import DemoVideoModal from './DemoVideoModal';
 ---
 
 <nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100/50 shadow-sm transition-all duration-300" id="navbar">
@@ -22,7 +23,7 @@ import MobileMenu from './MobileMenu';
 
             <!-- Action Buttons -->
             <div class="hidden md:flex items-center space-x-4">
-                <a href="#" class="text-brand-blue font-bold hover:text-blue-700 transition-colors">Demo</a>
+                <DemoVideoModal client:load />
                 <a 
                     href="http://localhost:5173" 
                     class="bg-brand-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-900 transition-all shadow-lg hover:shadow-brand-blue/20 active:scale-95"

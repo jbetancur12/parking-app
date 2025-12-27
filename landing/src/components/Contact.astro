@@ -45,20 +45,20 @@ import { Mail, Phone, MapPin } from 'lucide-react';
             </div>
 
             <div class="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10">
-                <form class="space-y-4">
+                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Nombre Completo</label>
-                        <input type="text" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Tu nombre" />
+                        <input type="text" name="name" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Tu nombre" required />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Correo Electrónico</label>
-                        <input type="email" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="tucorreo@empresa.com" />
+                        <input type="email" name="email" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="tucorreo@empresa.com" required />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Mensaje</label>
-                        <textarea rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Cuéntanos sobre tu parqueadero..."></textarea>
+                        <textarea name="message" rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Cuéntanos sobre tu parqueadero..." required></textarea>
                     </div>
-                    <button type="button" class="w-full bg-brand-yellow text-brand-blue font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-lg">
+                    <button type="submit" class="w-full bg-brand-yellow text-brand-blue font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-lg">
                         Enviar Mensaje
                     </button>
                     <p class="text-xs text-center text-blue-300 mt-4">
