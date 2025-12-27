@@ -3,13 +3,13 @@ import { Check, Zap } from 'lucide-react';
 
 const plans = [
     {
-        name: "Emprendedor",
-        price: "80.000",
-        period: "/mes",
+        name: "Gratis",
+        price: "0",
+        period: "",
         description: "Perfecto para parqueaderos pequeños que están comenzando",
         features: [
             "1 sede",
-            "Hasta 50 cupos",
+            "Hasta 2 usuarios",
             "Gestión de entradas y salidas",
             "Clientes mensuales ilimitados",
             "Reportes básicos",
@@ -21,13 +21,13 @@ const plans = [
     },
     {
         name: "Pro",
-        price: "180.000",
+        price: "50.000",
         period: "/mes",
         description: "Ideal para parqueaderos establecidos que necesitan más control",
         features: [
-            "Todo lo del Emprendedor",
-            "Hasta 3 sedes",
-            "Cupos ilimitados",
+            "Todo lo del plan Gratis",
+            "Hasta 5 sedes",
+            "Hasta 10 usuarios",
             "✨ Integración facturación electrónica DIAN",
             "Reportes avanzados y exportación",
             "Control de turnos",
@@ -39,16 +39,16 @@ const plans = [
         badge: "Más Popular"
     },
     {
-        name: "Empresarial",
-        price: "350.000",
+        name: "Enterprise",
+        price: "200.000",
         period: "/mes",
         description: "Para cadenas de parqueaderos con múltiples ubicaciones",
         features: [
             "Todo lo del Pro",
-            "Sedes ilimitadas",
+            "Hasta 100 sedes",
+            "Hasta 1000 usuarios",
             "Dashboard consolidado multi-sede",
             "API para integraciones",
-            "Usuarios ilimitados",
             "Roles y permisos personalizados",
             "Soporte 24/7 dedicado",
             "Capacitación incluida"
