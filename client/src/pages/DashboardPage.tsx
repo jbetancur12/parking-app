@@ -185,13 +185,125 @@ export default function DashboardPage() {
         <div>
             <h1 className="text-3xl font-display font-bold text-brand-blue mb-6">Bienvenido, {user?.username}</h1>
 
-            {/* Multi-Location Summary (Admin Only) */}
+            {/* ZONA 1: OPERATIVA INMEDIATA */}
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Operativa Inmediata</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Columna 1 & 2: Gestión de Turno */}
+                <div className="lg:col-span-2">
+                    {!activeShift ? (
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-gray-300 h-full flex flex-col justify-center">
+                            <h2 className="text-lg font-display font-bold mb-4 text-brand-blue">Iniciar Turno</h2>
+                            <p className="text-gray-600 mb-4">Necesita un turno activo para registrar vehículos.</p>
+                            <div className="flex gap-4 items-end">
+                                <div className="flex-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Base de Caja</label>
+                                    <input
+                                        type="number"
+                                        value={baseAmount}
+                                        onChange={(e) => setBaseAmount(e.target.value)}
+                                        className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-blue transition-shadow"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleOpenShift}
+                                    className="flex-1 bg-brand-green text-white py-2 rounded-lg hover:bg-green-600 font-bold shadow-md transition-transform active:scale-95 flex justify-center items-center h-[42px]"
+                                >
+                                    <Play className="mr-2" size={20} />
+                                    Abrir Turno
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                            {/* Turno Activo Card */}
+                            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green flex flex-col justify-between">
+                                <div>
+                                    <h2 className="text-lg font-display font-bold text-brand-blue">Turno Activo</h2>
+                                    <p className="text-gray-500 text-sm font-medium mt-1">Iniciado: {new Date(activeShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    <p className="text-gray-500 text-sm font-medium">Base: ${Number(activeShift.baseAmount).toLocaleString()}</p>
+                                </div>
+                                <div className="mt-4">
+                                    <button
+                                        onClick={() => setShowCloseModal(true)}
+                                        className="w-full py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold transition-colors flex items-center justify-center border border-red-200"
+                                    >
+                                        <Square className="mr-2" size={18} /> Cerrar Turno
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Acciones Rápidas Card */}
+                            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100 flex flex-col justify-center gap-3">
+                                <h2 className="text-lg font-display font-bold text-brand-blue mb-1">Acciones Rápidas</h2>
+                                <a href="/parking" className="flex items-center justify-center w-full bg-brand-blue text-white py-2 rounded-lg hover:bg-blue-900 font-bold shadow-sm transition-all">
+                                    Ir al Parqueo
+                                </a>
+                                <a href="/reports" className="flex items-center justify-center w-full bg-gray-100 text-brand-blue py-2 rounded-lg hover:bg-gray-200 font-bold transition-all border border-gray-200">
+                                    Ver Reportes
+                                </a>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Columna 3: Ocupación en Tiempo Real */}
+                <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-brand-yellow">
+                    <h3 className="text-lg font-display font-bold text-brand-blue mb-4">Ocupación en Tiempo Real</h3>
+                    {occupancy ? (
+                        <div className="space-y-6">
+                            {/* Cars */}
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm font-bold text-gray-600">Carros</span>
+                                    <span className="text-sm font-bold text-brand-blue">{occupancy.car.current} / {occupancy.checkEnabled ? occupancy.car.capacity : '∞'}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className={`h-2 rounded-full transition-all duration-500 ${(occupancy.car.current / occupancy.car.capacity) > 0.9 ? 'bg-red-500' :
+                                                (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-blue'
+                                            }`}
+                                        style={{ width: `${occupancy.checkEnabled ? Math.min((occupancy.car.current / occupancy.car.capacity) * 100, 100) : 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+
+                            {/* Motorcycles */}
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm font-bold text-gray-600">Motos</span>
+                                    <span className="text-sm font-bold text-brand-yellow">{occupancy.motorcycle.current} / {occupancy.checkEnabled ? occupancy.motorcycle.capacity : '∞'}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className={`h-2 rounded-full transition-all duration-500 ${(occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.9 ? 'bg-red-500' :
+                                                (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-yellow'
+                                            }`}
+                                        style={{ width: `${occupancy.checkEnabled ? Math.min((occupancy.motorcycle.current / occupancy.motorcycle.capacity) * 100, 100) : 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-24 w-full" />
+                    )}
+                </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg flex items-center font-bold">
+                    <AlertCircle className="mr-2" size={20} />
+                    {error}
+                </div>
+            )}
+
+
+            {/* ZONA 2: KPIS FINANCIEROS (Admin Only) */}
             {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && consolidatedData && (
-                <div className="mb-8">
-                    <h2 className="text-xl font-display font-bold text-brand-blue mb-4 flex items-center">
-                        <Users className="mr-2" size={24} /> Resumen Multi-Sede (Hoy)
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <>
+                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">KPIs Financieros (Hoy)</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                         <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-brand-blue">
                             <div className="text-sm font-bold text-gray-500">Total Ingresos (Global)</div>
                             <div className="text-2xl font-bold text-brand-blue">${consolidatedData.globalStats?.totalIncome?.toLocaleString()}</div>
@@ -210,232 +322,124 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Location Breakdown Grid */}
-                    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-                        <h3 className="text-lg font-display font-bold text-brand-blue mb-4">Desglose por Sede</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {consolidatedData.locationStats?.map((loc: any) => (
-                                <div key={loc.locationId} className="border rounded-lg p-4 hover:bg-brand-blue/5 transition-colors">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="font-bold text-brand-blue">{loc.locationName}</h4>
-                                        <span className="text-xs font-bold bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                                            {loc.transactionCount} Tx
-                                        </span>
+                    {/* ZONA 3: ANÁLISIS PROFUNDO */}
+                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Análisis Profundo</h2>
+                    {stats && (
+                        <div className="space-y-6 mb-8">
+                            {/* Row 1: Ingresos y Distribución */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Ingresos Semanales (2/3) */}
+                                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                                            <TrendingUp size={20} className="mr-2 text-brand-green" />
+                                            Ingresos Semanales
+                                        </h3>
                                     </div>
-                                    <div className="space-y-1 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500 font-medium">Ingresos:</span>
-                                            <span className="font-bold text-brand-green">${loc.totalIncome.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500 font-medium">Neto:</span>
-                                            <span className="font-bold text-brand-blue">${(loc.totalIncome - loc.totalExpenses).toLocaleString()}</span>
-                                        </div>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={stats.weeklyIncome}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                                                <Tooltip
+                                                    formatter={(value: any) => [`$${value.toLocaleString()}`, 'Ingresos']}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Area type="monotone" dataKey="amount" stroke="#28A745" fill="#D1FAE5" strokeWidth={2} />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Occupancy Widget */}
-            {occupancy && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {/* Cars */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-blue">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-lg font-display font-bold text-brand-blue">Ocupación Carros</h3>
-                            <span className="text-2xl font-bold text-brand-blue">{occupancy.car.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.car.capacity : '∞'}</span></span>
-                        </div>
-                        {occupancy.checkEnabled && (
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div
-                                    className={`h-2.5 rounded-full ${(occupancy.car.current / occupancy.car.capacity) > 0.9 ? 'bg-red-500' :
-                                        (occupancy.car.current / occupancy.car.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-blue'
-                                        }`}
-                                    style={{ width: `${Math.min((occupancy.car.current / occupancy.car.capacity) * 100, 100)}%` }}
-                                ></div>
+                                {/* Distribución de Ingresos (1/3) */}
+                                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                                            <Users size={20} className="mr-2 text-brand-blue" />
+                                            Distribución
+                                        </h3>
+                                    </div>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={stats.pieData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    fill="#1A3A5A"
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {stats.pieData.map((_: any, index: number) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend verticalAlign="bottom" height={36} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                        <p className="text-xs font-bold text-gray-500 mt-2">
-                            {occupancy.checkEnabled
-                                ? `${occupancy.car.capacity - occupancy.car.current} cupos disponibles`
-                                : 'Sin límite de capacidad'}
-                        </p>
-                    </div>
 
-                    {/* Motorcycles */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-yellow">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-lg font-display font-bold text-brand-blue">Ocupación Motos</h3>
-                            <span className="text-2xl font-bold text-brand-yellow">{occupancy.motorcycle.current} <span className="text-sm text-gray-400">/ {occupancy.checkEnabled ? occupancy.motorcycle.capacity : '∞'}</span></span>
-                        </div>
-                        {occupancy.checkEnabled && (
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div
-                                    className={`h-2.5 rounded-full ${(occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.9 ? 'bg-red-500' :
-                                        (occupancy.motorcycle.current / occupancy.motorcycle.capacity) > 0.7 ? 'bg-brand-yellow' : 'bg-brand-yellow'
-                                        }`}
-                                    style={{ width: `${Math.min((occupancy.motorcycle.current / occupancy.motorcycle.capacity) * 100, 100)}%` }}
-                                ></div>
-                            </div>
-                        )}
-                        <p className="text-xs font-bold text-gray-500 mt-2">
-                            {occupancy.checkEnabled
-                                ? `${occupancy.motorcycle.capacity - occupancy.motorcycle.current} cupos disponibles`
-                                : 'Sin límite de capacidad'}
-                        </p>
-                    </div>
-                </div>
-            )}
+                            {/* Row 2: Actividad y Desglose */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Actividad por Hora (2/3) */}
+                                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                                            <Clock size={20} className="mr-2 text-purple-500" />
+                                            Actividad por Hora (30 días)
+                                        </h3>
+                                    </div>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={stats.hourlyData}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
+                                                <Tooltip
+                                                    cursor={{ fill: '#F3F4F6' }}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
 
-            {/* Dashboard Charts for Admin */}
-            {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && stats && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* Weekly Income */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
-                                <TrendingUp size={20} className="mr-2 text-brand-green" />
-                                Ingresos Semanales
-                            </h3>
-                        </div>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={stats.weeklyIncome}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                                    <Tooltip
-                                        formatter={(value: any) => [`$${value.toLocaleString()}`, 'Ingresos']}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Area type="monotone" dataKey="amount" stroke="#28A745" fill="#D1FAE5" strokeWidth={2} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Transaction Types */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
-                                <Users size={20} className="mr-2 text-brand-blue" />
-                                Distribución de Ingresos
-                            </h3>
-                        </div>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={stats.pieData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        fill="#1A3A5A"
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {stats.pieData.map((_: any, index: number) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                {/* Desglose por Sede (1/3) - Moved here */}
+                                <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4">
+                                    <h3 className="text-lg font-display font-bold text-brand-blue mb-4">Desglose por Sede</h3>
+                                    <div className="flex flex-col gap-3 h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        {consolidatedData.locationStats?.map((loc: any) => (
+                                            <div key={loc.locationId} className="border rounded-lg p-3 hover:bg-brand-blue/5 transition-colors">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <h4 className="font-bold text-sm text-brand-blue truncate max-w-[120px]" title={loc.locationName}>{loc.locationName}</h4>
+                                                    <span className="text-xs font-bold bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">
+                                                        {loc.transactionCount} Tx
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-500">Ingresos:</span>
+                                                    <span className="font-bold text-brand-green">${loc.totalIncome.toLocaleString()}</span>
+                                                </div>
+                                            </div>
                                         ))}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend verticalAlign="bottom" height={36} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                                        {(!consolidatedData.locationStats || consolidatedData.locationStats.length === 0) && (
+                                            <p className="text-gray-400 text-sm text-center italic mt-10">No hay datos de sedes</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Hourly Activity */}
-                    <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2 border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
-                                <Clock size={20} className="mr-2 text-purple-500" />
-                                Actividad por Hora (Últimos 30 días)
-                            </h3>
-                        </div>
-                        <div className="h-48">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.hourlyData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
-                                    <Tooltip
-                                        cursor={{ fill: '#F3F4F6' }}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
+                    )}
+                </>
             )}
 
-            {error && (
-                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg flex items-center font-bold">
-                    <AlertCircle className="mr-2" size={20} />
-                    {error}
-                </div>
-            )}
-
-            {!activeShift ? (
-                <div className="bg-white p-6 rounded-lg shadow-md max-w-md border-l-4 border-gray-300">
-                    <h2 className="text-lg font-display font-bold mb-4 text-brand-blue">Iniciar Turno</h2>
-                    <p className="text-gray-600 mb-4">Necesita un turno activo para registrar vehículos.</p>
-                    <div className="mb-4">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Base de Caja</label>
-                        <input
-                            type="number"
-                            value={baseAmount}
-                            onChange={(e) => setBaseAmount(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-blue transition-shadow"
-                            placeholder="0"
-                        />
-                    </div>
-                    <button
-                        onClick={handleOpenShift}
-                        className="w-full flex items-center justify-center bg-brand-green text-white py-2 rounded-lg hover:bg-green-600 font-bold shadow-md transition-transform active:scale-95"
-                    >
-                        <Play className="mr-2" size={20} />
-                        Abrir Turno
-                    </button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green">
-                        <h2 className="text-lg font-display font-bold text-brand-blue">Turno Activo</h2>
-                        <p className="text-gray-500 text-sm font-medium">Iniciado a las: {new Date(activeShift.startTime).toLocaleString()}</p>
-                        <p className="text-gray-500 text-sm mt-2 font-medium">Base: ${Number(activeShift.baseAmount).toLocaleString()}</p>
-                        <div className="mt-4">
-                            <button
-                                onClick={() => setShowCloseModal(true)}
-                                className="flex items-center text-red-600 hover:text-red-800 font-bold transition-colors"
-                            >
-                                <Square className="mr-2" size={18} /> Cerrar Turno
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-                        <h2 className="text-lg font-display font-bold text-brand-blue mb-4">Acciones Rápidas</h2>
-                        <div className="space-y-3">
-                            <a href="/parking" className="block w-full text-center bg-brand-blue text-white py-2 rounded-lg hover:bg-blue-900 font-bold shadow-sm transition-all">
-                                Ir al Parqueo
-                            </a>
-                            <a href="/reports" className="block w-full text-center bg-gray-100 text-brand-blue py-2 rounded-lg hover:bg-gray-200 font-bold transition-all">
-                                Ver Reportes
-                            </a>
-                        </div>
-                    </div>
-
-
-                </div>
-            )}
-
+            {/* Modals and Hidden Components - Keep as is at bottom */}
             {/* Close Shift Modal */}
             {showCloseModal && activeShift && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
