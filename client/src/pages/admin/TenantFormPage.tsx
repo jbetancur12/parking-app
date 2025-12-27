@@ -8,7 +8,7 @@ interface TenantFormData {
     name: string;
     slug: string;
     contactEmail: string;
-    plan: 'free' | 'pro' | 'enterprise';
+    plan: 'basic' | 'pro' | 'enterprise';
 }
 
 export default function TenantFormPage() {
@@ -19,7 +19,7 @@ export default function TenantFormPage() {
         name: '',
         slug: '',
         contactEmail: '',
-        plan: 'free',
+        plan: 'basic',
     });
 
     const isEdit = !!id;
@@ -166,7 +166,7 @@ export default function TenantFormPage() {
                             required
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="free">Free - Gratis</option>
+                            <option value="basic">Básico - $50.000/mes</option>
                             <option value="pro">Pro - Profesional</option>
                             <option value="enterprise">Enterprise - Empresarial</option>
                         </select>

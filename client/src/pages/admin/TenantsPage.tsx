@@ -19,9 +19,9 @@ interface Tenant {
 }
 
 const SAAS_PLANS: Record<string, { maxLocations: number; maxUsers: number; price: number; label: string }> = {
-    free: { maxLocations: 1, maxUsers: 2, price: 0, label: 'Gratis' },
-    pro: { maxLocations: 5, maxUsers: 10, price: 50000, label: 'Pro' },
-    enterprise: { maxLocations: 100, maxUsers: 1000, price: 200000, label: 'Enterprise' }
+    basic: { maxLocations: 1, maxUsers: 2, price: 50000, label: 'Básico' },
+    pro: { maxLocations: 5, maxUsers: 10, price: 150000, label: 'Pro' },
+    enterprise: { maxLocations: 100, maxUsers: 1000, price: 300000, label: 'Enterprise' }
 };
 
 export default function TenantsPage() {
@@ -84,12 +84,12 @@ export default function TenantsPage() {
 
     const getPlanBadge = (plan: string) => {
         const colors = {
-            free: 'bg-gray-100 text-gray-800',
+            basic: 'bg-gray-100 text-gray-800',
             pro: 'bg-brand-blue/10 text-brand-blue',
             enterprise: 'bg-brand-yellow/20 text-yellow-800',
         };
         return (
-            <span className={`px-2 py-1 text-xs font-bold rounded-full ${colors[plan as keyof typeof colors] || colors.free}`}>
+            <span className={`px-2 py-1 text-xs font-bold rounded-full ${colors[plan as keyof typeof colors] || colors.basic}`}>
                 {plan.toUpperCase()}
             </span>
         );
