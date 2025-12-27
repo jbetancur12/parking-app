@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+    description?: string;
+}
+
+const { title, description = "Controla mensualidades, facturación y turnos de tu parqueadero con Aparca. El software más moderno y fácil de usar en Colombia." } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		
+		<!-- Favicon -->
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/favicon.png" />
+		
+		<!-- SEO Meta Tags -->
+		<meta name="keywords" content="software parqueadero, sistema parking, control mensualidades, colombia, aparca, parqueadero colombia, facturación parqueadero, gestión parking" />
+		<meta name="author" content="Aparca Software" />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href={canonicalURL} />
+		
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalURL} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={new URL('/favicon.png', Astro.site)} />
+		<meta property="og:locale" content="es_CO" />
+		<meta property="og:site_name" content="Aparca" />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={canonicalURL} />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={new URL('/favicon.png', Astro.site)} />
+
+		<!-- Structured Data (JSON-LD) -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "SoftwareApplication",
+			"name": "Aparca",
+			"applicationCategory": "BusinessApplication",
+			"operatingSystem": "Web",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "COP"
+			},
+			"aggregateRating": {
+				"@type": "AggregateRating",
+				"ratingValue": "4.8",
+				"ratingCount": "150"
+			},
+			"description": "Software para la gestión integral de parqueaderos en Colombia"
+		}
+		</script>
+
+        <!-- Preconnect for Performance -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+	</head>
+	<body class="font-sans antialiased text-gray-800 bg-brand-white">
+		<slot />
+	</body>
+</html>

@@ -1,0 +1,38 @@
+---
+import MobileMenu from './MobileMenu';
+---
+
+<nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100/50 shadow-sm transition-all duration-300" id="navbar">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <!-- Brand -->
+            <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                <img src="/LogoTexto.png" alt="Aparca Logo" class="h-10 w-auto" />
+            </div>
+
+            <!-- Desktop Links -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#features" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">Características</a>
+                <a href="#how-it-works" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">Cómo Funciona</a>
+                <a href="#pricing" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">Precios</a>
+                <a href="#testimonials" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">Clientes</a>
+                <a href="#faq" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">FAQ</a>
+                <a href="#contact" class="text-gray-600 hover:text-brand-blue font-medium transition-colors">Contacto</a>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-brand-blue font-bold hover:text-blue-700 transition-colors">Demo</a>
+                <a 
+                    href="http://localhost:5173" 
+                    class="bg-brand-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-900 transition-all shadow-lg hover:shadow-brand-blue/20 active:scale-95"
+                >
+                    Ingresar
+                </a>
+            </div>
+
+            <!-- Mobile Menu -->
+            <MobileMenu client:load />
+        </div>
+    </div>
+</nav>

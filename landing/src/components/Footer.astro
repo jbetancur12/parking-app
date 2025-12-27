@@ -1,0 +1,48 @@
+---
+import { Facebook, Instagram, Twitter } from 'lucide-react';
+---
+
+<footer class="bg-gray-900 text-white py-12 border-t border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center gap-2 mb-4">
+                     <img src="/LogoTexto.png" alt="Aparca Logo" class="h-8 w-auto brightness-0 invert" />
+                </div>
+                <p class="text-gray-400 max-w-sm mb-6">
+                    El sistema operativo para parqueaderos modernos. Impulsamos la eficiencia y el control de tu negocio.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-brand-yellow transition-colors"><Facebook size={20} /></a>
+                    <a href="#" class="text-gray-400 hover:text-brand-yellow transition-colors"><Instagram size={20} /></a>
+                    <a href="#" class="text-gray-400 hover:text-brand-yellow transition-colors"><Twitter size={20} /></a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-gray-200">Producto</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="/#features" class="hover:text-white transition-colors">Características</a></li>
+                    <li><a href="/#pricing" class="hover:text-white transition-colors">Precios</a></li>
+                    <li><a href="/#testimonials" class="hover:text-white transition-colors">Clientes</a></li>
+                    <li><a href="http://localhost:5173" class="hover:text-white transition-colors">Iniciar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-gray-200">Legal</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="/terms" class="hover:text-white transition-colors">Términos y Condiciones</a></li>
+                    <li><a href="/privacy" class="hover:text-white transition-colors">Política de Privacidad</a></li>
+                    <li><a href="/habeas-data" class="hover:text-white transition-colors">Habeas Data</a></li>
+                    <li><a href="/#contact" class="hover:text-white transition-colors">Contacto</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+            <p>&copy; {new Date().getFullYear()} Aparca Software. Hecho con ❤️ en Colombia.</p>
+            <p>v1.0.0</p>
+        </div>
+    </div>
+</footer>

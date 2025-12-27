@@ -1,0 +1,50 @@
+---
+import { Quote } from 'lucide-react';
+
+const testimonials = [
+    {
+        name: "Carlos Rodríguez",
+        role: "Administrador Parking Central",
+        content: "Desde que usamos Aparca, el cierre de caja ya no es un dolor de cabeza. Ahorramos 2 horas diarias de trabajo administrativo.",
+        location: "Bogotá, DC"
+    },
+    {
+        name: "María Fernanda Lopez",
+        role: "Gerente Parqueadero La 93",
+        content: "La facturación electrónica integrada es lo mejor. Cumplimos con la DIAN sin tener que contratar otro software adicional.",
+        location: "Medellín, ANT"
+    },
+    {
+        name: "Jorge Martínez",
+        role: "Propietario AutoPark",
+        content: "Controlar las mensualidades y saber quién ha pagado y quién no en tiempo real ha mejorado nuestro flujo de caja increíblemente.",
+        location: "Cali, VAC"
+    }
+];
+---
+
+<section id="testimonials" class="py-24 bg-white relative overflow-hidden">
+    <!-- Background blob -->
+    <div class="absolute -right-20 top-40 w-96 h-96 bg-brand-yellow/5 rounded-full blur-3xl"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Confían en nosotros</h2>
+            <p class="text-xl text-gray-600">Únete a la comunidad de parqueaderos más moderna de Colombia.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t) => (
+                <div class="bg-gray-50 rounded-2xl p-8 relative">
+                    <Quote className="absolute top-8 right-8 text-brand-blue/10 w-12 h-12" />
+                    <p class="text-gray-700 text-lg mb-6 italic">"{t.content}"</p>
+                    <div>
+                        <h4 class="font-bold text-gray-900 font-display">{t.name}</h4>
+                        <p class="text-brand-blue text-sm font-medium">{t.role}</p>
+                        <p class="text-gray-500 text-xs mt-1">{t.location}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+</section>

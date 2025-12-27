@@ -1,0 +1,91 @@
+---
+import { Car, Wallet, ShieldCheck, Receipt, BarChart3, Users } from 'lucide-react';
+---
+
+<section id="features" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">todo lo que necesitas para operar</h2>
+            <p class="text-xl text-gray-600">Deja de usar papel y Excel. Automatiza tu operación con tecnología de punta.</p>
+        </div>
+
+        <!-- Bento Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+            
+            <!-- Large Card: Control de Vehículos -->
+            <div class="md:col-span-2 row-span-1 bg-gray-50 rounded-3xl p-8 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition-shadow group overflow-hidden relative">
+                <div class="absolute right-0 top-0 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-brand-blue/10"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-brand-blue">
+                        <Car size={24} />
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-gray-900 mb-2">Control de Entradas y Salidas</h3>
+                    <p class="text-gray-600 max-w-md">Registra placas, calcula tarifas automáticamente y gestiona cupos en tiempo real. Imprime tickets al instante.</p>
+                </div>
+                
+                <div class="mt-8 flex gap-2 overflow-hidden opacity-50 relative h-20 items-end">
+                    <!-- Decorate UI elements -->
+                     <div class="bg-white border rounded-lg p-3 w-48 shadow-sm text-xs">
+                        <div class="font-bold text-gray-800">Placa: HKL-123</div>
+                        <div class="text-green-600">Ingreso: 10:30 AM</div>
+                     </div>
+                     <div class="bg-white border rounded-lg p-3 w-48 shadow-sm text-xs translate-y-2">
+                        <div class="font-bold text-gray-800">Placa: AAA-000</div>
+                        <div class="text-green-600">Ingreso: 10:45 AM</div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Tall Card: Mensualidades -->
+            <div class="md:col-span-1 row-span-2 bg-brand-blue rounded-3xl p-8 text-white flex flex-col relative overflow-hidden group">
+                 <div class="absolute inset-0 bg-gradient-to-br from-brand-blue to-blue-900 z-0"></div>
+                 <div class="relative z-10">
+                    <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 text-brand-yellow">
+                        <Users size={24} />
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-2">Mensualidades</h3>
+                    <p class="text-blue-100 mb-8">Administra clientes recurrentes, fechas de vencimiento y pagos anticipados.</p>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-sm">Juan Pérez</span>
+                                <span class="text-brand-green bg-white/10 px-2 py-0.5 rounded text-xs">Activo</span>
+                            </div>
+                            <div class="h-1 bg-white/20 rounded-full w-full">
+                                <div class="h-1 bg-brand-yellow rounded-full w-3/4"></div>
+                            </div>
+                            <div class="text-xs text-blue-200 mt-1">Vence en 5 días</div>
+                        </div>
+                         <div class="bg-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-sm">Maria L.</span>
+                                <span class="text-red-300 bg-red-900/20 px-2 py-0.5 rounded text-xs">Vencido</span>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Card: Ingresos -->
+            <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-600">
+                    <Wallet size={24} />
+                </div>
+                <h3 class="text-xl font-bold font-display text-gray-900 mb-2">Caja y Arqueo</h3>
+                <p class="text-sm text-gray-600">Cierra caja por turnos, controla efectivo vs transferencias y evita fugas de dinero.</p>
+            </div>
+
+            <!-- Card: Facturación -->
+            <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center mb-6 text-yellow-600">
+                    <Receipt size={24} />
+                </div>
+                <h3 class="text-xl font-bold font-display text-gray-900 mb-2">Facturación POS</h3>
+                <p class="text-sm text-gray-600">Genera recibos personalizados con tu logo y normativa legal vigente.</p>
+            </div>
+
+        </div>
+    </div>
+</section>

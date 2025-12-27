@@ -1,0 +1,71 @@
+---
+import { Mail, Phone, MapPin } from 'lucide-react';
+---
+
+<section id="contact" class="py-24 bg-brand-blue text-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div>
+                <h2 class="text-3xl md:text-5xl font-display font-bold mb-6">Hablemos de tu negocio</h2>
+                <p class="text-blue-100 text-lg mb-10 max-w-lg">
+                    ¿Tienes dudas sobre cómo Aparca puede ayudarte? Nuestro equipo está listo para asesorarte sin compromiso.
+                </p>
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-yellow">
+                            <Mail size={24} />
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-200">Correo Electrónico</p>
+                            <p class="font-bold">hola@aparca.app</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-yellow">
+                            <Phone size={24} />
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-200">Línea de Ventas</p>
+                            <p class="font-bold">+57 300 123 4567</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-yellow">
+                            <MapPin size={24} />
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-200">Oficina Principal</p>
+                            <p class="font-bold">Bogotá D.C., Colombia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10">
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-blue-100 mb-1">Nombre Completo</label>
+                        <input type="text" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Tu nombre" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-100 mb-1">Correo Electrónico</label>
+                        <input type="email" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="tucorreo@empresa.com" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-100 mb-1">Mensaje</label>
+                        <textarea rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Cuéntanos sobre tu parqueadero..."></textarea>
+                    </div>
+                    <button type="button" class="w-full bg-brand-yellow text-brand-blue font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-lg">
+                        Enviar Mensaje
+                    </button>
+                    <p class="text-xs text-center text-blue-300 mt-4">
+                        Al enviar este formulario aceptas nuestra <a href="/privacy" class="underline hover:text-white">Política de Privacidad</a>.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

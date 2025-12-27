@@ -1,0 +1,63 @@
+---
+import { UserPlus, Car, CreditCard, BarChart } from 'lucide-react';
+
+const steps = [
+    {
+        icon: UserPlus,
+        title: "1. Regístrate",
+        description: "Crea tu cuenta gratis en menos de 2 minutos. No necesitas tarjeta de crédito."
+    },
+    {
+        icon: Car,
+        title: "2. Configura tu Parqueadero",
+        description: "Define tarifas, cupos y horarios. Personaliza según tu operación."
+    },
+    {
+        icon: CreditCard,
+        title: "3. Registra Entradas y Salidas",
+        description: "Usa la app desde cualquier dispositivo. Imprime tickets automáticamente."
+    },
+    {
+        icon: BarChart,
+        title: "4. Controla tu Negocio",
+        description: "Revisa reportes en tiempo real. Cierra caja sin errores."
+    }
+];
+---
+
+<section id="how-it-works" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">¿Cómo funciona?</h2>
+            <p class="text-xl text-gray-600">Empieza a operar en 4 pasos simples</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                    <div class="relative">
+                        {/* Connector Line (hidden on mobile, last item) */}
+                        {index < steps.length - 1 && (
+                            <div class="hidden lg:block absolute top-12 left-1/2 w-full h-0.5 bg-gradient-to-r from-brand-blue to-brand-yellow opacity-20 z-0"></div>
+                        )}
+                        
+                        <div class="relative z-10 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-brand-blue to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg transform hover:scale-110 transition-transform">
+                                <Icon size={32} />
+                            </div>
+                            <h3 class="text-xl font-bold font-display text-gray-900 mb-3">{step.title}</h3>
+                            <p class="text-gray-600">{step.description}</p>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+
+        <div class="mt-16 text-center">
+            <a href="http://localhost:5173" class="inline-block bg-brand-yellow text-brand-blue px-10 py-4 rounded-xl font-bold text-lg hover:bg-yellow-400 transition-all shadow-lg hover:-translate-y-1">
+                Comenzar Ahora
+            </a>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,89 @@
+---
+import { Check } from 'lucide-react';
+
+const plans = [
+    {
+        name: "Emprendedor",
+        price: "Gratis",
+        period: "Para siempre",
+        description: "Ideal para parqueaderos pequeños o que están iniciando.",
+        features: [
+            "Hasta 50 tickets diarios",
+            "Gestión de caja básica",
+            "Un solo usuario",
+            "Soporte por correo"
+        ],
+        cta: "Comenzar Gratis",
+        primary: false
+    },
+    {
+        name: "Pro",
+        price: "$80.000",
+        period: "/ mes",
+        description: "Para parqueaderos en crecimiento que necesitan control total.",
+        features: [
+            "Tickets ilimitados",
+            "Facturación Electrónica DIAN",
+            "Usuarios ilimitados",
+            "Control de mensualidades",
+            "Reportes avanzados",
+            "Soporte prioritario WhatsApp"
+        ],
+        cta: "Prueba de 14 días",
+        primary: true
+    },
+    {
+        name: "Empresarial",
+        price: "A medida",
+        period: "",
+        description: "Para cadenas de parqueaderos o necesidades complejas.",
+        features: [
+            "Todo lo de Pro",
+            "API personalizada",
+            "Integración con talanqueras",
+            "Hardware incluido (opcional)",
+            "Gerente de cuenta dedicado"
+        ],
+        cta: "Contactar Ventas",
+        primary: false
+    }
+];
+---
+
+<section id="pricing" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Planes transparentes</h2>
+            <p class="text-xl text-gray-600">Sin costos ocultos. Elige el plan que mejor se adapte a tu operación.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {plans.map((plan) => (
+                <div class={`rounded-3xl p-8 border ${plan.primary ? 'bg-white border-brand-blue shadow-xl scale-105 z-10' : 'bg-white border-gray-100 shadow-sm'} transition-transform hover:-translate-y-1`}>
+                    <h3 class="text-xl font-bold font-display text-gray-900 mb-2">{plan.name}</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span class="text-4xl font-extrabold text-gray-900">{plan.price}</span>
+                        <span class="text-gray-500">{plan.period}</span>
+                    </div>
+                    <p class="text-gray-600 mb-6 h-12">{plan.description}</p>
+                    
+                    <a 
+                        href="http://localhost:5173" 
+                        class={`block w-full text-center py-3 rounded-xl font-bold transition-all ${plan.primary ? 'bg-brand-blue text-white hover:bg-blue-800 shadow-lg' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
+                    >
+                        {plan.cta}
+                    </a>
+
+                    <ul class="mt-8 space-y-4">
+                        {plan.features.map((feature) => (
+                            <li class="flex items-start gap-3 text-gray-600">
+                                <Check className={`w-5 h-5 flex-shrink-0 ${plan.primary ? 'text-brand-green' : 'text-gray-400'}`} />
+                                <span class="text-sm">{feature}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </div>
+    </div>
+</section>

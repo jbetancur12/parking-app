@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Pricing from '../components/Pricing.astro';
+import Testimonials from '../components/Testimonials.astro';
+import FAQ from '../components/FAQ';
+import Contact from '../components/Contact.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Aparca - El Software #1 para Parqueaderos en Colombia">
+	<Navbar />
+	<main>
+		<Hero />
+		<Features />
+		<HowItWorks />
+		<Pricing />
+        <Testimonials />
+		<FAQ client:load />
+        <Contact />
+	</main>
+	<WhatsAppButton />
+	<Footer />
+</Layout>

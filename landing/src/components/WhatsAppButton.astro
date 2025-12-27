@@ -1,0 +1,17 @@
+---
+import { MessageCircle } from 'lucide-react';
+---
+
+<a 
+    href="https://wa.me/573001234567?text=Hola,%20quiero%20información%20sobre%20Aparca" 
+    target="_blank"
+    rel="noopener noreferrer"
+    class="fixed bottom-6 right-6 z-40 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition-all hover:scale-110 active:scale-95 group"
+    aria-label="Contactar por WhatsApp"
+>
+    <MessageCircle size={28} className="group-hover:animate-bounce" />
+    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+    </span>
+</a>
