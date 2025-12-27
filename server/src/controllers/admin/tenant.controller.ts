@@ -28,8 +28,8 @@ export const createTenant = async (req: Request, res: Response) => {
             return res.status(409).json({ message: 'Slug already exists' });
         }
 
-        const selectedPlan = plan || TenantPlan.FREE;
-        const planConfig = SAAS_PLANS[selectedPlan as TenantPlan] || SAAS_PLANS[TenantPlan.FREE];
+        const selectedPlan = plan || TenantPlan.BASIC;
+        const planConfig = SAAS_PLANS[selectedPlan as TenantPlan] || SAAS_PLANS[TenantPlan.BASIC];
 
         const tenant = em.create(Tenant, {
             name,

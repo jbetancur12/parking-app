@@ -21,13 +21,13 @@ export class Tenant {
     status = TenantStatus.ACTIVE;
 
     @Enum(() => TenantPlan)
-    plan = TenantPlan.FREE;
+    plan = TenantPlan.BASIC;
 
     @Property()
     maxLocations: number = 1;
 
     @Property()
-    maxUsers: number = 2; // Default small limit for FREE
+    maxUsers: number = 2; // Default limit for BASIC
 
     @Property({ nullable: true })
     trialEndsAt?: Date;
@@ -53,7 +53,7 @@ export enum TenantStatus {
 }
 
 export enum TenantPlan {
-    FREE = 'free',
+    BASIC = 'basic',
     TRIAL = 'trial',
     PRO = 'pro',
     ENTERPRISE = 'enterprise'

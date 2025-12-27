@@ -93,7 +93,7 @@ async function seedSaaS() {
                 name: 'Parking Plaza',
                 slug: 'parkingplaza',
                 contactEmail: 'info@parkingplaza.com',
-                plan: TenantPlan.FREE,
+                plan: TenantPlan.BASIC,
                 status: TenantStatus.ACTIVE,
                 createdAt: new Date(),
                 updatedAt: new Date(),
