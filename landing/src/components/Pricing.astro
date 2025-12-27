@@ -1,51 +1,61 @@
+```
 ---
-import { Check } from 'lucide-react';
+import { Check, Zap } from 'lucide-react';
 
 const plans = [
     {
         name: "Emprendedor",
-        price: "Gratis",
-        period: "Para siempre",
-        description: "Ideal para parqueaderos pequeños o que están iniciando.",
+        price: "80.000",
+        period: "/mes",
+        description: "Perfecto para parqueaderos pequeños que están comenzando",
         features: [
-            "Hasta 50 tickets diarios",
-            "Gestión de caja básica",
-            "Un solo usuario",
-            "Soporte por correo"
+            "1 sede",
+            "Hasta 50 cupos",
+            "Gestión de entradas y salidas",
+            "Clientes mensuales ilimitados",
+            "Reportes básicos",
+            "Impresión de tickets",
+            "Soporte por email"
         ],
         cta: "Comenzar Gratis",
-        primary: false
+        highlighted: false
     },
     {
         name: "Pro",
-        price: "$80.000",
-        period: "/ mes",
-        description: "Para parqueaderos en crecimiento que necesitan control total.",
+        price: "180.000",
+        period: "/mes",
+        description: "Ideal para parqueaderos establecidos que necesitan más control",
         features: [
-            "Tickets ilimitados",
-            "Facturación Electrónica DIAN",
-            "Usuarios ilimitados",
-            "Control de mensualidades",
-            "Reportes avanzados",
-            "Soporte prioritario WhatsApp"
+            "Todo lo del Emprendedor",
+            "Hasta 3 sedes",
+            "Cupos ilimitados",
+            "✨ Integración facturación electrónica DIAN",
+            "Reportes avanzados y exportación",
+            "Control de turnos",
+            "Gestión de lavado",
+            "Soporte prioritario"
         ],
-        cta: "Prueba de 14 días",
-        primary: true
+        cta: "Prueba 14 Días Gratis",
+        highlighted: true,
+        badge: "Más Popular"
     },
     {
         name: "Empresarial",
-        price: "A medida",
-        period: "",
-        description: "Para cadenas de parqueaderos o necesidades complejas.",
+        price: "350.000",
+        period: "/mes",
+        description: "Para cadenas de parqueaderos con múltiples ubicaciones",
         features: [
-            "Todo lo de Pro",
-            "API personalizada",
-            "Integración con talanqueras",
-            "Hardware incluido (opcional)",
-            "Gerente de cuenta dedicado"
+            "Todo lo del Pro",
+            "Sedes ilimitadas",
+            "Dashboard consolidado multi-sede",
+            "API para integraciones",
+            "Usuarios ilimitados",
+            "Roles y permisos personalizados",
+            "Soporte 24/7 dedicado",
+            "Capacitación incluida"
         ],
         cta: "Contactar Ventas",
-        primary: false
+        highlighted: false
     }
 ];
 ---
@@ -53,37 +63,63 @@ const plans = [
 <section id="pricing" class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Planes transparentes</h2>
-            <p class="text-xl text-gray-600">Sin costos ocultos. Elige el plan que mejor se adapte a tu operación.</p>
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Planes transparentes, sin sorpresas</h2>
+            <p class="text-xl text-gray-600">Elige el plan perfecto para tu parqueadero. Todos incluyen 14 días de prueba gratis.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {plans.map((plan) => (
-                <div class={`rounded-3xl p-8 border ${plan.primary ? 'bg-white border-brand-blue shadow-xl scale-105 z-10' : 'bg-white border-gray-100 shadow-sm'} transition-transform hover:-translate-y-1`}>
-                    <h3 class="text-xl font-bold font-display text-gray-900 mb-2">{plan.name}</h3>
-                    <div class="flex items-baseline gap-1 mb-4">
-                        <span class="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                        <span class="text-gray-500">{plan.period}</span>
-                    </div>
-                    <p class="text-gray-600 mb-6 h-12">{plan.description}</p>
+                <div class={`relative bg-white rounded-3xl shadow-lg border-2 transition-all hover:-translate-y-2 ${plan.highlighted ? 'border-brand-blue scale-105' : 'border-gray-100'}`}>
+                    {plan.badge && (
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-yellow text-brand-blue px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                            {plan.badge}
+                        </div>
+                    )}
                     
-                    <a 
-                        href="http://localhost:5173" 
-                        class={`block w-full text-center py-3 rounded-xl font-bold transition-all ${plan.primary ? 'bg-brand-blue text-white hover:bg-blue-800 shadow-lg' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
-                    >
-                        {plan.cta}
-                    </a>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-display font-bold text-gray-900 mb-2">{plan.name}</h3>
+                        <p class="text-gray-600 text-sm mb-6">{plan.description}</p>
+                        
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold text-gray-900">${plan.price}</span>
+                            <span class="text-gray-600">{plan.period}</span>
+                        </div>
 
-                    <ul class="mt-8 space-y-4">
-                        {plan.features.map((feature) => (
-                            <li class="flex items-start gap-3 text-gray-600">
-                                <Check className={`w-5 h-5 flex-shrink-0 ${plan.primary ? 'text-brand-green' : 'text-gray-400'}`} />
-                                <span class="text-sm">{feature}</span>
-                            </li>
-                        ))}
-                    </ul>
+                        <a 
+                            href="http://localhost:5173" 
+                            class={`block w-full text-center py-3 rounded-xl font-bold transition-all mb-8 ${plan.highlighted ? 'bg-brand-blue text-white hover:bg-blue-900 shadow-lg' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
+                        >
+                            {plan.cta}
+                        </a>
+
+                        <ul class="space-y-3">
+                            {plan.features.map((feature) => (
+                                <li class="flex items-start gap-3">
+                                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${feature.includes('✨') ? 'text-brand-yellow' : 'text-brand-green'}`} />
+                                    <span class={`text-gray-700 ${feature.includes('✨') ? 'font-semibold' : ''}`}>{feature}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             ))}
         </div>
+
+        <!-- Billing Integration Note -->
+        <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 max-w-4xl mx-auto">
+            <div class="flex items-start gap-4">
+                <Zap className="w-6 h-6 text-brand-blue flex-shrink-0 mt-1" />
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-2">Facturación Electrónica DIAN</h4>
+                    <p class="text-gray-700 text-sm mb-3">
+                        El plan <strong>Pro</strong> y <strong>Empresarial</strong> incluyen integración con proveedores de facturación electrónica certificados por la DIAN (Alegra, Siigo, Facturador.co).
+                    </p>
+                    <p class="text-gray-600 text-xs">
+                        <strong>Nota:</strong> El servicio de facturación electrónica se contrata y paga directamente con el proveedor (~$50.000 - $150.000 COP/mes adicionales). Aparca solo cobra por la integración.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+```
