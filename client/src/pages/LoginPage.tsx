@@ -72,7 +72,7 @@ export default function LoginPage() {
                 navigate('/');
             }
         } catch (err) {
-            setError('Invalid credentials');
+            setError('Credenciales inválidas');
         }
     };
 
