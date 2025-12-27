@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { ArrowLeft, Building2, MapPin, Users, Edit, Trash2, Plus, UserPlus, CheckCircle, X } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Users, Edit, Trash2, Plus, UserPlus, CheckCircle, X, Power } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Tenant {
@@ -132,6 +132,19 @@ export default function TenantDetailPage() {
             fetchTenantDetails();
         } catch (error) {
             toast.error('Error al remover usuario');
+        }
+    };
+
+    const toggleLocationStatus = async (locationId: string, currentStatus: boolean, locationName: string) => {
+        if (!confirm(`¿${currentStatus ? 'Desactivar' : 'Activar'} la sede "${locationName}"?`)) return;
+
+        try {
+            await api.put(`/admin/locations/${locationId}`, { isActive: !currentStatus });
+            toast.success(`Sede ${currentStatus ? 'desactivada' : 'activada'} exitosamente`);
+            fetchTenantDetails();
+        } catch (error) {
+            console.error('Error toggling location:', error);
+            toast.error('Error al cambiar estado de la sede');
         }
     };
 
@@ -272,15 +285,27 @@ export default function TenantDetailPage() {
                                 {tenant.locations.map(loc => (
                                     <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition-shadow">
                                         <div>
-                                            <h4 className="font-bold text-gray-900">{loc.name}</h4>
-                                            <p className="text-sm text-gray-500 flex items-center mt-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="font-bold text-gray-900">{loc.name}</h4>
+                                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {loc.isActive ? 'Activa' : 'Inactiva'}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 flex items-center">
                                                 <MapPin className="h-3 w-3 mr-1" />
                                                 {loc.address || 'Sin dirección'}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {loc.isActive ? 'Activa' : 'Inactiva'}
-                                        </span>
+                                        <button
+                                            onClick={() => toggleLocationStatus(loc.id, loc.isActive, loc.name)}
+                                            className={`p-2 rounded-lg transition-colors ${loc.isActive
+                                                ? 'text-red-500 hover:bg-red-50'
+                                                : 'text-green-500 hover:bg-green-50'
+                                                }`}
+                                            title={loc.isActive ? "Desactivar Sede" : "Activar Sede"}
+                                        >
+                                            <Power size={20} />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
