@@ -13,19 +13,14 @@ import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 
 const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
-    // We now expect 'tariffs' to potentially contain a single configuration per vehicle type,
-    // OR distinct rows. With the new model, we likely look for a Tariff record that defines the rules.
-    // For backward compatibility or mixed usage, we'll try to find a relevant Tariff record.
-    // In the new UI, we save ONE Tariff record per VehicleType with the specific fields.
-
     // Find the tariff configuration for this vehicle type
-    const tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType);
-    // Fallback: if multiple (old style), we might need to rely on old logic. 
-    // But let's assume the new UI saves a unified config.
+    const tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType !== TariffType.DAY);
+    const dayTariff = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.DAY);
 
     const exitTime = new Date();
     const durationMs = exitTime.getTime() - session.entryTime.getTime();
     const durationMinutes = Math.ceil(durationMs / (1000 * 60));
+    const durationHours = durationMinutes / 60;
 
     let cost = 0;
 
@@ -35,43 +30,55 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
     }
 
     if (session.planType === PlanType.DAY) {
-        // Explicit Day plan override? 
-        // Or just use dayMaxPrice? Usually 'PlanType.DAY' implies a flat fee?
-        // Let's stick to the 'DAY' tariff type if it exists in the old way, OR use dayMaxPrice?
-        // User requested: "Tarifa Plena (Día Único)" option in UI.
-        // If user Selected "Dia Unico" (PlanType.DAY), we charge the Day Rate.
-        // Where is the Day Rate stored now? 
-        // In 'dayMaxPrice' or 'basePrice' of a TariffType.DAY?
-        // Let's assume for PlanType.DAY we look for a specific Day Tariff or use dayMaxPrice.
-        const dayTariff = tariffs.find(t => t.tariffType === TariffType.DAY);
-        cost = dayTariff ? Number(dayTariff.cost) : (tariffConfig.dayMaxPrice || 15000);
+        // User selected "Día Único" at entry - charge flat day rate
+        const dayRate = dayTariff ? Number(dayTariff.cost) : (tariffConfig.dayMaxPrice || 15000);
 
         // Multi-day logic
         const days = Math.ceil(durationMinutes / 1440);
-        cost = days * cost;
+        cost = days * dayRate;
 
     } else {
-        // Normal Calculation (Minute or Blocks) based on Configuration
+        // Normal Calculation based on Pricing Model
         if (tariffConfig.pricingModel === PricingModel.MINUTE) {
-            // Bogotá Style: Minute * Price
-            // Price is likely in 'basePrice' (per minute) or 'cost'.
+            // Per-minute pricing (Bogotá style)
             const pricePerMinute = Number(tariffConfig.basePrice || tariffConfig.cost || 0);
             cost = durationMinutes * pricePerMinute;
+
         } else if (tariffConfig.pricingModel === PricingModel.BLOCKS) {
-            // Shopping Center Style: First Block (Hour) + Fractions
-            if (durationMinutes <= tariffConfig.baseTimeMinutes) {
+            // Block pricing (Shopping center style): First block + extra fractions
+            const baseTimeMinutes = tariffConfig.baseTimeMinutes || 60;
+            const extraFracTimeMinutes = tariffConfig.extraFracTimeMinutes || 30;
+
+            if (durationMinutes <= baseTimeMinutes) {
                 cost = Number(tariffConfig.basePrice);
             } else {
-                const extraMinutes = durationMinutes - tariffConfig.baseTimeMinutes;
-                // Let's us simple block math first:
-                const extraBlocks = Math.ceil(extraMinutes / tariffConfig.extraFracTimeMinutes);
-                cost = Number(tariffConfig.basePrice) + (extraBlocks * Number(tariffConfig.extraFracPrice));
+                const extraMinutes = durationMinutes - baseTimeMinutes;
+                const extraBlocks = Math.ceil(extraMinutes / extraFracTimeMinutes);
+                cost = Number(tariffConfig.basePrice) + (extraBlocks * Number(tariffConfig.extraFracPrice || 0));
             }
+
+        } else if (tariffConfig.pricingModel === PricingModel.TRADITIONAL) {
+            // Traditional hourly pricing (fraction = hour charged)
+            const hoursCharged = Math.ceil(durationMinutes / 60);
+            const pricePerHour = Number(tariffConfig.basePrice || tariffConfig.cost || 0);
+            cost = hoursCharged * pricePerHour;
         }
 
-        // Apply Day Max Price limit (Tope Diario)
-        if (tariffConfig.dayMaxPrice && cost > Number(tariffConfig.dayMaxPrice)) {
-            cost = Number(tariffConfig.dayMaxPrice);
+        // Apply Flat Rate (Tarifa Plena) cap if configured
+        // Only apply if:
+        // 1. dayMaxPrice is set (flat rate enabled)
+        // 2. dayMinHours threshold is met (or not set, defaults to 0)
+        const dayMaxPrice = tariffConfig.dayMaxPrice ? Number(tariffConfig.dayMaxPrice) : 0;
+        const dayMinHours = tariffConfig.dayMinHours ? Number(tariffConfig.dayMinHours) : 0;
+
+        if (dayMaxPrice > 0) {
+            // Check if minimum hours threshold is met
+            if (durationHours >= dayMinHours) {
+                // Apply flat rate if cost exceeds it
+                if (cost > dayMaxPrice) {
+                    cost = dayMaxPrice;
+                }
+            }
         }
     }
 
