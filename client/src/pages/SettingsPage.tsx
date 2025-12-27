@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
     Settings, Save, RefreshCw, Shield, Download, Receipt, Building2, Upload,
-    Car, Bike, Clock, AlertCircle, Globe, Award, Database, Lock
+    Car, Bike, Clock, AlertCircle, Globe, Award, Database
 } from 'lucide-react';
 import api from '../services/api';
 import { tariffService } from '../services/tariff.service';
