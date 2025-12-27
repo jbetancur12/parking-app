@@ -91,7 +91,24 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     // 2. Weekly Income
     // 3. Pie Chart (Cash vs Transfer)
 
-    const thirtyDaysAgo = subDays(new Date(), 30);
+    // Check Plan Limits for Reports
+    const authReq = req as any;
+    const tenant = authReq.tenant;
+
+    // Default limit: Unlimited
+    let maxDaysLookback = Infinity;
+
+    // Enforce limits for Basic Plan
+    if (tenant && tenant.plan === 'basic') {
+        maxDaysLookback = 60; // Max 2 months
+    }
+
+    const thirtyDaysAgo = subDays(new Date(), Math.min(30, maxDaysLookback)); // Default view is 30, but cap at limit just in case
+
+    // If user requests a custom range in future, we would validate it here:
+    // const { startDate } = req.query;
+    // if (plan === 'basic' && daysBetween(startDate,  now) > 60) throw new Error("Upgrade to Pro to see older reports");
+
     const transactions = await em.find(Transaction, {
         type: TransactionType.PARKING_REVENUE,
         timestamp: { $gte: thirtyDaysAgo }
