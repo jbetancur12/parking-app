@@ -8,6 +8,7 @@ export default function BrandsPage() {
     const [brands, setBrands] = useState<Brand[]>([]);
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Check permissions
     if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
@@ -35,24 +36,32 @@ export default function BrandsPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        if (!name.trim() || isSubmitting) return;
 
+        setIsSubmitting(true);
         try {
             await brandService.create(name.trim());
             setName('');
             loadBrands();
         } catch (error) {
             alert('Error al crear marca');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Está seguro?')) return;
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
         try {
             await brandService.delete(id);
             loadBrands();
         } catch (error) {
             alert('Error al eliminar marca');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -74,10 +83,11 @@ export default function BrandsPage() {
                 />
                 <button
                     type="submit"
-                    className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 flex items-center"
+                    disabled={isSubmitting}
+                    className={`bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 flex items-center ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <Plus size={20} className="mr-2" />
-                    Agregar
+                    {isSubmitting ? '...' : 'Agregar'}
                 </button>
             </form>
 

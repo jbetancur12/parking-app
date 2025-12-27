@@ -39,6 +39,7 @@ export default function UsersPage() {
     const [role, setRole] = useState('OPERATOR');
     const [isActive, setIsActive] = useState(true);
     const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -69,7 +70,9 @@ export default function UsersPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        if (isSubmitting) return;
 
+        setIsSubmitting(true);
         try {
             if (editingUser) {
                 // Update user
@@ -78,7 +81,9 @@ export default function UsersPage() {
                 // Create user
                 if (!password) {
                     setError('La contraseña es requerida');
-                    return;
+                    return; // Early return, set check to false/return in finally? No, simple return is fine if we check isSubmitting.
+                    // Actually, if we return early we must reset isSubmitting!
+                    // Let's refactor slightly to avoid trap.
                 }
                 await api.post('/users', { username, password, role });
             }
@@ -87,17 +92,23 @@ export default function UsersPage() {
             closeModal();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al guardar usuario');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Está seguro de eliminar este usuario?')) return;
+        if (isSubmitting) return;
 
+        setIsSubmitting(true);
         try {
             await api.delete(`/users/${id}`);
             fetchUsers();
         } catch (err: any) {
             alert(err.response?.data?.message || 'Error al eliminar usuario');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -108,7 +119,9 @@ export default function UsersPage() {
     };
 
     const handleSaveLocations = async () => {
-        if (!assigningUser) return;
+        if (!assigningUser || isSubmitting) return;
+
+        setIsSubmitting(true);
         try {
             await api.post(`/users/${assigningUser.id}/assign-location`, { locationIds: selectedLocationIds });
             fetchUsers();
@@ -117,6 +130,8 @@ export default function UsersPage() {
             setSelectedLocationIds([]);
         } catch (err: any) {
             alert(err.response?.data?.message || 'Error al asignar sedes');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -329,9 +344,10 @@ export default function UsersPage() {
                             <div className="flex gap-3">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                                    disabled={isSubmitting}
+                                    className={`flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    {editingUser ? 'Actualizar' : 'Crear'}
+                                    {isSubmitting ? 'Guardando...' : (editingUser ? 'Actualizar' : 'Crear')}
                                 </button>
                                 <button
                                     type="button"
@@ -387,9 +403,10 @@ export default function UsersPage() {
                             </button>
                             <button
                                 onClick={handleSaveLocations}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                disabled={isSubmitting}
+                                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                Guardar Asignaciones
+                                {isSubmitting ? 'Guardando...' : 'Guardar Asignaciones'}
                             </button>
                         </div>
                     </div>

@@ -17,6 +17,7 @@ export default function AgreementsPage() {
     const { user } = useAuth();
     const [agreements, setAgreements] = useState<Agreement[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [name, setName] = useState('');
@@ -40,6 +41,8 @@ export default function AgreementsPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             await api.post('/agreements', {
                 name,
@@ -54,10 +57,14 @@ export default function AgreementsPage() {
         } catch (error) {
             console.error(error);
             toast.error('Error al crear convenio');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleToggleStatus = async (id: number) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             await api.patch(`/agreements/${id}/status`);
             fetchAgreements();
@@ -65,6 +72,8 @@ export default function AgreementsPage() {
         } catch (error) {
             console.error(error);
             toast.error('Error al actualizar estado');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -217,9 +226,10 @@ export default function AgreementsPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                                    disabled={isSubmitting}
+                                    className={`px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    Crear Convenio
+                                    {isSubmitting ? 'Creando...' : 'Crear Convenio'}
                                 </button>
                             </div>
                         </form>

@@ -45,6 +45,7 @@ export default function ParkingPage() {
     const [redeem, setRedeem] = useState(false);
     const [showPrintConfirm, setShowPrintConfirm] = useState(false);
     const [pendingPrintSession, setPendingPrintSession] = useState<any>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [cashReceived, setCashReceived] = useState('');
 
     // Print refs
@@ -98,6 +99,9 @@ export default function ParkingPage() {
 
     const handleEntrySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
 
         // Offline Handling
         if (!isOnline) {
@@ -128,13 +132,13 @@ export default function ParkingPage() {
                 plate: plate.toUpperCase(),
                 vehicleType,
                 planType,
-                entryTime: entryDate.toISOString()
             });
 
             setIsEntryModalOpen(false);
             setPlate('');
             setShowPrintConfirm(true);
             toast.warning('Guardado en Modo Offline. Se sincronizará al volver la conexión.');
+            setIsSubmitting(false);
             return;
         }
 
@@ -172,6 +176,8 @@ export default function ParkingPage() {
             } else {
                 toast.error(err.response?.data?.message || 'Error al registrar entrada');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -217,7 +223,9 @@ export default function ParkingPage() {
     };
 
     const confirmExit = async () => {
-        if (!previewData) return;
+        if (!previewData || isSubmitting) return;
+
+        setIsSubmitting(true);
 
         // Offline Handling
         if (!isOnline) {
@@ -241,6 +249,7 @@ export default function ParkingPage() {
 
             setPreviewData(null);
             toast.warning('Salida guardada en Modo Offline.');
+            setIsSubmitting(false); // Reset here as return follows
             return;
         }
 
@@ -292,6 +301,8 @@ export default function ParkingPage() {
 
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al registrar salida');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -621,10 +632,11 @@ export default function ParkingPage() {
                             </button>
                             <button
                                 onClick={confirmExit}
-                                className="flex-1 bg-brand-yellow text-brand-blue font-bold py-2 rounded hover:bg-yellow-400 shadow-sm transition-colors"
+                                disabled={isSubmitting}
+                                className={`flex-1 bg-brand-yellow text-brand-blue font-bold py-2 rounded hover:bg-yellow-400 shadow-sm transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 data-testid="btn-confirm-exit"
                             >
-                                Confirmar Salida
+                                {isSubmitting ? 'Procesando...' : 'Confirmar Salida'}
                             </button>
                         </div>
                     </div>
@@ -768,10 +780,11 @@ export default function ParkingPage() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transition-colors"
+                                    disabled={isSubmitting}
+                                    className={`w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     data-testid="btn-register-entry"
                                 >
-                                    Registrar Entrada
+                                    {isSubmitting ? 'Registrando...' : 'Registrar Entrada'}
                                 </button>
                             </form>
                         </div>

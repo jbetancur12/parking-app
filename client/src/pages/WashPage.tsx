@@ -198,10 +198,10 @@ export default function WashPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 shadow-md flex items-center justify-center h-10 w-full md:w-auto md:col-start-6 transform transition-transform active:scale-95"
+                        className={`bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 shadow-md flex items-center justify-center h-10 w-full md:w-auto md:col-start-6 transform transition-transform active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        <Plus size={18} className="mr-2" />
-                        Registrar
+                        {loading ? '...' : <Plus size={18} className="mr-2" />}
+                        {loading ? 'Registrando' : 'Registrar'}
                     </button>
                 </form>
             </div>

@@ -434,8 +434,8 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="flex justify-end mb-6">
-                            <button onClick={handleSaveGeneral} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg">
-                                <Save className="mr-2" size={20} /> Guardar Cambios
+                            <button onClick={handleSaveGeneral} disabled={loading} className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                <Save className="mr-2" size={20} /> {loading ? 'Guardando...' : 'Guardar Cambios'}
                             </button>
                         </div>
 
@@ -444,8 +444,8 @@ export default function SettingsPage() {
                                 <h2 className="text-xl font-semibold mb-6 flex items-center text-gray-800 border-b pb-2">
                                     <Shield className="mr-2 text-purple-600" size={24} /> Seguridad y Datos
                                 </h2>
-                                <button onClick={handleDownloadBackup} disabled={loading} className="flex items-center justify-center w-full md:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">
-                                    <Download size={16} className="mr-2" /> Descargar Copia de Seguridad
+                                <button onClick={handleDownloadBackup} disabled={loading} className={`flex items-center justify-center w-full md:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    <Download size={16} className="mr-2" /> {loading ? 'Generando...' : 'Descargar Copia de Seguridad'}
                                 </button>
                             </div>
                         )}
@@ -591,10 +591,10 @@ export default function SettingsPage() {
                                 <button
                                     onClick={handleSaveTicket}
                                     disabled={loading}
-                                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg"
+                                    className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <Save className="mr-2" size={20} />
-                                    Guardar Ticket
+                                    {loading ? 'Guardando...' : 'Guardar Ticket'}
                                 </button>
                             </div>
                         </div>

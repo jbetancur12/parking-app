@@ -27,6 +27,7 @@ export default function MonthlyClientsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'EXPIRED'>('ALL');
     const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [plate, setPlate] = useState('');
@@ -102,6 +103,10 @@ export default function MonthlyClientsPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setConfirmModal(prev => ({ ...prev, isOpen: false })); // Close any potentially open confirm
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
         try {
             const response = await api.post('/monthly', {
                 plate: plate.toUpperCase(),
@@ -142,6 +147,8 @@ export default function MonthlyClientsPage() {
             }
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al crear cliente');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -154,8 +161,9 @@ export default function MonthlyClientsPage() {
 
     const handleRenewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!renewClientData) return;
+        if (!renewClientData || isSubmitting) return;
 
+        setIsSubmitting(true);
         try {
             const res = await api.post(`/monthly/${renewClientData.id}/renew`, {
                 amount: Number(renewAmount),
@@ -170,7 +178,7 @@ export default function MonthlyClientsPage() {
             if (client && payment) {
                 setConfirmModal({
                     isOpen: true,
-                    title: 'Imprimir Recibp',
+                    title: 'Imprimir Recibo',
                     message: '¿Desea imprimir el recibo de renovación?',
                     type: 'primary',
                     onConfirm: () => {
@@ -192,6 +200,8 @@ export default function MonthlyClientsPage() {
 
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error en renovación');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -228,6 +238,13 @@ export default function MonthlyClientsPage() {
             message: '¿Está seguro de cambiar el estado de este cliente?',
             type: 'warning',
             onConfirm: async () => {
+                // Determine if we should block UI - since this is a callback, 
+                // we might want to just execute it. But using isSubmitting protects against
+                // rapid double firing if the modal doesn't close fast enough.
+                if (isSubmitting) return;
+
+                // Note: We can't easily see the loading state inside the generic modal unless we update the modal to support it.
+                // However, we can prevent double execution.
                 try {
                     await api.patch(`/monthly/${clientId}/status`);
                     fetchClients();
@@ -442,10 +459,11 @@ export default function MonthlyClientsPage() {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg hover:bg-yellow-400 font-bold shadow-md transition-transform active:scale-95 mt-4"
+                                disabled={isSubmitting}
+                                className={`w-full bg-brand-yellow text-brand-blue py-3 rounded-lg hover:bg-yellow-400 font-bold shadow-md transition-transform active:scale-95 mt-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 data-testid="btn-create-client"
                             >
-                                Crear Cliente
+                                {isSubmitting ? 'Registrando...' : 'Crear Cliente'}
                             </button>
                         </form>
                     </div>
@@ -505,9 +523,10 @@ export default function MonthlyClientsPage() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition-colors mt-2"
+                                disabled={isSubmitting}
+                                className={`w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition-colors mt-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                Confirmar Renovación
+                                {isSubmitting ? 'Procesando...' : 'Confirmar Renovación'}
                             </button>
                         </form>
                     </div>

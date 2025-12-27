@@ -298,9 +298,9 @@ export default function IncomesPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
+                                    className={`w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    Registrar
+                                    {loading ? 'Registrando...' : 'Registrar'}
                                 </button>
                             </form>
                         </div>
@@ -445,7 +445,7 @@ export default function IncomesPage() {
                                 onClick={handlePOSSubmit}
                                 disabled={cart.length === 0 || loading}
                                 data-testid="btn-confirm-pos-sale"
-                                className="w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 disabled:bg-gray-400 disabled:shadow-none transition-all active:scale-95 flex justify-center items-center"
+                                className={`w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 transition-all active:scale-95 flex justify-center items-center ${loading || cart.length === 0 ? 'opacity-50 cursor-not-allowed bg-gray-300' : ''}`}
                             >
                                 {loading ? 'Procesando...' : 'Confirmar Venta'}
                             </button>

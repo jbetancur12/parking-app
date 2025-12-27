@@ -54,6 +54,7 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true); // Reusing loading state which affects the list, but effectively prevents double input
         try {
             if (editingId) {
                 await washService.updateType(editingId, { name, price: Number(price), vehicleType });
@@ -62,16 +63,21 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                 await washService.createType({ name, price: Number(price), vehicleType });
                 toast.success('Servicio creado');
             }
-            loadServices();
+            loadServices(); // This will eventually set loading to false via finally block in loadServices?
+            // loadServices sets loading(true) then finally(false). 
+            // So if I call loadServices here, it will restart the loading cycle, which is fine.
             onUpdate(); // Refresh parent
             resetForm();
         } catch (error) {
             toast.error('Error al guardar servicio');
+            setLoading(false); // Only needed if loadServices not called or fails
         }
+        // Note: loadServices handles setLoading(false) in its finally block.
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Seguro que deseas eliminar este servicio?')) return;
+        setLoading(true);
         try {
             await washService.deleteType(id);
             toast.success('Servicio eliminado');
@@ -79,6 +85,7 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
             onUpdate();
         } catch (error) {
             toast.error('Error al eliminar servicio');
+            setLoading(false);
         }
     };
 
@@ -149,9 +156,10 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                             )}
                             <button
                                 type="submit"
-                                className="px-4 py-1.5 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded flex items-center"
+                                disabled={loading}
+                                className={`px-4 py-1.5 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                <Plus size={14} className="mr-1" />
+                                {loading ? '...' : <Plus size={14} className="mr-1" />}
                                 {editingId ? 'Actualizar' : 'Agregar'}
                             </button>
                         </div>
