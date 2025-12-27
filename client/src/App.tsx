@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SaasProvider } from './context/SaasContext';
 import { OfflineProvider } from './context/OfflineContext';
+import { ShiftProvider } from './context/ShiftContext';
 import { Loader2 } from 'lucide-react';
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -59,45 +60,47 @@ function App() {
     <OfflineProvider>
       <AuthProvider>
         <SaasProvider>
-          <Toaster richColors position="top-center" />
-          <Router>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/setup" element={<SetupPage />} />
-                <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
-                <Route path="/activate" element={<LicenseActivationPage />} />
+          <ShiftProvider>
+            <Toaster richColors position="top-center" />
+            <Router>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/setup" element={<SetupPage />} />
+                  <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
+                  <Route path="/activate" element={<LicenseActivationPage />} />
 
-                <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="select-location" element={<LocationSelectionPage />} />
+                  <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="select-location" element={<LocationSelectionPage />} />
 
-                  <Route path="parking" element={<ParkingPage />} />
-                  <Route path="monthly" element={<MonthlyClientsPage />} />
-                  <Route path="reports" element={<ReportsPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="audit-logs" element={<AuditLogsPage />} />
-                  <Route path="brands" element={<BrandsPage />} />
-                  <Route path="expenses" element={<ExpensesPage />} />
-                  <Route path="incomes" element={<IncomesPage />} />
-                  <Route path="wash" element={<WashPage />} />
-                  <Route path="users" element={<UsersPage />} />
-                  <Route path="agreements" element={<AgreementsPage />} />
-                  <Route path="shifts" element={<ShiftHistoryPage />} />
-                  <Route path="transactions" element={<TransactionsPage />} />
-                  <Route path="inventory" element={<InventoryPage />} />
+                    <Route path="parking" element={<ParkingPage />} />
+                    <Route path="monthly" element={<MonthlyClientsPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="audit-logs" element={<AuditLogsPage />} />
+                    <Route path="brands" element={<BrandsPage />} />
+                    <Route path="expenses" element={<ExpensesPage />} />
+                    <Route path="incomes" element={<IncomesPage />} />
+                    <Route path="wash" element={<WashPage />} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route path="agreements" element={<AgreementsPage />} />
+                    <Route path="shifts" element={<ShiftHistoryPage />} />
+                    <Route path="transactions" element={<TransactionsPage />} />
+                    <Route path="inventory" element={<InventoryPage />} />
 
-                  {/* Admin Routes */}
-                  <Route path="admin/tenants" element={<TenantsPage />} />
-                  <Route path="admin/tenants/new" element={<TenantFormPage />} />
-                  <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
-                  <Route path="admin/locations" element={<LocationsPage />} />
-                </Route>
-              </Routes>
-            </Suspense>
-          </Router>
+                    {/* Admin Routes */}
+                    <Route path="admin/tenants" element={<TenantsPage />} />
+                    <Route path="admin/tenants/new" element={<TenantFormPage />} />
+                    <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
+                    <Route path="admin/locations" element={<LocationsPage />} />
+                  </Route>
+                </Routes>
+              </Suspense>
+            </Router>
+          </ShiftProvider>
         </SaasProvider>
       </AuthProvider>
     </OfflineProvider>

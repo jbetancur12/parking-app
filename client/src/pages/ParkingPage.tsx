@@ -8,6 +8,7 @@ import { PrintReceipt } from '../components/PrintReceipt';
 import { toast } from 'sonner';
 import { useOffline } from '../context/OfflineContext';
 import { Skeleton } from '../components/Skeleton';
+import { useShift } from '../context/ShiftContext';
 
 interface ParkingSession {
     id: number;
@@ -25,6 +26,7 @@ export default function ParkingPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
     const { isOnline, addOfflineItem, queue, isSyncing } = useOffline();
+    const { activeShift } = useShift();
 
     // ... (rest of simple states)
 
@@ -345,18 +347,41 @@ export default function ParkingPage() {
         session.plate.includes(searchTerm.toUpperCase())
     );
 
+    const handleOpenEntryModal = () => {
+        if (!activeShift) {
+            toast.error('Debe abrir un turno antes de registrar entradas', {
+                duration: 4000,
+                style: { border: '2px solid #EF4444' }
+            });
+            return;
+        }
+        setIsEntryModalOpen(true);
+    };
+
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left">Gestión de Parqueadero</h1>
-                <button
-                    onClick={() => setIsEntryModalOpen(true)}
-                    className="flex w-full md:w-auto justify-center items-center bg-brand-yellow text-brand-blue font-bold px-4 py-3 md:py-2 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95"
-                    data-testid="btn-open-entry-modal"
-                >
-                    <Plus className="mr-2" size={20} />
-                    Nueva Entrada
-                </button>
+                <div className="flex flex-col items-center md:items-end w-full md:w-auto">
+                    <button
+                        onClick={handleOpenEntryModal}
+                        disabled={!activeShift}
+                        title={!activeShift ? "Debe iniciar turno para registrar vehículos" : "Registrar nueva entrada"}
+                        className={`flex w-full md:w-auto justify-center items-center font-bold px-4 py-3 md:py-2 rounded-lg shadow-md transform transition-all ${activeShift
+                                ? 'bg-brand-yellow text-brand-blue hover:bg-yellow-400 active:scale-95 cursor-pointer'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                        data-testid="btn-open-entry-modal"
+                    >
+                        <Plus className="mr-2" size={20} />
+                        Nueva Entrada
+                    </button>
+                    {!activeShift && (
+                        <span className="text-xs text-red-500 font-bold mt-1 flex items-center bg-red-50 px-2 py-1 rounded-full border border-red-100">
+                            <span className="mr-1">⚠️</span> Requiere Turno Activo
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Search Bar */}
