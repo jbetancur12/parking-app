@@ -23,4 +23,4 @@ RUN npm run build
 EXPOSE 3001
 
 # Start the application (with optional DB reset)
-CMD ["sh", "-c", "if [ \"$RUN_DB_RESET\" = \"true\" ]; then echo '🔄 Running DB Reset...'; npm run db:reset:prod; fi && npm start"]
+CMD ["sh", "-c", "if [ \"$RUN_DB_RESET\" = \"true\" ]; then echo '🔄 Running DB Reset...'; npm run db:reset:prod; fi && npm run start:prod"]
