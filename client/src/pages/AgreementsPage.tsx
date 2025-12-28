@@ -25,6 +25,19 @@ export default function AgreementsPage() {
     const [value, setValue] = useState('');
     const [description, setDescription] = useState('');
 
+    // Permission Check
+    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'LOCATION_MANAGER') {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500">
+                <div className="bg-red-50 p-6 rounded-full mb-4">
+                    <Power className="w-12 h-12 text-red-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Acceso Restringido</h3>
+                <p>No tienes permisos para ver esta página.</p>
+            </div>
+        );
+    }
+
     useEffect(() => {
         fetchAgreements();
     }, []);
