@@ -106,7 +106,6 @@ export default function DashboardLayout() {
             title: 'Administración',
             items: [
                 { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-                { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
                 { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Added for LocMgr
                 { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
