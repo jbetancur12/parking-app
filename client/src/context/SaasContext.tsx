@@ -5,6 +5,9 @@ interface Tenant {
     id: string;
     name: string;
     slug: string;
+    plan?: 'free' | 'basic' | 'pro' | 'enterprise' | 'trial';
+    planStatus?: 'active' | 'past_due' | 'canceled' | 'incomplete';
+    trialEndsAt?: string;
 }
 
 interface Location {

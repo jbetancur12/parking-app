@@ -220,13 +220,56 @@ export default function DashboardLayout() {
 
                 <div className="w-full border-t border-blue-800 p-4 flex-shrink-0 bg-brand-blue">
                     {/* Tenant Context Display */}
+                    {/* Tenant Context Display */}
                     {currentTenant && (
                         <div className="mb-2 px-4 py-2 bg-blue-900/50 rounded-lg border border-blue-700">
-                            <div className="flex items-center text-xs">
+                            <div className="flex items-center text-xs mb-1">
                                 <Building2 className="mr-2 h-4 w-4 text-brand-yellow" />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-white truncate">{currentTenant.name}</p>
                                 </div>
+                            </div>
+
+                            {/* Plan Badge */}
+                            <div className="pl-6">
+                                {(() => {
+                                    const plan = currentTenant.plan || 'free';
+                                    const status = currentTenant.planStatus;
+
+                                    let label = 'Gratis';
+                                    let colorClass = 'bg-gray-600 text-gray-200';
+
+                                    if (plan === 'trial') {
+                                        label = 'Prueba';
+                                        colorClass = 'bg-purple-600 text-white';
+                                        if (currentTenant.trialEndsAt) {
+                                            const end = new Date(currentTenant.trialEndsAt);
+                                            const diff = Math.ceil((end.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                                            if (diff > 0) label += ` (${diff}d)`;
+                                            else label = 'Prueba Vencida';
+                                        }
+                                    } else if (plan === 'basic') {
+                                        label = 'Básico';
+                                        colorClass = 'bg-blue-600 text-white';
+                                    } else if (plan === 'pro') {
+                                        label = 'Pro';
+                                        colorClass = 'bg-green-600 text-white';
+                                    } else if (plan === 'enterprise') {
+                                        label = 'Enterprise';
+                                        colorClass = 'bg-yellow-600 text-white';
+                                    }
+
+                                    if (status === 'past_due') {
+                                        label += ' (Pagos Pendientes)';
+                                        colorClass = 'bg-red-600 text-white';
+                                    }
+
+                                    return (
+                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide ${colorClass}`}>
+                                            {label}
+                                        </span>
+                                    );
+                                })()}
                             </div>
                         </div>
                     )}
@@ -285,8 +328,8 @@ export default function DashboardLayout() {
                 </header>
 
                 {/* Trial Expired Blocking Overlay */}
-                {currentTenant && (currentTenant as any).plan === 'trial' && (currentTenant as any).trialEndsAt && (() => {
-                    const end = new Date((currentTenant as any).trialEndsAt);
+                {currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && (() => {
+                    const end = new Date(currentTenant.trialEndsAt);
                     const now = new Date();
                     const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
@@ -314,12 +357,12 @@ export default function DashboardLayout() {
                 })()}
 
                 {/* Main Content (Hidden if expired, unless SuperAdmin) */}
-                {(!(currentTenant && (currentTenant as any).plan === 'trial' && (currentTenant as any).trialEndsAt && new Date((currentTenant as any).trialEndsAt) < new Date()) || user?.role === 'SUPER_ADMIN') && (
+                {(!(currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && new Date(currentTenant.trialEndsAt) < new Date()) || user?.role === 'SUPER_ADMIN') && (
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                         {/* Trial Banner */}
-                        {currentTenant && ((currentTenant as any).plan === 'basic' || (currentTenant as any).plan === 'trial') && (currentTenant as any).trialEndsAt && user?.role !== 'SUPER_ADMIN' && (
+                        {currentTenant && (currentTenant.plan === 'basic' || currentTenant.plan === 'trial') && currentTenant.trialEndsAt && user?.role !== 'SUPER_ADMIN' && (
                             (() => {
-                                const end = new Date((currentTenant as any).trialEndsAt);
+                                const end = new Date(currentTenant.trialEndsAt);
                                 const now = new Date();
                                 const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
