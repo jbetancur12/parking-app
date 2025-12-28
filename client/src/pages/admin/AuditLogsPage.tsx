@@ -15,6 +15,10 @@ interface AuditLog {
     details: string; // JSON string
     ipAddress: string;
     timestamp: string;
+    location?: {
+        id: string;
+        name: string;
+    };
 }
 
 export default function AuditLogsPage() {
@@ -85,6 +89,7 @@ export default function AuditLogsPage() {
                         <thead className="bg-brand-blue/5">
                             <tr>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Fecha</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Sede</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Usuario</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Acción</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Entidad</th>
@@ -99,6 +104,12 @@ export default function AuditLogsPage() {
                                             <Clock className="mr-1.5 h-4 w-4 text-gray-400" />
                                             {new Date(log.timestamp).toLocaleString()}
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {/* Display Location Name if available */}
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                            {log.location?.name || 'Global'}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
