@@ -12,9 +12,28 @@ import { Loyalty } from '../entities/Loyalty';
 import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 
-const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
-    // Find the tariff configuration for this vehicle type
-    const tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType !== TariffType.DAY);
+export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
+    // 1. Determine active pricing model from global setting (stored on any tariff)
+    const anyTariff = tariffs.find(t => t.vehicleType === session.vehicleType);
+    const pricingModel = anyTariff?.pricingModel || PricingModel.MINUTE;
+
+    // 2. Select specific configuration record based on model to ensure independence
+    let tariffConfig: Tariff | undefined;
+
+    if (pricingModel === PricingModel.MINUTE) {
+        // Minute Model -> Uses MINUTE tariff record (basePrice)
+        tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.MINUTE);
+    } else {
+        // Traditional & Blocks Models -> Use HOUR tariff record
+        // Traditional uses 'cost', Blocks uses 'basePrice'
+        tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.HOUR);
+    }
+
+    if (!tariffConfig) {
+        // Fallback
+        tariffConfig = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType !== TariffType.DAY);
+    }
+
     const dayTariff = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.DAY);
 
     const exitTime = new Date();
@@ -25,27 +44,26 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
     let cost = 0;
 
     if (!tariffConfig) {
-        // Fallback or Error
         return { cost: 0, durationMinutes, exitTime };
     }
 
     if (session.planType === PlanType.DAY) {
         // User selected "Día Único" at entry - charge flat day rate
         const dayRate = dayTariff ? Number(dayTariff.cost) : (tariffConfig.dayMaxPrice || 15000);
-
-        // Multi-day logic
         const days = Math.ceil(durationMinutes / 1440);
         cost = days * dayRate;
 
     } else {
         // Normal Calculation based on Pricing Model
-        if (tariffConfig.pricingModel === PricingModel.MINUTE) {
-            // Per-minute pricing (Bogotá style)
-            const pricePerMinute = Number(tariffConfig.basePrice || tariffConfig.cost || 0);
+        // We use the 'pricingModel' variable derived earlier to ensure consistency
+
+        if (pricingModel === PricingModel.MINUTE) {
+            // Per-minute pricing -> Use basePrice from MINUTE record
+            const pricePerMinute = Number(tariffConfig.basePrice || 0);
             cost = durationMinutes * pricePerMinute;
 
-        } else if (tariffConfig.pricingModel === PricingModel.BLOCKS) {
-            // Block pricing (Shopping center style): First block + extra fractions
+        } else if (pricingModel === PricingModel.BLOCKS) {
+            // Block pricing -> Use basePrice from HOUR record
             const baseTimeMinutes = tariffConfig.baseTimeMinutes || 60;
             const extraFracTimeMinutes = tariffConfig.extraFracTimeMinutes || 30;
 
@@ -57,26 +75,26 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
                 cost = Number(tariffConfig.basePrice) + (extraBlocks * Number(tariffConfig.extraFracPrice || 0));
             }
 
-        } else if (tariffConfig.pricingModel === PricingModel.TRADITIONAL) {
-            // Traditional hourly pricing (fraction = hour charged)
-            // For TRADITIONAL, the hourly rate is stored in the HOUR tariff's cost field
-            const hourTariff = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.HOUR);
+        } else if (pricingModel === PricingModel.TRADITIONAL) {
+            // Traditional hourly pricing -> Use cost from HOUR record
+            // tariffConfig IS the hour tariff here
 
             const fullHours = Math.floor(durationMinutes / 60);
             const remainingMinutes = durationMinutes % 60;
 
             let hoursCharged = fullHours;
 
-            // If there are remaining minutes, check if they exceed grace period
+            // Grace period logic (Traditional only)
             if (remainingMinutes > gracePeriod) {
                 hoursCharged += 1;
             } else if (fullHours === 0) {
-                // If duration is less than an hour but GREATER than grace period (handled by logic above?)
-                // If duration = 3 min (grace=5). full=0, rem=3. 3<5 -> +0. hoursCharged=0. Correct (Free).
-                // If duration = 6 min (grace=5). full=0, rem=6. 6>5 -> +1. hoursCharged=1. Correct (1 Hour).
+                // < 1 hour and within grace period (free?) or charge 1 hour? 
+                // Usually if < 1h, charge 1h unless explicitly configured otherwise.
+                // But strictly if remainingMinutes < gracePeriod (e.g. 5m) -> hoursCharged=0.
             }
 
-            const pricePerHour = hourTariff ? Number(hourTariff.cost) : Number(tariffConfig.basePrice || tariffConfig.cost || 0);
+            // Use 'cost' field for Traditional Price
+            const pricePerHour = Number(tariffConfig.cost || 0);
             cost = hoursCharged * pricePerHour;
         }
 
