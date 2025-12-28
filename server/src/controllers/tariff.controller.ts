@@ -57,6 +57,8 @@ export class TariffController {
                         tariff.extraFracPrice = item.extraFracPrice;
                         tariff.extraFracTimeMinutes = item.extraFracTimeMinutes;
                         tariff.description = item.description;
+                        tariff.dayMaxPrice = item.dayMaxPrice;
+                        tariff.dayMinHours = item.dayMinHours;
                     }
                 } else {
                     const tariff = em.create(Tariff, {
@@ -69,6 +71,8 @@ export class TariffController {
                         extraFracPrice: item.extraFracPrice || 0,
                         extraFracTimeMinutes: item.extraFracTimeMinutes || 0,
                         description: item.description || '',
+                        dayMaxPrice: item.dayMaxPrice,
+                        dayMinHours: item.dayMinHours,
                         tenant,
                         location
                     });

@@ -59,8 +59,10 @@ const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], graceP
 
         } else if (tariffConfig.pricingModel === PricingModel.TRADITIONAL) {
             // Traditional hourly pricing (fraction = hour charged)
+            // For TRADITIONAL, the hourly rate is stored in the HOUR tariff's cost field
+            const hourTariff = tariffs.find(t => t.vehicleType === session.vehicleType && t.tariffType === TariffType.HOUR);
             const hoursCharged = Math.ceil(durationMinutes / 60);
-            const pricePerHour = Number(tariffConfig.basePrice || tariffConfig.cost || 0);
+            const pricePerHour = hourTariff ? Number(hourTariff.cost) : Number(tariffConfig.basePrice || tariffConfig.cost || 0);
             cost = hoursCharged * pricePerHour;
         }
 
