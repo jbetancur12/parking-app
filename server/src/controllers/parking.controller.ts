@@ -84,13 +84,15 @@ export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[],
 
             let hoursCharged = fullHours;
 
-            // Grace period logic (Traditional only)
-            if (remainingMinutes > gracePeriod) {
-                hoursCharged += 1;
-            } else if (fullHours === 0) {
-                // < 1 hour and within grace period (free?) or charge 1 hour? 
-                // Usually if < 1h, charge 1h unless explicitly configured otherwise.
-                // But strictly if remainingMinutes < gracePeriod (e.g. 5m) -> hoursCharged=0.
+            if (fullHours === 0) {
+                // Always charge at least the first hour if duration > 0
+                // (Unless specifically 0 minutes, but durationMinutes is ceil'd)
+                hoursCharged = 1;
+            } else {
+                // Grace period logic for subsequent hours
+                if (remainingMinutes > gracePeriod) {
+                    hoursCharged += 1;
+                }
             }
 
             // Use 'cost' field for Traditional Price
@@ -274,7 +276,8 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
         ...result,
         hourlyRate: tariffs.find(t => t.tariffType === 'HOUR')?.cost || 0,
         loyalty,
-        canRedeem
+        canRedeem,
+        debug: (result as any).debugTrace // Expose debug info
     });
 };
 
