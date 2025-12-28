@@ -45,7 +45,7 @@ export class UserController {
     }
 
     // Create new user (SUPER_ADMIN and ADMIN only)
-    async create(req: Request, res: Response) {
+    async create(req: AuthRequest, res: Response) {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
@@ -63,6 +63,8 @@ export class UserController {
                 return res.status(400).json({ message: 'Tenant context or tenantId is required to create a non-SuperAdmin user' });
             }
 
+            console.log('Creating user:', { username, role, currentTenantId }); // DEBUG LOG
+
             // Check if user already exists
             const existing = await em.findOne(User, { username });
             if (existing) {
@@ -72,6 +74,11 @@ export class UserController {
             // Validate role
             if (!Object.values(UserRole).includes(role)) {
                 return res.status(400).json({ message: 'Invalid role' });
+            }
+
+            // Prevent privilege escalation: Only SUPER_ADMIN can create another SUPER_ADMIN
+            if (role === UserRole.SUPER_ADMIN && req.user?.role !== UserRole.SUPER_ADMIN) {
+                return res.status(403).json({ message: 'Forbidden: Only Super Admins can create Super Admins' });
             }
 
             // Hash password
@@ -108,7 +115,7 @@ export class UserController {
     }
 
     // Update user (SUPER_ADMIN only)
-    async update(req: Request, res: Response) {
+    async update(req: AuthRequest, res: Response) {
         try {
             const em = RequestContext.getEntityManager();
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
@@ -123,7 +130,16 @@ export class UserController {
 
             // Update fields
             if (username) user.username = username;
-            if (role && Object.values(UserRole).includes(role)) user.role = role;
+
+            // Validate role update
+            if (role && Object.values(UserRole).includes(role)) {
+                // Prevent privilege escalation: Only SUPER_ADMIN can set or unset SUPER_ADMIN role
+                if (role === UserRole.SUPER_ADMIN && req.user?.role !== UserRole.SUPER_ADMIN) {
+                    return res.status(403).json({ message: 'Forbidden: Only Super Admins can assign Super Admin role' });
+                }
+                user.role = role;
+            }
+
             if (typeof isActive === 'boolean') user.isActive = isActive;
 
             await em.flush();

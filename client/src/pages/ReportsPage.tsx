@@ -240,7 +240,7 @@ export default function ReportsPage() {
                     </div>
 
                     {/* Consolidated Toggle (Admin Only) */}
-                    {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                    {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && (
                         <div className="flex items-center space-x-2 bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 cursor-pointer hover:bg-purple-100 transition-colors">
                             <input
                                 type="checkbox"

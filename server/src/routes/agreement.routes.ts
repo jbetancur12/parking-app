@@ -11,8 +11,8 @@ router.use(authenticateToken);
 router.get('/active', controller.getActive);
 
 // Admin only routes
-router.get('/', requireRole(['ADMIN', 'SUPER_ADMIN']), controller.getAll);
-router.post('/', requireRole(['ADMIN', 'SUPER_ADMIN']), controller.create);
-router.patch('/:id/status', requireRole(['ADMIN', 'SUPER_ADMIN']), controller.toggleStatus);
+router.get('/', requireRole(['ADMIN', 'SUPER_ADMIN', 'LOCATION_MANAGER']), controller.getAll);
+router.post('/', requireRole(['ADMIN', 'SUPER_ADMIN', 'LOCATION_MANAGER']), controller.create);
+router.patch('/:id/status', requireRole(['ADMIN', 'SUPER_ADMIN', 'LOCATION_MANAGER']), controller.toggleStatus);
 
 export default router;

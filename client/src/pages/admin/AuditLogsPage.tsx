@@ -24,7 +24,7 @@ export default function AuditLogsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+        if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'LOCATION_MANAGER') {
             navigate('/');
             return;
         }

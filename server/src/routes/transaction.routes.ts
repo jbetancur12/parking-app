@@ -7,7 +7,7 @@ const router = Router();
 router.use(authenticateToken);
 
 // Restrict viewing full transaction history/shift data to admins
-router.use(requireRole(['ADMIN', 'SUPER_ADMIN']));
+router.use(requireRole(['ADMIN', 'SUPER_ADMIN', 'LOCATION_MANAGER']));
 
 router.get('/shift/:shiftId', getByShift);
 router.delete('/:id', deleteTransaction);

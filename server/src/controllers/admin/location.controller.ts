@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Location } from '../../entities/Location';
 import { Tenant } from '../../entities/Tenant';
 import { AuditService } from '../../services/AuditService';
+import { User } from '../../entities/User';
 
 // Create new location
 export const createLocation = async (req: Request, res: Response) => {
@@ -86,6 +87,19 @@ export const getAllLocations = async (req: Request, res: Response) => {
             where.tenant = tenantId;
         }
 
+        // If LOCATION_MANAGER, restrict to assigned locations
+        if (userRole === 'LOCATION_MANAGER') {
+            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['locations'] });
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            const locationIds = user.locations.getItems().map((l: Location) => l.id);
+            if (locationIds.length === 0) {
+                // No locations assigned, return empty list
+                return res.json([]);
+            }
+            where.id = { $in: locationIds };
+        }
+
         const locations = await em.find(Location, where, {
             populate: ['tenant'],
             filters: userRole === 'SUPER_ADMIN' ? false : undefined
@@ -112,6 +126,16 @@ export const getLocationById = async (req: Request, res: Response) => {
 
         if (!location) {
             return res.status(404).json({ message: 'Location not found' });
+        }
+
+        // Check if LOCATION_MANAGER has access
+        const authReq = req as any;
+        if (authReq.user?.role === 'LOCATION_MANAGER') {
+            const user = await em.findOne(User, { id: authReq.user.id }, { populate: ['locations'] });
+            const hasAccess = user?.locations.getItems().some((l: Location) => l.id === location.id);
+            if (!hasAccess) {
+                return res.status(403).json({ message: 'Forbidden: You do not have access to this location' });
+            }
         }
 
         return res.json(location);

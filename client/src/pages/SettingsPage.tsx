@@ -62,7 +62,7 @@ export default function SettingsPage() {
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
     // Check permissions
-    if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
+    if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'LOCATION_MANAGER') {
         return (
             <div className="p-8">
                 <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center">

@@ -6,6 +6,7 @@ export enum UserRole {
     SUPER_ADMIN = 'SUPER_ADMIN', // Platform owner
     // Tenant roles
     ADMIN = 'ADMIN',             // Tenant owner/manager
+    LOCATION_MANAGER = 'LOCATION_MANAGER', // Managed specific locations
     OPERATOR = 'OPERATOR',
     CASHIER = 'CASHIER',
 }

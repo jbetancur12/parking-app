@@ -97,7 +97,7 @@ export default function AgreementsPage() {
         }
     };
 
-    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && user?.role !== 'LOCATION_MANAGER') {
         return (
             <div className="p-8 text-center text-red-600">
                 No tienes permisos para ver esta página.

@@ -11,7 +11,7 @@ export default function BrandsPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Check permissions
-    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+    if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'LOCATION_MANAGER') {
         return (
             <div className="p-8">
                 <div className="bg-red-100 text-red-700 p-4 rounded-lg">

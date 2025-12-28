@@ -6,7 +6,7 @@ const router = Router();
 const controller = new AuditController();
 
 router.use(authenticateToken);
-router.use(requireRole(['ADMIN', 'SUPER_ADMIN']));
+router.use(requireRole(['ADMIN', 'SUPER_ADMIN', 'LOCATION_MANAGER']));
 
 router.get('/', controller.getAll);
 

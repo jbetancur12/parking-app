@@ -99,19 +99,19 @@ export default function DashboardLayout() {
             items: [
                 { name: 'Egresos', href: '/expenses', icon: TrendingDown },
                 { name: 'Ingresos', href: '/incomes', icon: DollarSign },
-                { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Historial Turnos', href: '/shifts', icon: History, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
+                { name: 'Historial Turnos', href: '/shifts', icon: History, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
+                { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
             ]
         },
         {
             title: 'Administración',
             items: [
-                { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
+                { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
                 { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
+                { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
+                { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
             ]
         }
     ];
@@ -292,7 +292,11 @@ export default function DashboardLayout() {
                         <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0 flex-1">
                                 <p className="text-xs font-bold text-white truncate">{user?.username}</p>
-                                <p className="text-[10px] text-blue-300 truncate">{user?.role === 'SUPER_ADMIN' ? 'Super Admin' : user?.role === 'ADMIN' ? 'Admin' : 'Operador'}</p>
+                                <p className="text-[10px] text-blue-300 truncate">
+                                    {user?.role === 'SUPER_ADMIN' ? 'Super Admin' :
+                                        user?.role === 'ADMIN' ? 'Admin' :
+                                            user?.role === 'LOCATION_MANAGER' ? 'Admin Sede' : 'Operador'}
+                                </p>
                             </div>
                             <button
                                 onClick={logout}

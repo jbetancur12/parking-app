@@ -18,6 +18,7 @@ interface User {
 const roleLabels: Record<string, string> = {
     SUPER_ADMIN: 'Super Administrador',
     ADMIN: 'Administrador',
+    LOCATION_MANAGER: 'Administrador de Sede',
     OPERATOR: 'Operador',
     CASHIER: 'Cajero'
 };
@@ -320,8 +321,11 @@ export default function UsersPage() {
                                     onChange={(e) => setRole(e.target.value)}
                                     className="w-full border rounded-md px-3 py-2"
                                 >
-                                    <option value="SUPER_ADMIN">Super Administrador</option>
+                                    {currentUser?.role === 'SUPER_ADMIN' && (
+                                        <option value="SUPER_ADMIN">Super Administrador</option>
+                                    )}
                                     <option value="ADMIN">Administrador</option>
+                                    <option value="LOCATION_MANAGER">Administrador de Sede</option>
                                     <option value="OPERATOR">Operador</option>
                                     <option value="CASHIER">Cajero</option>
                                 </select>
