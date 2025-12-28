@@ -1061,7 +1061,7 @@ export default function SettingsPage() {
                                     value={companyName}
                                     onChange={(e) => setCompanyName(e.target.value)}
                                     className="block w-full border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Ej: Aparca Parking"
+                                    placeholder="Ej: Cuadra Parking"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-5">

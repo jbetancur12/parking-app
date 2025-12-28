@@ -56,7 +56,7 @@ export default function RegisterPage() {
                     <div className="bg-blue-50 p-3 rounded-full mb-4">
                         <Rocket className="h-8 w-8 text-brand-blue" />
                     </div>
-                    <img src="/LogoTexto.png" alt="Aparca" className="h-8 w-auto mb-2" />
+                    <img src="/logo_cuadra.png" alt="Cuadra" className="h-8 w-auto mb-2" />
                     <h1 className="text-2xl font-display font-bold text-gray-900">Crear Cuenta</h1>
                     <p className="text-sm text-brand-green font-bold mt-1 bg-green-50 px-3 py-1 rounded-full border border-green-100">
                         ¡Prueba gratis de 14 días!

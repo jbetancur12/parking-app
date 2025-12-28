@@ -80,7 +80,7 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-brand-blue p-4 bg-[url('/pattern.png')] bg-repeat">
             <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-blue-100">
                 <div className="mb-8 text-center flex flex-col items-center">
-                    <img src="/LogoTexto.png" alt="Aparca" className="h-24 w-auto mb-6" />
+                    <img src="/logo_cuadra.png" alt="Cuadra" className="h-24 w-auto mb-6" />
                     <p className="text-gray-500 font-sans">Inicie sesión para continuar</p>
                 </div>
 
@@ -142,7 +142,7 @@ export default function LoginPage() {
             </div>
             {/* Footer / Copyright */}
             <div className="absolute bottom-4 text-blue-200 text-xs text-center opacity-60">
-                &copy; {new Date().getFullYear()} Aparca SaaS. Todos los derechos reservados.
+                &copy; {new Date().getFullYear()} Cuadra SaaS. Todos los derechos reservados.
             </div>
         </div >
     );

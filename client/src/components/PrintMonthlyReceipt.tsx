@@ -45,7 +45,7 @@ export const PrintMonthlyReceipt = React.forwardRef<HTMLDivElement, MonthlyRecei
                             <img src={logo} alt="Logo" style={{ maxHeight: '60px', maxWidth: '100%' }} />
                         </div>
                     )}
-                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'APARCA'}</h1>
+                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'CUADRA'}</h1>
                     {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
                     {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
                     {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}
@@ -114,7 +114,7 @@ export const PrintMonthlyReceipt = React.forwardRef<HTMLDivElement, MonthlyRecei
                         <p className="font-bold">¡GRACIAS POR SU CONFIANZA!</p>
                     )}
 
-                    <p className="text-[7pt] mt-1 text-gray-500">Software: APARCA</p>
+                    <p className="text-[7pt] mt-1 text-gray-500">Software: CUADRA</p>
                 </div>
             </div>
         );

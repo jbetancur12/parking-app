@@ -42,7 +42,7 @@ export const useElectronPrint = ({
             <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>Ticket - Aparca</title>
+                    <title>Ticket - Cuadra</title>
                     <style>
                         ${styles}
                         

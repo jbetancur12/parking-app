@@ -165,7 +165,12 @@ export default function DashboardLayout() {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-brand-blue shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
                 <div className="flex h-20 items-center justify-center px-6 border-b border-blue-800 flex-shrink-0">
-                    <img src="/LogoTexto.png" alt="Aparca" className="h-16 w-auto brightness-0 invert" />
+                    <img
+                        src="/logo_cuadra.png"
+                        alt="Cuadra"
+                        className="h-16 w-auto"
+                        style={{ filter: 'grayscale(1) invert(1) brightness(2) contrast(1.2)', mixBlendMode: 'screen' }}
+                    />
                     {user?.role === 'SUPER_ADMIN' && (
                         <span className="absolute bottom-2 right-4 text-[10px] font-bold text-brand-yellow tracking-widest bg-brand-blue px-1 rounded">SAAS</span>
                     )}
@@ -266,7 +271,7 @@ export default function DashboardLayout() {
                         <Menu size={24} />
                     </button>
                     <div className="flex flex-col items-center">
-                        <img src="/LogoTexto.png" alt="Aparca" className="h-8 w-auto mb-1" />
+                        <img src="/logo_cuadra.png" alt="Cuadra" className="h-8 w-auto mb-1" />
                         {currentLocation && (
                             <span className="text-xs text-green-600 font-medium flex items-center">
                                 <MapPin size={10} className="mr-1" />

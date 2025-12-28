@@ -73,7 +73,7 @@ export default function TicketStatusPage() {
                 <div className="bg-brand-blue p-6 text-white text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-brand-yellow"></div>
                     <div className="relative z-10 flex flex-col items-center">
-                        <img src="/LogoTexto.png" alt="Aparca" className="h-8 mb-4 brightness-0 invert" />
+                        <img src="/logo_cuadra.png" alt="Cuadra" className="h-8 mb-4 brightness-0 invert" />
                         <h1 className="text-2xl font-display font-bold mb-1">Estado de Cuenta</h1>
                         <p className="opacity-80 text-sm font-sans">Parqueadero</p>
                     </div>

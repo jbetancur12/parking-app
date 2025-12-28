@@ -64,7 +64,7 @@ const SetupPage = () => {
                     <div className="mx-auto bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
                         <ShieldCheck className="w-8 h-8 text-white" />
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Bienvenido a Aparca</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2">Bienvenido a Cuadra</h2>
                     <p className="text-blue-100">Configuración Inicial del Sistema</p>
                 </div>
 

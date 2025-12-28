@@ -38,7 +38,7 @@ export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
                         </div>
                     )}
 
-                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'APARCA'}</h1>
+                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'CUADRA'}</h1>
                     {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
                     {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
                     {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}
@@ -95,7 +95,7 @@ export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
                 <div className="text-center text-[8pt] mt-4">
                     <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
                     <p className="font-bold">¡GRACIAS POR SU VISITA!</p>
-                    <p className="mt-1 text-gray-500">Software: APARCA</p>
+                    <p className="mt-1 text-gray-500">Software: CUADRA</p>
                 </div>
             </div>
         );

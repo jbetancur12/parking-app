@@ -40,7 +40,7 @@ export const PrintSaleReceipt = React.forwardRef<HTMLDivElement, PrintSaleReceip
                         </div>
                     )}
 
-                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'APARCA'}</h1>
+                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'CUADRA'}</h1>
                     {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
                     {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
                     {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}
