@@ -3,6 +3,7 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Product } from '../entities/Product';
 import { Location } from '../entities/Location';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { AuditService } from '../services/AuditService';
 
 export class ProductController {
 
@@ -42,6 +43,17 @@ export class ProductController {
             } as any);
 
             await em.persistAndFlush(product);
+
+            await AuditService.log(
+                em,
+                'CREATE_PRODUCT',
+                'Product',
+                String(product.id),
+                (req as any).user,
+                { name, price, stock },
+                req
+            );
+
             res.status(201).json(product);
         } catch (error) {
             console.error(error);
@@ -95,6 +107,17 @@ export class ProductController {
             if (minStock !== undefined) product.minStock = Number(minStock);
 
             await em.flush();
+
+            await AuditService.log(
+                em,
+                'UPDATE_PRODUCT',
+                'Product',
+                String(id),
+                (req as any).user,
+                { id, name, price, stock, minStock },
+                req
+            );
+
             res.json(product);
         } catch (error) {
             res.status(500).json({ message: 'Error updating product' });
@@ -116,6 +139,17 @@ export class ProductController {
 
             product.isActive = false;
             await em.flush();
+
+            await AuditService.log(
+                em,
+                'DELETE_PRODUCT',
+                'Product',
+                String(id),
+                (req as any).user,
+                { id, name: product.name },
+                req
+            );
+
             res.json({ message: 'Product deleted' });
         } catch (error) {
             res.status(500).json({ message: 'Error deleting product' });

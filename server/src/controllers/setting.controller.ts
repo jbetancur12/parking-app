@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { SystemSetting } from '../entities/SystemSetting';
+import { AuditService } from '../services/AuditService';
 
 export class SystemSettingController {
 
@@ -84,6 +85,18 @@ export class SystemSettingController {
             }
 
             await em.flush();
+
+
+            await AuditService.log(
+                em,
+                'UPDATE_SETTINGS',
+                'SystemSetting',
+                'Global',
+                (req as any).user,
+                updates,
+                req
+            );
+
             res.json({ message: 'Settings updated for this location' });
         } catch (error) {
             console.error(error);
