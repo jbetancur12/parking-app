@@ -40,7 +40,7 @@ export default function LocationsPage() {
 
     // Redirect if not SUPER_ADMIN or ADMIN
     useEffect(() => {
-        if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
+        if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN' && user?.role !== 'LOCATION_MANAGER') {
             navigate('/');
         }
     }, [user, navigate]);

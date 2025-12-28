@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/product.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+import { authenticateToken, requireRole } from '../middleware/auth.middleware';
+import { UserRole } from '../entities/User';
 
 const router = Router();
 const controller = new ProductController();
@@ -11,8 +12,8 @@ router.use(authenticateToken); // Requires Auth
 // which filters query by tenant.
 
 router.get('/', controller.getAll);
-router.post('/', controller.create);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+router.post('/', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.create);
+router.put('/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.update);
+router.delete('/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.delete);
 
 export default router;

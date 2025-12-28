@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { WashController } from '../controllers/wash.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+import { authenticateToken, requireRole } from '../middleware/auth.middleware';
+import { UserRole } from '../entities/User';
 
 const router = Router();
 const controller = new WashController();
@@ -13,8 +14,8 @@ router.post('/entries', controller.createEntry);
 router.post('/seed', controller.seedServices);
 
 // Service Types CRUD
-router.post('/types', controller.createType);
-router.put('/types/:id', controller.updateType);
-router.delete('/types/:id', controller.deleteType);
+router.post('/types', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.createType);
+router.put('/types/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.updateType);
+router.delete('/types/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.LOCATION_MANAGER]), controller.deleteType);
 
 export default router;

@@ -57,7 +57,7 @@ export default function DashboardPage() {
             if (currentLocation) fetchOccupancy();
         }, 30000); // Poll every 30s
 
-        if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+        if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') {
             fetchStats();
             fetchConsolidatedStats();
         }
@@ -300,7 +300,7 @@ export default function DashboardPage() {
 
 
             {/* ZONA 2: KPIS FINANCIEROS (Admin Only) */}
-            {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && consolidatedData && (
+            {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && consolidatedData && (
                 <>
                     <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">KPIs Financieros (Hoy)</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

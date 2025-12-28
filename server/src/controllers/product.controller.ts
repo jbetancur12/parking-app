@@ -12,7 +12,8 @@ export class ProductController {
             if (!em || !req.user || !req.tenant) return res.status(500).json({ message: 'Internal Server Error' });
 
             // Only ADMIN or SUPER_ADMIN can create products
-            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            // Only ADMIN or SUPER_ADMIN or LOCATION_MANAGER can create products
+            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'LOCATION_MANAGER') {
                 return res.status(403).json({ message: 'Insufficient permissions' });
             }
 
@@ -78,7 +79,7 @@ export class ProductController {
             const em = RequestContext.getEntityManager();
             if (!em || !req.user) return res.status(500).json({ message: 'No EM' });
 
-            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'LOCATION_MANAGER') {
                 return res.status(403).json({ message: 'Insufficient permissions' });
             }
 
@@ -105,7 +106,7 @@ export class ProductController {
             const em = RequestContext.getEntityManager();
             if (!em || !req.user) return res.status(500).json({ message: 'No EM' });
 
-            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'LOCATION_MANAGER') {
                 return res.status(403).json({ message: 'Insufficient permissions' });
             }
 

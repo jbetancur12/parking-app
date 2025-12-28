@@ -110,7 +110,7 @@ export default function WashPage() {
                 <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
                     <Car className="mr-2" /> Lavadero de Autos
                 </h1>
-                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && (
                     <button
                         onClick={() => setModalOpen(true)}
                         className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg flex items-center font-medium transition-colors"

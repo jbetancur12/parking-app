@@ -12,11 +12,12 @@ const controller = new UserController();
 // authentication is now handled globally in index.ts
 
 // SUPER_ADMIN and ADMIN routes
-router.get('/', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.getAll);
-router.post('/', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.create);
-router.put('/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.update);
-router.delete('/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), controller.delete);
+// SUPER_ADMIN and ADMIN routes
+router.get('/', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.getAll);
+router.post('/', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.create);
+router.put('/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.update);
 
+// Location assignment (SUPER_ADMIN and ADMIN only)
 // Location assignment (SUPER_ADMIN and ADMIN only)
 router.post('/:userId/assign-location', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), assignUserToLocation);
 router.get('/:userId/location', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), getUserLocation);

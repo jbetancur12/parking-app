@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Plus, Edit, Trash, AlertTriangle, Save, X } from 'lucide-react';
 import { productService, type Product } from '../services/product.service';
+import { useAuth } from '../context/AuthContext';
 
 export const InventoryPage: React.FC = () => {
-    // const { user } = useAuth(); // Unused
+    const { user } = useAuth(); // Unused
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,13 +88,15 @@ export const InventoryPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-800 flex items-center">
                     <Package className="mr-2" /> Inventario de Productos
                 </h1>
-                <button
-                    onClick={() => handleOpenModal()}
-                    data-testid="btn-new-product"
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
-                >
-                    <Plus size={18} className="mr-2" /> Nuevo Producto
-                </button>
+                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && (
+                    <button
+                        onClick={() => handleOpenModal()}
+                        data-testid="btn-new-product"
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
+                    >
+                        <Plus size={18} className="mr-2" /> Nuevo Producto
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -104,7 +107,9 @@ export const InventoryPage: React.FC = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') ? 'Acciones' : ''}
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -130,12 +135,16 @@ export const InventoryPage: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onClick={() => handleOpenModal(p)} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                                        <Edit size={18} />
-                                    </button>
-                                    <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:text-red-900">
-                                        <Trash size={18} />
-                                    </button>
+                                    {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && (
+                                        <>
+                                            <button onClick={() => handleOpenModal(p)} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                                                <Edit size={18} />
+                                            </button>
+                                            <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:text-red-900">
+                                                <Trash size={18} />
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}

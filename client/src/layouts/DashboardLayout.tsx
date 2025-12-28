@@ -1,9 +1,8 @@
 import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, Tag, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
 
@@ -90,7 +89,6 @@ export default function DashboardLayout() {
                 { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
                 { name: 'Parqueo', href: '/parking', icon: Car },
                 { name: 'Lavadero', href: '/wash', icon: Droplets },
-                { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Mensualidades', href: '/monthly', icon: Users },
             ]
         },
@@ -109,6 +107,7 @@ export default function DashboardLayout() {
             items: [
                 { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
                 { name: 'Marcas', href: '/brands', icon: Tag, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
+                { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Added for LocMgr
                 { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
                 { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
                 { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
