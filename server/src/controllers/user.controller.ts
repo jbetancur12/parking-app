@@ -44,6 +44,51 @@ export class UserController {
         }
     }
 
+    // Get current user profile with full context
+    async getProfile(req: AuthRequest, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em || !req.user) return res.status(500).json({ message: 'No Context' });
+
+            const user = await em.findOne(User, { id: req.user.id }, {
+                populate: ['tenants', 'locations', 'lastActiveLocation'],
+            });
+
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            // Determines available locations based on Role (Copy of Login Logic)
+            let availableLocations = user.locations.getItems();
+            if (user.role === UserRole.ADMIN && user.tenants.length > 0) {
+                const tenantIds = user.tenants.getItems().map(t => t.id);
+                // Explicitly fetch ALL locations for the tenant
+                const allTenantLocations = await em.find('Location', {
+                    tenant: { $in: tenantIds },
+                    isActive: true
+                });
+                availableLocations = allTenantLocations as any;
+            }
+
+            res.json({
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                tenants: user.tenants.getItems().map(t => ({
+                    id: t.id,
+                    name: t.name,
+                    slug: t.slug,
+                    plan: t.plan,
+                    status: t.status,
+                    trialEndsAt: t.trialEndsAt
+                })),
+                locations: availableLocations.map(l => ({ id: l.id, name: l.name })),
+                lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error fetching profile' });
+        }
+    }
+
     // Create new user (SUPER_ADMIN and ADMIN only)
     async create(req: AuthRequest, res: Response) {
         try {

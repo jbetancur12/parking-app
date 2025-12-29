@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 interface Tenant {
     id: string;
@@ -41,6 +41,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
     };
+
+    // Hydrate user from server on load (to get fresh locations/roles)
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Fetch fresh profile
+            // We use fetch directly to avoid circular dependency if api.ts imports AuthContext
+            // But usually api.ts handles headers. Let's assume api instance is safe or use fetch.
+            // Using fetch for safety here to avoid import cycles with Axios interceptors if poorly structured.
+            // Actually, let's try a simple fetch.
+            fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/users/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(res => {
+                    if (res.ok) return res.json();
+                    throw new Error('Failed to fetch profile');
+                })
+                .then(userData => {
+                    // Update local storage and state with fresh data
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    setUser(userData);
+                })
+                .catch(err => {
+                    console.error('Session validation failed:', err);
+                    // Optional: logout() if strictly invalid, but maybe offline?
+                    // For now, just log. If 401, subsequent API calls will fail anyway.
+                });
+        }
+    }, []);
 
     const logout = () => {
         localStorage.removeItem('token');

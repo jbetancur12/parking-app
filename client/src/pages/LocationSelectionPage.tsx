@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 import { Building2, MousePointerClick, LogOut } from 'lucide-react';
 
 export default function LocationSelectionPage() {
@@ -12,6 +14,19 @@ export default function LocationSelectionPage() {
         setCurrentLocation(location);
         navigate('/');
     };
+
+    const [availableLocations, setAvailableLocations] = useState<any[]>(user?.locations || []);
+
+    useEffect(() => {
+        if (user?.role === 'ADMIN') {
+            // Fetch fresh locations for Admin to ensure full list
+            api.get('/admin/locations').then(res => {
+                setAvailableLocations(res.data);
+            }).catch(err => console.error(err));
+        } else {
+            setAvailableLocations(user?.locations || []);
+        }
+    }, [user]);
 
     if (!user) return null;
 
@@ -27,7 +42,7 @@ export default function LocationSelectionPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {user.locations.map((location) => (
+                    {availableLocations.map((location) => (
                         <button
                             key={location.id}
                             onClick={() => handleSelectLocation(location)}
