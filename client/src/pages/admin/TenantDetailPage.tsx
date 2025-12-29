@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { ArrowLeft, Building2, MapPin, Users, Edit, Trash2, Plus, UserPlus, CheckCircle, X } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Users, Edit, Trash2, Plus, UserPlus, CheckCircle, X, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Tenant {
@@ -73,6 +73,28 @@ export default function TenantDetailPage() {
         } catch (error: any) {
             const message = error.response?.data?.message || 'Error al crear sede';
             toast.error(message);
+        }
+    };
+
+    const handleDeleteLocation = async (locationId: string) => {
+        if (!confirm('¿Está seguro de desactivar esta sede?')) return;
+
+        try {
+            await api.delete(`/admin/locations/${locationId}`);
+            toast.success('Sede desactivada');
+            fetchTenantDetails();
+        } catch (error) {
+            toast.error('Error al desactivar sede');
+        }
+    };
+
+    const handleReactivateLocation = async (location: Location) => {
+        try {
+            await api.put(`/admin/locations/${location.id}`, { isActive: true });
+            toast.success('Sede reactivada');
+            fetchTenantDetails();
+        } catch (error) {
+            toast.error('Error al reactivar sede');
         }
     };
 
@@ -266,7 +288,6 @@ export default function TenantDetailPage() {
                             </button>
                         </div>
 
-                        {/* Location List */}
                         {tenant.locations && tenant.locations.length > 0 ? (
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 {tenant.locations.map(loc => (
@@ -278,9 +299,30 @@ export default function TenantDetailPage() {
                                                 {loc.address || 'Sin dirección'}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {loc.isActive ? 'Activa' : 'Inactiva'}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {loc.isActive ? 'Activa' : 'Inactiva'}
+                                            </span>
+                                            <div className="flex gap-1">
+                                                {loc.isActive ? (
+                                                    <button
+                                                        onClick={() => handleDeleteLocation(loc.id)}
+                                                        className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                                        title="Desactivar Sede"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleReactivateLocation(loc)}
+                                                        className="text-green-500 hover:text-green-700 p-1 rounded hover:bg-green-50"
+                                                        title="Reactivar Sede"
+                                                    >
+                                                        <RotateCcw className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -403,124 +445,128 @@ export default function TenantDetailPage() {
             }
 
             {/* Add Location Modal */}
-            {showAddLocationModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-6">
-                        <h3 className="text-xl font-display font-bold text-brand-blue mb-4">Nueva Sede</h3>
-                        <form onSubmit={createLocation} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Sede</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={newLocation.name}
-                                    onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
-                                    placeholder="Ej. Sede Norte"
-                                />
+            {
+                showAddLocationModal && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-6">
+                            <h3 className="text-xl font-display font-bold text-brand-blue mb-4">Nueva Sede</h3>
+                            <form onSubmit={createLocation} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Sede</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newLocation.name}
+                                        onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        placeholder="Ej. Sede Norte"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Dirección</label>
+                                    <input
+                                        type="text"
+                                        value={newLocation.address}
+                                        onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        placeholder="Ej. Calle 123 #45-67"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
+                                    <input
+                                        type="text"
+                                        value={newLocation.phone}
+                                        onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        placeholder="Ej. 300 123 4567"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddLocationModal(false)}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                    >
+                                        Crear Sede
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Change Plan Modal */}
+            {
+                showPlanModal && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-2xl font-display font-bold text-brand-blue">Cambiar Plan de Suscripción</h3>
+                                <button onClick={() => setShowPlanModal(false)} className="text-gray-400 hover:text-gray-600">
+                                    <X className="h-6 w-6" />
+                                </button>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Dirección</label>
-                                <input
-                                    type="text"
-                                    value={newLocation.address}
-                                    onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
-                                    placeholder="Ej. Calle 123 #45-67"
-                                />
+
+                            <div className="grid md:grid-cols-3 gap-6 mb-8">
+                                {Object.entries(SAAS_PLANS).map(([key, plan]) => (
+                                    <div
+                                        key={key}
+                                        className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === key
+                                            ? 'border-brand-blue bg-blue-50 ring-2 ring-brand-blue ring-opacity-20 transform scale-105 shadow-lg'
+                                            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                            }`}
+                                        onClick={() => setSelectedPlan(key)}
+                                    >
+                                        {selectedPlan === key && (
+                                            <div className="absolute top-3 right-3 text-brand-blue">
+                                                <CheckCircle className="h-6 w-6 fill-current" />
+                                            </div>
+                                        )}
+                                        <h4 className="text-xl font-bold text-brand-blue mb-2 uppercase">{plan.label}</h4>
+                                        <p className="text-3xl font-bold text-gray-900 mb-4">
+                                            ${plan.price.toLocaleString()} <span className="text-sm text-gray-500 font-normal">/mes</span>
+                                        </p>
+                                        <ul className="space-y-3 text-sm">
+                                            <li className="flex items-center text-gray-700">
+                                                <MapPin className="h-4 w-4 text-brand-green mr-2" />
+                                                <span className="font-bold">{plan.maxLocations}</span> &nbsp; Sedes Máximas
+                                            </li>
+                                            <li className="flex items-center text-gray-700">
+                                                <Users className="h-4 w-4 text-brand-green mr-2" />
+                                                <span className="font-bold">{plan.maxUsers}</span> &nbsp; Usuarios Admin/Op
+                                            </li>
+                                        </ul>
+                                    </div>
+                                ))}
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
-                                <input
-                                    type="text"
-                                    value={newLocation.phone}
-                                    onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
-                                    placeholder="Ej. 300 123 4567"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                                 <button
-                                    type="button"
-                                    onClick={() => setShowAddLocationModal(false)}
-                                    className="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
+                                    onClick={() => setShowPlanModal(false)}
+                                    className="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
                                 >
                                     Cancelar
                                 </button>
                                 <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                    onClick={handleUpdatePlan}
+                                    className="px-6 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                    disabled={selectedPlan === tenant.plan}
                                 >
-                                    Crear Sede
+                                    Guardar Cambios
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Change Plan Modal */}
-            {showPlanModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-display font-bold text-brand-blue">Cambiar Plan de Suscripción</h3>
-                            <button onClick={() => setShowPlanModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <div className="grid md:grid-cols-3 gap-6 mb-8">
-                            {Object.entries(SAAS_PLANS).map(([key, plan]) => (
-                                <div
-                                    key={key}
-                                    className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === key
-                                        ? 'border-brand-blue bg-blue-50 ring-2 ring-brand-blue ring-opacity-20 transform scale-105 shadow-lg'
-                                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                                        }`}
-                                    onClick={() => setSelectedPlan(key)}
-                                >
-                                    {selectedPlan === key && (
-                                        <div className="absolute top-3 right-3 text-brand-blue">
-                                            <CheckCircle className="h-6 w-6 fill-current" />
-                                        </div>
-                                    )}
-                                    <h4 className="text-xl font-bold text-brand-blue mb-2 uppercase">{plan.label}</h4>
-                                    <p className="text-3xl font-bold text-gray-900 mb-4">
-                                        ${plan.price.toLocaleString()} <span className="text-sm text-gray-500 font-normal">/mes</span>
-                                    </p>
-                                    <ul className="space-y-3 text-sm">
-                                        <li className="flex items-center text-gray-700">
-                                            <MapPin className="h-4 w-4 text-brand-green mr-2" />
-                                            <span className="font-bold">{plan.maxLocations}</span> &nbsp; Sedes Máximas
-                                        </li>
-                                        <li className="flex items-center text-gray-700">
-                                            <Users className="h-4 w-4 text-brand-green mr-2" />
-                                            <span className="font-bold">{plan.maxUsers}</span> &nbsp; Usuarios Admin/Op
-                                        </li>
-                                    </ul>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                            <button
-                                onClick={() => setShowPlanModal(false)}
-                                className="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleUpdatePlan}
-                                className="px-6 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
-                                disabled={selectedPlan === tenant.plan}
-                            >
-                                Guardar Cambios
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </div >
     );
 }
