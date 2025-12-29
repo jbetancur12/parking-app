@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { MapPin, Plus, Edit, Trash2, Building2 } from 'lucide-react';
+import { MapPin, Plus, Edit, Trash2, Building2, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Tenant {
@@ -119,6 +119,16 @@ export default function LocationsPage() {
             fetchLocations();
         } catch (error) {
             toast.error('Error al desactivar sede');
+        }
+    };
+
+    const handleReactivate = async (location: Location) => {
+        try {
+            await api.put(`/admin/locations/${location.id}`, { isActive: true });
+            toast.success('Sede reactivada');
+            fetchLocations();
+        } catch (error) {
+            toast.error('Error al reactivar sede');
         }
     };
 
@@ -314,12 +324,21 @@ export default function LocationsPage() {
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </button>
-                                            {location.isActive && (
+                                            {location.isActive ? (
                                                 <button
                                                     onClick={() => handleDelete(location.id)}
                                                     className="text-red-600 hover:text-red-900"
+                                                    title="Desactivar"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleReactivate(location)}
+                                                    className="text-green-600 hover:text-green-900"
+                                                    title="Reactivar"
+                                                >
+                                                    <RotateCcw className="h-4 w-4" />
                                                 </button>
                                             )}
                                         </div>
