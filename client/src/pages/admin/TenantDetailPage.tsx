@@ -49,7 +49,8 @@ export default function TenantDetailPage() {
 
     // User management state
     const [showAddUserModal, setShowAddUserModal] = useState(false);
-    const [newUser, setNewUser] = useState({ username: '', password: '', role: 'OPERATOR' });
+    const [newUser, setNewUser] = useState({ username: '', password: '', confirmPassword: '', role: 'OPERATOR' });
+    const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Location management state
     const [showAddLocationModal, setShowAddLocationModal] = useState(false);
@@ -123,26 +124,73 @@ export default function TenantDetailPage() {
         }
     };
 
-    const createAndAssignUser = async (e: React.FormEvent) => {
+    const handleSubmitUser = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation
+        if (newUser.password !== newUser.confirmPassword) {
+            toast.error('Las contraseñas no coinciden');
+            return;
+        }
+
         try {
-            // 1. Create user
-            const createResponse = await api.post('/users', { ...newUser, tenantId: id });
-            const createdUserId = createResponse.data.id;
+            if (editingUser) {
+                // Update Logic
+                const updateData: any = {
+                    username: newUser.username,
+                    role: newUser.role
+                };
+                if (newUser.password) {
+                    updateData.password = newUser.password;
+                }
 
-            // 2. Assign to tenant
-            await api.post(`/admin/users/${createdUserId}/tenants`, {
-                tenantIds: [id]
-            });
+                await api.put(`/users/${editingUser.id}`, updateData);
+                toast.success('Usuario actualizado');
+            } else {
+                // Create Logic
+                if (!newUser.password) {
+                    toast.error('La contraseña es requerida');
+                    return;
+                }
 
-            toast.success('Usuario creado y asignado');
+                // 1. Create user
+                const { confirmPassword, ...userData } = newUser;
+                const createResponse = await api.post('/users', { ...userData, tenantId: id });
+                const createdUserId = createResponse.data.id;
+
+                // 2. Assign to tenant
+                await api.post(`/admin/users/${createdUserId}/tenants`, {
+                    tenantIds: [id]
+                });
+
+                toast.success('Usuario creado y asignado');
+            }
+
             setShowAddUserModal(false);
-            setNewUser({ username: '', password: '', role: 'OPERATOR' });
+            setNewUser({ username: '', password: '', confirmPassword: '', role: 'OPERATOR' });
+            setEditingUser(null);
             fetchTenantDetails();
         } catch (error: any) {
-            const message = error.response?.data?.message || 'Error al crear usuario';
+            const message = error.response?.data?.message || 'Error al guardar usuario';
             toast.error(message);
         }
+    };
+
+    const openCreateUserModal = () => {
+        setEditingUser(null);
+        setNewUser({ username: '', password: '', confirmPassword: '', role: 'OPERATOR' });
+        setShowAddUserModal(true);
+    };
+
+    const openEditUserModal = (user: any) => {
+        setEditingUser(user);
+        setNewUser({
+            username: user.username,
+            password: '',
+            confirmPassword: '',
+            role: user.role
+        });
+        setShowAddUserModal(true);
     };
 
     const removeUserFromTenant = async (userId: number) => {
@@ -337,7 +385,7 @@ export default function TenantDetailPage() {
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl font-display font-bold text-brand-blue">Usuarios</h3>
                             <button
-                                onClick={() => setShowAddUserModal(true)}
+                                onClick={openCreateUserModal}
                                 className="flex items-center px-4 py-2 bg-brand-blue text-white font-bold rounded-lg hover:bg-blue-800 shadow-md transition-transform active:scale-95"
                             >
                                 <UserPlus className="mr-2 h-4 w-4" />
@@ -362,13 +410,22 @@ export default function TenantDetailPage() {
                                                 <p className="text-xs font-medium text-gray-500 uppercase">{user.role}</p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => removeUserFromTenant(user.id)}
-                                            className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Remover acceso"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => openEditUserModal(user)}
+                                                className="text-blue-500 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="Editar Usuario"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => removeUserFromTenant(user.id)}
+                                                className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Remover acceso"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -382,8 +439,10 @@ export default function TenantDetailPage() {
                 showAddUserModal && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-                            <h3 className="text-xl font-display font-bold text-brand-blue mb-4">Crear y Asignar Usuario</h3>
-                            <form onSubmit={createAndAssignUser} className="space-y-4">
+                            <h3 className="text-xl font-display font-bold text-brand-blue mb-4">
+                                {editingUser ? 'Editar Usuario' : 'Crear y Asignar Usuario'}
+                            </h3>
+                            <form onSubmit={handleSubmitUser} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">
                                         Username *
@@ -399,16 +458,31 @@ export default function TenantDetailPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">
-                                        Password *
+                                        Password {editingUser && '(Opcional)'}
                                     </label>
                                     <input
                                         type="password"
                                         value={newUser.password}
                                         onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                                        required
+                                        required={!editingUser}
+                                        placeholder={editingUser ? '••••••••' : ''}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                     />
                                 </div>
+                                {(newUser.password || !editingUser) && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">
+                                            Confirmar Password *
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={newUser.confirmPassword}
+                                            onChange={(e) => setNewUser({ ...newUser, confirmPassword: e.target.value })}
+                                            required={!editingUser || !!newUser.password}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        />
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">
                                         Rol *
@@ -420,7 +494,9 @@ export default function TenantDetailPage() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                     >
                                         <option value="ADMIN">ADMIN</option>
+                                        <option value="LOCATION_MANAGER">LOCATION_MANAGER</option>
                                         <option value="OPERATOR">OPERATOR</option>
+                                        <option value="CASHIER">CASHIER</option>
                                     </select>
                                 </div>
                                 <div className="flex gap-3 pt-4">
@@ -435,7 +511,7 @@ export default function TenantDetailPage() {
                                         type="submit"
                                         className="flex-1 px-4 py-2 bg-brand-blue text-white font-bold rounded-lg hover:bg-blue-800"
                                     >
-                                        Crear Usuario
+                                        {editingUser ? 'Actualizar' : 'Crear Usuario'}
                                     </button>
                                 </div>
                             </form>

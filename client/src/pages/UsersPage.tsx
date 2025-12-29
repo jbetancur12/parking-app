@@ -37,6 +37,7 @@ export default function UsersPage() {
     // Form state
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('OPERATOR');
     const [isActive, setIsActive] = useState(true);
     const [error, setError] = useState('');
@@ -90,14 +91,27 @@ export default function UsersPage() {
         try {
             if (editingUser) {
                 // Update user
-                await api.put(`/users/${editingUser.id}`, { username, role, isActive });
+                if (password && password !== confirmPassword) {
+                    setError('Las contraseñas no coinciden');
+                    setIsSubmitting(false);
+                    return;
+                }
+                const updateData: any = { username, role, isActive };
+                if (password) {
+                    updateData.password = password;
+                }
+                await api.put(`/users/${editingUser.id}`, updateData);
             } else {
                 // Create user
                 if (!password) {
                     setError('La contraseña es requerida');
-                    return; // Early return, set check to false/return in finally? No, simple return is fine if we check isSubmitting.
-                    // Actually, if we return early we must reset isSubmitting!
-                    // Let's refactor slightly to avoid trap.
+                    setIsSubmitting(false);
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    setError('Las contraseñas no coinciden');
+                    setIsSubmitting(false);
+                    return;
                 }
                 await api.post('/users', { username, password, role });
             }
@@ -161,6 +175,7 @@ export default function UsersPage() {
         setEditingUser(null);
         setUsername('');
         setPassword('');
+        setConfirmPassword('');
         setRole('OPERATOR');
         setIsActive(true);
         setError('');
@@ -170,7 +185,9 @@ export default function UsersPage() {
     const openEditModal = (user: User) => {
         setEditingUser(user);
         setUsername(user.username);
+        setUsername(user.username);
         setPassword('');
+        setConfirmPassword('');
         setRole(user.role);
         setIsActive(user.isActive);
         setError('');
@@ -310,17 +327,31 @@ export default function UsersPage() {
                                 />
                             </div>
 
-                            {!editingUser && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Contraseña {editingUser && '(Opcional)'}
+                                </label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full border rounded-md px-3 py-2"
+                                    required={!editingUser}
+                                    placeholder={editingUser ? 'Dejar en blanco para mantener actual' : ''}
+                                />
+                            </div>
+
+                            {(password || !editingUser) && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Contraseña
+                                        Confirmar Contraseña
                                     </label>
                                     <input
                                         type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
                                         className="w-full border rounded-md px-3 py-2"
-                                        required
+                                        required={!editingUser || !!password}
                                     />
                                 </div>
                             )}
