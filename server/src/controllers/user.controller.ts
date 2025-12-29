@@ -111,9 +111,29 @@ export class UserController {
             console.log('Creating user:', { username, role, currentTenantId }); // DEBUG LOG
 
             // Check if user already exists
-            const existing = await em.findOne(User, { username });
+            const existing = await em.findOne(User, { username }, { populate: ['tenants'] });
             if (existing) {
-                return res.status(400).json({ message: 'Username already exists' });
+                if (!currentTenantId) {
+                    return res.status(400).json({ message: 'Username already exists' });
+                }
+
+                // Check if already assigned to this tenant
+                const isAssigned = existing.tenants.getItems().some(t => t.id === currentTenantId);
+                if (isAssigned) {
+                    return res.status(400).json({ message: 'User already assigned to this tenant' });
+                }
+
+                // If not assigned, assign to tenant
+                const tenant = await em.findOne(Tenant, { id: currentTenantId });
+                if (!tenant) {
+                    return res.status(404).json({ message: 'Tenant not found' });
+                }
+
+                existing.tenants.add(tenant);
+                await em.flush();
+
+                const { password: _, ...userWithoutPassword } = existing;
+                return res.status(201).json(userWithoutPassword);
             }
 
             // Validate role
@@ -186,6 +206,10 @@ export class UserController {
             }
 
             if (typeof isActive === 'boolean') user.isActive = isActive;
+
+            if (req.body.password) {
+                user.password = await bcrypt.hash(req.body.password, 10);
+            }
 
             await em.flush();
 

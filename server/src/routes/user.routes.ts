@@ -17,6 +17,7 @@ router.get('/profile', controller.getProfile); // Moved up to valid collisions
 router.get('/', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.getAll);
 router.post('/', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.create);
 router.put('/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.update);
+router.delete('/:id', requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), controller.delete);
 
 // Location assignment (SUPER_ADMIN and ADMIN only)
 // Location assignment (SUPER_ADMIN and ADMIN only)
