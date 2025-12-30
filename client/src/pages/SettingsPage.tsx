@@ -138,28 +138,82 @@ export default function SettingsPage() {
         ));
     };
 
-    // Helper to calculate suggested hours for flat rate threshold
-    const calculateSuggestedHours = (tariff: Tariff) => {
-        if (!tariff.dayMaxPrice || (tariff.extraFracPrice || 0) <= 0) return null;
+    // Helper to calculate smart suggestions (Bidirectional: Price <-> Hours)
+    const calculateSmartSuggestion = (tariff: Tariff, type: 'HOURS_FROM_PRICE' | 'PRICE_FROM_HOURS') => {
+        const pricingModel = tariff.pricingModel || 'MINUTE';
+        const dayMax = Number(tariff.dayMaxPrice) || 0;
+        const dayMinHours = Number(tariff.dayMinHours) || 0;
 
-        const basePrice = Number(tariff.basePrice) || 0;
+        // Base Values
+        const basePrice = Number(tariff.basePrice) || 0; // Usage depends on model
+        const costPerHour = Number(tariff.cost) || 0;   // Traditional only
         const extraPrice = Number(tariff.extraFracPrice) || 0;
-        const dayMax = Number(tariff.dayMaxPrice);
-        const baseTime = Number(tariff.baseTimeMinutes) || 60;
         const extraTime = Number(tariff.extraFracTimeMinutes) || 15;
+        const baseTime = Number(tariff.baseTimeMinutes) || 60;
 
-        // If flat rate is less than base price, it applies immediately
-        if (dayMax <= basePrice) return (baseTime / 60).toFixed(1);
+        if (type === 'HOURS_FROM_PRICE') {
+            // User entered PRICE, we suggest HOURS
+            if (dayMax <= 0) return null;
 
-        // Calculate how many extra blocks are needed to exceed dayMax
-        // Cost = Base + (N * Extra)
-        // Find N where Cost >= DayMax
-        // N * Extra >= DayMax - Base
-        // N >= (DayMax - Base) / Extra
-        const neededExtras = Math.ceil((dayMax - basePrice) / extraPrice);
+            if (pricingModel === 'MINUTE') {
+                if (basePrice <= 0) return null;
+                // Price = Min * Base -> Min = Price / Base -> Hours = Min / 60
+                const hours = (dayMax / basePrice) / 60;
+                return hours.toFixed(1);
+            }
 
-        const totalMinutes = baseTime + (neededExtras * extraTime);
-        return (totalMinutes / 60).toFixed(1);
+            if (pricingModel === 'TRADITIONAL') {
+                if (costPerHour <= 0) return null;
+                // Price = Hours * Cost -> Hours = Price / Cost
+                const hours = dayMax / costPerHour;
+                return hours.toFixed(1);
+            }
+
+            if (pricingModel === 'BLOCKS') {
+                // Price = Base + N * Extra
+                // If Price <= Base, it's just the base time (usually 1h)
+                if (dayMax <= basePrice) return (baseTime / 60).toFixed(1);
+                if (extraPrice <= 0) return null; // Avoid division by zero
+
+                // (Price - Base) / Extra = N blocks
+                const neededBlocks = (dayMax - basePrice) / extraPrice;
+                const totalMinutes = baseTime + (neededBlocks * extraTime);
+                return (totalMinutes / 60).toFixed(1);
+            }
+        }
+
+        if (type === 'PRICE_FROM_HOURS') {
+            // User entered HOURS, we suggest PRICE
+            if (dayMinHours <= 0) return null;
+
+            if (pricingModel === 'MINUTE') {
+                // Price = Hours * 60 * Base
+                const price = dayMinHours * 60 * basePrice;
+                return Math.ceil(price).toString();
+            }
+
+            if (pricingModel === 'TRADITIONAL') {
+                // Price = Hours * Cost
+                const price = dayMinHours * costPerHour;
+                return Math.ceil(price).toString();
+            }
+
+            if (pricingModel === 'BLOCKS') {
+                // Minutes = Hours * 60
+                const totalMinutes = dayMinHours * 60;
+
+                if (totalMinutes <= baseTime) return basePrice.toString();
+
+                // Extra Minutes = Total - Base
+                const extraMinutes = totalMinutes - baseTime;
+                // Extra Blocks = Ceil(Extra / FracTime)
+                const extraBlocks = Math.ceil(extraMinutes / extraTime);
+                const price = basePrice + (extraBlocks * extraPrice);
+                return Math.ceil(price).toString();
+            }
+        }
+
+        return null;
     };
 
     const handleSaveAll = async () => {
@@ -418,6 +472,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('CAR', 'HOUR', 'dayMaxPrice', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('CAR', 'HOUR');
+                                                                            if (t) {
+                                                                                const suggHours = calculateSmartSuggestion(t, 'HOURS_FROM_PRICE');
+                                                                                if (suggHours) {
+                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1 font-medium bg-blue-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💡</span> Equivale a: ~{suggHours}h
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                     <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                                                                         <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
@@ -427,6 +493,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('CAR', 'HOUR', 'dayMinHours', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('CAR', 'HOUR');
+                                                                            if (t) {
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                 </div>
                                                             ) : (
@@ -511,6 +589,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('CAR', 'MINUTE', 'dayMaxPrice', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('CAR', 'MINUTE');
+                                                                            if (t) {
+                                                                                const suggHours = calculateSmartSuggestion(t, 'HOURS_FROM_PRICE');
+                                                                                if (suggHours) {
+                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1 font-medium bg-blue-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💡</span> Equivale a: ~{suggHours}h
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                     <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                                                                         <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
@@ -520,6 +610,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('CAR', 'MINUTE', 'dayMinHours', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('CAR', 'MINUTE');
+                                                                            if (t) {
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -591,10 +693,10 @@ export default function SettingsPage() {
                                                                         {(() => {
                                                                             const t = getTariff('CAR', 'HOUR');
                                                                             if (t && carPricingModel === 'BLOCKS') {
-                                                                                const sugg = calculateSuggestedHours(t);
-                                                                                if (sugg) {
-                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1">
-                                                                                        <span className="text-xs">💡</span> Sugerencia: {sugg}h
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
                                                                                     </p>;
                                                                                 }
                                                                             }
@@ -707,6 +809,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('MOTORCYCLE', 'HOUR', 'dayMaxPrice', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('MOTORCYCLE', 'HOUR');
+                                                                            if (t) {
+                                                                                const suggHours = calculateSmartSuggestion(t, 'HOURS_FROM_PRICE');
+                                                                                if (suggHours) {
+                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1 font-medium bg-blue-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💡</span> Equivale a: ~{suggHours}h
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                     <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                                                                         <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
@@ -716,6 +830,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('MOTORCYCLE', 'HOUR', 'dayMinHours', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('MOTORCYCLE', 'HOUR');
+                                                                            if (t) {
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                 </div>
                                                             ) : (
@@ -791,6 +917,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('MOTORCYCLE', 'MINUTE', 'dayMaxPrice', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('MOTORCYCLE', 'MINUTE');
+                                                                            if (t) {
+                                                                                const suggHours = calculateSmartSuggestion(t, 'HOURS_FROM_PRICE');
+                                                                                if (suggHours) {
+                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1 font-medium bg-blue-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💡</span> Equivale a: ~{suggHours}h
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                     <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                                                                         <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
@@ -800,6 +938,18 @@ export default function SettingsPage() {
                                                                             onChange={(e) => handleTariffChange('MOTORCYCLE', 'MINUTE', 'dayMinHours', Number(e.target.value))}
                                                                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                                                         />
+                                                                        {(() => {
+                                                                            const t = getTariff('MOTORCYCLE', 'MINUTE');
+                                                                            if (t) {
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
+                                                                                    </p>;
+                                                                                }
+                                                                            }
+                                                                            return null;
+                                                                        })()}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -871,10 +1021,10 @@ export default function SettingsPage() {
                                                                         {(() => {
                                                                             const t = getTariff('MOTORCYCLE', 'HOUR');
                                                                             if (t && motoPricingModel === 'BLOCKS') {
-                                                                                const sugg = calculateSuggestedHours(t);
-                                                                                if (sugg) {
-                                                                                    return <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1">
-                                                                                        <span className="text-xs">💡</span> Sugerencia: {sugg}h
+                                                                                const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
+                                                                                if (suggPrice) {
+                                                                                    return <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium bg-green-50 px-1 rounded animate-fade-in">
+                                                                                        <span className="text-xs">💰</span> Costo normal: ${Number(suggPrice).toLocaleString()}
                                                                                     </p>;
                                                                                 }
                                                                             }
