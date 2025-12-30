@@ -30,6 +30,9 @@ export class MonthlyClient extends BaseTenantEntity {
     @Property()
     isActive: boolean = true;
 
+    @Property()
+    termsAccepted: boolean = true; // Implied consent by payment
+
     @Property({ onCreate: () => new Date() })
     createdAt: Date = new Date();
 

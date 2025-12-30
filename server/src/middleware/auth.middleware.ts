@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'supersecret_parking_app_key';
+const SECRET_KEY = process.env.JWT_SECRET;
+if (!SECRET_KEY) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+}
 
 export interface AuthRequest extends Request {
     user?: {
@@ -19,7 +22,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         return res.status(401).json({ message: 'Authentication required' });
     }
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET as string, (err, user) => {
         if (err) {
             return res.status(403).json({ message: 'Invalid or expired token' });
         }
@@ -27,6 +30,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         next();
     });
 };
+
 
 export const requireRole = (roles: string[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {

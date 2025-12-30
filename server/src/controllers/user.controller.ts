@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { User, UserRole } from '../entities/User';
 import { Tenant } from '../entities/Tenant';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { AuditService } from '../services/AuditService';
 import bcrypt from 'bcryptjs';
 
 export class UserController {
@@ -108,8 +109,6 @@ export class UserController {
                 return res.status(400).json({ message: 'Tenant context or tenantId is required to create a non-SuperAdmin user' });
             }
 
-            console.log('Creating user:', { username, role, currentTenantId }); // DEBUG LOG
-
             // Check if user already exists
             const existing = await em.findOne(User, { username }, { populate: ['tenants'] });
             if (existing) {
@@ -131,6 +130,11 @@ export class UserController {
 
                 existing.tenants.add(tenant);
                 await em.flush();
+
+                await AuditService.log(em, 'USER_UPDATE', 'User', existing.id.toString(), req.user, {
+                    action: 'Add to Tenant',
+                    tenant: tenant.name
+                }, req);
 
                 const { password: _, ...userWithoutPassword } = existing;
                 return res.status(201).json(userWithoutPassword);
@@ -168,11 +172,28 @@ export class UserController {
                 }
             }
 
+            // Assign location? Usually handled in separate endpoint or defaults. User starts with 0 locations?
+            // "locations" in body?
+            const locationsToAssign = [];
+            if (req.body.locationIds && Array.isArray(req.body.locationIds)) {
+                for (const lid of req.body.locationIds) {
+                    locationsToAssign.push(await em.getReference('Location', lid));
+                }
+                user.locations.set(locationsToAssign); // Set many to many
+            }
+
             await em.persistAndFlush(user);
+
+            await AuditService.log(em, 'USER_CREATE', 'User', user.id.toString(), req.user, {
+                username: user.username,
+                role: user.role,
+                assignedLocations: locationsToAssign.length
+            }, req);
 
             // Return user without password
             const { password: _, ...userWithoutPassword } = user;
             res.status(201).json(userWithoutPassword);
+
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error creating user' });
@@ -213,6 +234,11 @@ export class UserController {
 
             await em.flush();
 
+            await AuditService.log(em, 'USER_UPDATE', 'User', user.id.toString(), req.user, {
+                updatedUser: user.username,
+                updates: { username, role, isActive }
+            }, req);
+
             const { password: _, ...userWithoutPassword } = user;
             res.json(userWithoutPassword);
         } catch (error) {
@@ -252,6 +278,10 @@ export class UserController {
             user.password = await bcrypt.hash(newPassword, 10);
             await em.flush();
 
+            await AuditService.log(em, 'PASSWORD_CHANGE', 'User', user.id.toString(), req.user, {
+                targetUser: user.username
+            }, req);
+
             res.json({ message: 'Password updated successfully' });
         } catch (error) {
             console.error(error);
@@ -281,6 +311,11 @@ export class UserController {
             }
 
             await em.removeAndFlush(user);
+
+            await AuditService.log(em, 'USER_DELETE', 'User', id, (req as any).user || { id: 0, username: 'system' }, {
+                deletedUser: user.username
+            }, req);
+
             res.json({ message: 'User deleted successfully' });
         } catch (error) {
             console.error(error);

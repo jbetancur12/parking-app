@@ -129,6 +129,7 @@ export class MonthlyClientController {
                 startDate,
                 endDate,
                 isActive: true,
+                termsAccepted: true, // Consent implied by payment (Habeas Data)
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 tenant,
@@ -302,4 +303,40 @@ export class MonthlyClientController {
         }
     }
 
+    // Anonymize client (Right to be Forgotten)
+    async anonymize(req: Request, res: Response) {
+        try {
+            const em = RequestContext.getEntityManager();
+            if (!em) return res.status(500).json({ message: 'No EntityManager found' });
+
+            const { id } = req.params;
+            const client = await em.findOne(MonthlyClient, { id: Number(id) });
+
+            if (!client) {
+                return res.status(404).json({ message: 'Client not found' });
+            }
+
+            // Verify permissions (though route should be admin only, good to double check or log)
+            // (req as any).user.role === UserRole.ADMIN check handled by middleware usually
+
+            const oldName = client.name;
+            const oldPlate = client.plate;
+
+            // Anonymize data
+            client.name = `Usuario Eliminado ${client.id}`;
+            client.phone = '0000000000';
+            client.plate = `ANON-${client.id}-${Date.now().toString().slice(-4)}`; // Unique plate to avoid constraint errors
+            client.isActive = false; // Deactivate
+            client.updatedAt = new Date();
+
+            await em.flush();
+
+            console.log(`[PRIVACY] Client ${client.id} anonymized. Old: ${oldName} (${oldPlate})`);
+
+            res.json({ message: 'Client anonymized successfully', client });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error anonymizing client' });
+        }
+    }
 }

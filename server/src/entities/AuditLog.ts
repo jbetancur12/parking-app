@@ -1,5 +1,20 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 
+export type AuditAction =
+    | 'USER_CREATE'
+    | 'USER_UPDATE'
+    | 'USER_DELETE'
+    | 'PASSWORD_CHANGE'
+    | 'TARIFF_CREATE'
+    | 'TARIFF_UPDATE'
+    | 'TARIFF_DELETE'
+    | 'SHIFT_OPEN'
+    | 'SHIFT_CLOSE'
+    | 'UPDATE_SETTINGS'
+    | 'LOGIN_SUCCESS'
+    | 'LOGIN_FAILED'
+    | 'LOGOUT';
+
 @Entity()
 export class AuditLog {
     @PrimaryKey()

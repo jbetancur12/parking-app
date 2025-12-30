@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { addDays } from 'date-fns';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'supersecret_parking_app_key';
+
 
 export const registerTenant = async (req: Request, res: Response) => {
     const { companyName, username, password, email } = req.body;
@@ -67,9 +67,12 @@ export const registerTenant = async (req: Request, res: Response) => {
     await em.persistAndFlush([tenant, location, user]);
 
     // 5. Login immediately
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET not defined');
+
     const token = jwt.sign(
         { id: user.id, username: user.username, role: user.role },
-        SECRET_KEY,
+        secret,
         { expiresIn: '12h' }
     );
 
@@ -96,7 +99,7 @@ export const registerTenant = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
-    console.log(username, password);
+
 
     if (!username || !password) {
         return res.status(400).json({ message: 'Username and password are required' });
@@ -113,7 +116,6 @@ export const login = async (req: Request, res: Response) => {
         populate: ['tenants', 'locations', 'lastActiveLocation'],
         filters: false // Disable all filters for this query to find the user globally
     });
-    console.log(user);
 
     if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -125,9 +127,14 @@ export const login = async (req: Request, res: Response) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined');
+    }
+
     const token = jwt.sign(
         { id: user.id, username: user.username, role: user.role },
-        SECRET_KEY,
+        secret,
         { expiresIn: '12h' }
     );
 

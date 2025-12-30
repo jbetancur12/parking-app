@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Shift } from '../entities/Shift';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
+import { AuditService } from '../services/AuditService';
 
 export const openShift = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -146,6 +147,15 @@ export const closeShift = async (req: AuthRequest, res: Response) => {
     shift.notes = notes;
 
     await em.flush();
+
+    await AuditService.log(em, 'SHIFT_CLOSE', 'Shift', shift.id.toString(), req.user!, {
+        declaredAmount,
+        totalIncome,
+        cashIncome,
+        transferIncome,
+        totalExpenses,
+        difference: shift.declaredAmount - (shift.baseAmount + cashIncome - totalExpenses)
+    }, req);
 
     // Return summary
     const expectedCash = shift.baseAmount + cashIncome - totalExpenses; // Only cash income counts for expected cash
