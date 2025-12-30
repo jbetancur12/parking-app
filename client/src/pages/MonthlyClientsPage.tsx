@@ -1,52 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { settingService } from '../services/setting.service';
-import { Users, Plus, RefreshCw, Search, X, Download, AlertTriangle } from 'lucide-react';
-import { exportToExcel } from '../utils/excelExport';
+import { useState, useRef } from 'react';
+import { Users, Plus, Download } from 'lucide-react';
+import { useMonthlyClients, type Client } from '../hooks/useMonthlyClients';
 import { useElectronPrint } from '../hooks/useElectronPrint';
-import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
+import { ClientFilterBar } from '../components/monthly/ClientFilterBar';
+import { MonthlyClientTable } from '../components/monthly/MonthlyClientTable';
+import { MonthlyClientForm } from '../components/monthly/MonthlyClientForm';
+import { RenewalModal } from '../components/monthly/RenewalModal';
+import { HistoryModal } from '../components/monthly/HistoryModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { toast } from 'sonner';
-
-interface Client {
-    id: number;
-    plate: string;
-    name: string;
-    phone?: string;
-    vehicleType?: string;
-    startDate: string;
-    endDate: string;
-    monthlyRate: number;
-    isActive: boolean;
-}
+import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
+import { exportToExcel } from '../utils/excelExport';
 
 export default function MonthlyClientsPage() {
-    const [clients, setClients] = useState<Client[]>([]);
-    const [settings, setSettings] = useState<any>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'EXPIRED'>('ALL');
-    const [error, setError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const {
+        clients,
+        settings,
+        searchTerm,
+        setSearchTerm,
+        filterStatus,
+        setFilterStatus,
+        createClient,
+        renewClient,
+        toggleStatus,
+        anonymizeClient,
+        getHistory
+    } = useMonthlyClients();
 
-    // Form State
-    const [plate, setPlate] = useState('');
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [monthlyRate, setMonthlyRate] = useState('50000');
-    const [vehicleType, setVehicleType] = useState('CAR');
-
-    // Renewal Modal State
+    // Modal Visibility State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
-    const [renewClientData, setRenewClientData] = useState<{ id: number; rate: number } | null>(null);
-    const [renewAmount, setRenewAmount] = useState('');
-    const [renewPaymentMethod, setRenewPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
-
-    const [historyModalOpen, setHistoryModalOpen] = useState(false);
-    const [history, setHistory] = useState<any[]>([]);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
-    // Confirmation Modal State
+    // Confirmation Modal State (Global/Shared)
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -60,8 +46,8 @@ export default function MonthlyClientsPage() {
         onConfirm: () => { },
     });
 
-    // Printing
-    const componentRef = React.useRef<HTMLDivElement>(null);
+    // Printing System
+    const componentRef = useRef<HTMLDivElement>(null);
     const [printData, setPrintData] = useState<any>(null);
 
     const handlePrint = useElectronPrint({
@@ -77,242 +63,107 @@ export default function MonthlyClientsPage() {
         }, 100);
     };
 
-    const fetchClients = async () => {
-        try {
-            const response = await api.get(`/monthly?search=${searchTerm}`);
-            setClients(response.data);
-        } catch (err) {
-            console.error(err);
-            toast.error('Error al cargar clientes');
-        }
-    };
+    // --- Handlers ---
 
-    const fetchSettings = async () => {
-        try {
-            const data = await settingService.getAll();
-            setSettings(data);
-        } catch (error) {
-            console.error('Error loading settings', error);
-        }
-    };
+    const handleCreateSubmit = async (data: any) => {
+        const response = await createClient(data);
+        setIsCreateModalOpen(false);
 
-    useEffect(() => {
-        fetchClients();
-        fetchSettings();
-    }, [searchTerm]);
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setConfirmModal(prev => ({ ...prev, isOpen: false })); // Close any potentially open confirm
-        if (isSubmitting) return;
-
-        setIsSubmitting(true);
-        try {
-            const response = await api.post('/monthly', {
-                plate: plate.toUpperCase(),
-                name,
-                phone,
-                vehicleType,
-                monthlyRate: Number(monthlyRate)
+        // Printing Logic for New Client
+        const { client, payment } = response;
+        if (client && payment) {
+            setConfirmModal({
+                isOpen: true,
+                title: 'Imprimir Recibo',
+                message: '¿Desea imprimir el recibo de la nueva mensualidad?',
+                type: 'primary',
+                onConfirm: () => {
+                    triggerPrint({
+                        paymentId: payment.id,
+                        plate: client.plate,
+                        clientName: client.name,
+                        vehicleType: client.vehicleType,
+                        amount: payment.amount,
+                        periodStart: payment.periodStart,
+                        periodEnd: payment.periodEnd,
+                        paymentDate: payment.paymentDate,
+                        concept: 'NUEVA MENSUALIDAD'
+                    });
+                    closeConfirmModal();
+                }
             });
-
-            setIsModalOpen(false);
-            resetForm();
-            fetchClients();
-            toast.success('Cliente creado exitosamente');
-
-            // Print Receipt Confirmation
-            const { client, payment } = response.data;
-            if (client && payment) {
-                setConfirmModal({
-                    isOpen: true,
-                    title: 'Imprimir Recibo',
-                    message: '¿Desea imprimir el recibo de la nueva mensualidad?',
-                    type: 'primary',
-                    onConfirm: () => {
-                        triggerPrint({
-                            paymentId: payment.id,
-                            plate: client.plate,
-                            clientName: client.name,
-                            vehicleType: client.vehicleType,
-                            amount: payment.amount,
-                            periodStart: payment.periodStart,
-                            periodEnd: payment.periodEnd,
-                            paymentDate: payment.paymentDate,
-                            concept: 'NUEVA MENSUALIDAD'
-                        });
-                        closeConfirmModal();
-                    }
-                });
-            }
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Error al crear cliente');
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
-    const openRenewModal = (client: Client) => {
-        setRenewClientData({ id: client.id, rate: client.monthlyRate });
-        setRenewAmount(client.monthlyRate.toString());
-        setRenewPaymentMethod('CASH');
+    const handleRenewSubmit = async (id: number, data: { amount: number, paymentMethod: string }) => {
+        const response = await renewClient(id, data);
+
+        // Printing Logic for Renewal
+        const { client, payment } = response;
+        if (client && payment) {
+            // We might need to wait for themodal to close fully or just show confirm on top (?)
+            // Currently logic shows confirm after success toast in hook? No, hook returns data.
+            setConfirmModal({
+                isOpen: true,
+                title: 'Imprimir Recibo',
+                message: '¿Desea imprimir el recibo de renovación?',
+                type: 'primary',
+                onConfirm: () => {
+                    triggerPrint({
+                        paymentId: payment.id,
+                        plate: client.plate,
+                        clientName: client.name,
+                        vehicleType: client.vehicleType,
+                        amount: payment.amount,
+                        periodStart: payment.periodStart,
+                        periodEnd: payment.periodEnd,
+                        paymentDate: payment.paymentDate,
+                        concept: 'RENOVACIÓN'
+                    });
+                    closeConfirmModal();
+                }
+            });
+        }
+    };
+
+    const onRenewClick = (client: Client) => {
+        setSelectedClient(client);
         setIsRenewModalOpen(true);
     };
 
-    const handleRenewSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!renewClientData || isSubmitting) return;
-
-        setIsSubmitting(true);
-        try {
-            const res = await api.post(`/monthly/${renewClientData.id}/renew`, {
-                amount: Number(renewAmount),
-                paymentMethod: renewPaymentMethod
-            });
-            fetchClients();
-            setIsRenewModalOpen(false);
-            toast.success(`Renovado exitosamente (${renewPaymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'})`);
-
-            // Print Receipt Confirmation
-            const { client, payment } = res.data;
-            if (client && payment) {
-                setConfirmModal({
-                    isOpen: true,
-                    title: 'Imprimir Recibo',
-                    message: '¿Desea imprimir el recibo de renovación?',
-                    type: 'primary',
-                    onConfirm: () => {
-                        triggerPrint({
-                            paymentId: payment.id,
-                            plate: client.plate,
-                            clientName: client.name,
-                            vehicleType: client.vehicleType,
-                            amount: payment.amount,
-                            periodStart: payment.periodStart,
-                            periodEnd: payment.periodEnd,
-                            paymentDate: payment.paymentDate,
-                            concept: 'RENOVACIÓN'
-                        });
-                        closeConfirmModal();
-                    }
-                });
-            }
-
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Error en renovación');
-        } finally {
-            setIsSubmitting(false);
-        }
+    const onHistoryClick = (client: Client) => {
+        setSelectedClient(client);
+        setIsHistoryModalOpen(true);
     };
 
-    const handleHistory = async (client: Client) => {
-        try {
-            setSelectedClient(client);
-            const res = await api.get(`/monthly/${client.id}/history`);
-            setHistory(res.data);
-            setHistoryModalOpen(true);
-        } catch (err) {
-            toast.error('Error al obtener historial');
-        }
-    };
-
-    const handleReprintHistory = (payment: any) => {
-        if (!selectedClient) return;
-        triggerPrint({
-            paymentId: payment.id,
-            plate: selectedClient.plate,
-            clientName: selectedClient.name,
-            vehicleType: selectedClient.vehicleType,
-            amount: payment.amount,
-            periodStart: payment.periodStart,
-            periodEnd: payment.periodEnd,
-            paymentDate: payment.paymentDate,
-            concept: 'COPIA DE RECIBO'
-        });
-    };
-
-    const handleToggleStatus = (clientId: number) => {
+    const onToggleStatusClick = (clientId: number, isActive: boolean) => {
         setConfirmModal({
             isOpen: true,
-            title: 'Cambiar Estado',
-            message: '¿Está seguro de cambiar el estado de este cliente?',
+            title: isActive ? 'Desactivar Cliente' : 'Activar Cliente',
+            message: `¿Está seguro de ${isActive ? 'desactivar' : 'activar'} este cliente?`,
             type: 'warning',
             onConfirm: async () => {
-                // Determine if we should block UI - since this is a callback, 
-                // we might want to just execute it. But using isSubmitting protects against
-                // rapid double firing if the modal doesn't close fast enough.
-                if (isSubmitting) return;
-
-                // Note: We can't easily see the loading state inside the generic modal unless we update the modal to support it.
-                // However, we can prevent double execution.
-                try {
-                    await api.patch(`/monthly/${clientId}/status`);
-                    fetchClients();
-                    toast.success('Estado actualizado correctamente');
-                } catch (err) {
-                    toast.error('Error al actualizar estado');
-                }
+                await toggleStatus(clientId);
                 closeConfirmModal();
             }
         });
     };
 
-    const handleAnonymize = (clientId: number) => {
+    const onAnonymizeClick = (clientId: number) => {
         setConfirmModal({
             isOpen: true,
             title: 'Derecho al Olvido (Eliminación Legal)',
-            message: '¿Está seguro de ANONIMIZAR este cliente? Esta acción es IRREVERSIBLE. Se eliminará el Nombre, Teléfono y Placa para cumplir con la ley de Protección de Datos. El historial de pagos se mantendrá pero sin datos personales.',
+            message: '¿Está seguro de ANONIMIZAR este cliente? Esta acción es IRREVERSIBLE. Se eliminará el Nombre, Teléfono y Placa. El historial de pagos se mantendrá anónimo.',
             type: 'danger',
             onConfirm: async () => {
-                if (isSubmitting) return;
-                try {
-                    await api.post(`/monthly/${clientId}/anonymize`);
-                    fetchClients();
-                    toast.success('Cliente anonimizado correctamente');
-                } catch (err) {
-                    toast.error('Error al anonimizar cliente');
-                }
+                await anonymizeClient(clientId);
                 closeConfirmModal();
             }
         });
     };
 
-    const closeConfirmModal = () => {
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-    };
-
-    const resetForm = () => {
-        setPlate('');
-        setName('');
-        setPhone('');
-        setError('');
-    };
-
-    // Filter clients based on status
-    const filteredClients = clients.filter(client => {
-        // If searching, show all matches regardless of strict status filtering
-        if (searchTerm) return true;
-
-        const now = new Date();
-        const endDate = new Date(client.endDate);
-        const isExpired = endDate < now;
-
-        // ACTIVE: Active AND Not Expired
-        if (filterStatus === 'ACTIVE') return client.isActive && !isExpired;
-
-        // EXPIRED: Active AND Expired (Candidates for deactivation or renewal)
-        if (filterStatus === 'EXPIRED') return client.isActive && isExpired;
-
-        // ALL: Show all Active (Expired or Not) - Hide Inactive unless searched?
-        // Let's hide inactive by default to keep list clean, unless in 'ALL' we want everything?
-        // User wants to "hide" them. So Inactive should ONLY show in search.
-        if (filterStatus === 'ALL') return client.isActive;
-
-        return true;
-    });
-
     const handleExport = () => {
-        const exportData = filteredClients.map(client => ({
+        const exportData = clients.map(client => ({
             'Placa': client.plate,
             'Nombre': client.name,
             'Teléfono': client.phone || '',
@@ -322,34 +173,15 @@ export default function MonthlyClientsPage() {
             'Fecha Fin': new Date(client.endDate).toLocaleDateString(),
             'Estado': client.isActive ? 'Activo' : 'Inactivo'
         }));
-
         const filename = `Clientes_Mensuales_${filterStatus}_${new Date().toISOString().split('T')[0]}`;
         exportToExcel(exportData, filename, 'Clientes');
     };
 
+    const closeConfirmModal = () => setConfirmModal(prev => ({ ...prev, isOpen: false }));
+
     return (
         <div>
-            {/* Confirmation Modal */}
-            <ConfirmationModal
-                isOpen={confirmModal.isOpen}
-                title={confirmModal.title}
-                message={confirmModal.message}
-                onConfirm={confirmModal.onConfirm}
-                onCancel={closeConfirmModal}
-                type={confirmModal.type}
-            />
-
-            {/* Print Component mimicking ParkingPage structure */}
-            <div style={{ display: 'none' }}>
-                {printData && (
-                    <PrintMonthlyReceipt
-                        ref={componentRef}
-                        data={printData}
-                        settings={settings}
-                    />
-                )}
-            </div>
-
+            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left flex items-center justify-center md:justify-start">
                     <Users className="mr-2" /> Clientes Mensuales
@@ -357,9 +189,8 @@ export default function MonthlyClientsPage() {
 
                 <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-center">
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => setIsCreateModalOpen(true)}
                         className="bg-brand-yellow text-brand-blue font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 shadow-md flex items-center justify-center flex-1 md:flex-none whitespace-nowrap"
-                        data-testid="btn-new-client"
                     >
                         <Plus className="mr-2" size={18} />
                         Nuevo Cliente
@@ -375,400 +206,77 @@ export default function MonthlyClientsPage() {
                 </div>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="mb-4 flex flex-wrap gap-2">
-                <button
-                    onClick={() => setFilterStatus('ALL')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ALL' ? 'bg-brand-blue text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
-                >
-                    Todos
-                </button>
-                <button
-                    onClick={() => setFilterStatus('ACTIVE')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'ACTIVE' ? 'bg-brand-green text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
-                >
-                    Activos
-                </button>
-                <button
-                    onClick={() => setFilterStatus('EXPIRED')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterStatus === 'EXPIRED' ? 'bg-red-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'} flex-1 md:flex-none`}
-                >
-                    Vencidos
-                </button>
-            </div>
+            {/* Filters */}
+            <ClientFilterBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                filterStatus={filterStatus}
+                onFilterChange={setFilterStatus}
+            />
 
-            {/* Search Bar */}
-            <div className="mb-6 relative">
-                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o placa (incluso desactivados)..."
-                    className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow uppercase"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
-                />
-            </div>
+            {/* Table */}
+            <MonthlyClientTable
+                clients={clients}
+                filterStatus={filterStatus}
+                onHistory={onHistoryClick}
+                onRenew={onRenewClick}
+                onToggleStatus={onToggleStatusClick}
+                onAnonymize={onAnonymizeClick}
+            />
 
-            {/* Create Client Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl animate-fade-in-up">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold text-gray-800">Nuevo Cliente Mensual</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
-                        </div>
-                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm flex items-center"><AlertTriangle size={16} className="mr-2" />{error}</div>}
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Placa</label>
-                                <input
-                                    type="text"
-                                    value={plate}
-                                    onChange={(e) => setPlate(e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 uppercase focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    required
-                                    name="plate"
-                                    id="plate"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    required
-                                    name="name"
-                                    id="name"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                                <input
-                                    type="text"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    name="phone"
-                                    id="phone"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Tarifa Mensual</label>
-                                    <input
-                                        type="number"
-                                        value={monthlyRate}
-                                        onChange={(e) => setMonthlyRate(e.target.value)}
-                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                                    <select
-                                        value={vehicleType}
-                                        onChange={(e) => setVehicleType(e.target.value)}
-                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    >
-                                        <option value="CAR">Carro</option>
-                                        <option value="MOTORCYCLE">Moto</option>
-                                        <option value="OTHER">Otro</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`w-full bg-brand-yellow text-brand-blue py-3 rounded-lg hover:bg-yellow-400 font-bold shadow-md transition-transform active:scale-95 mt-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                data-testid="btn-create-client"
-                            >
-                                {isSubmitting ? 'Registrando...' : 'Crear Cliente'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Modals */}
+            <MonthlyClientForm
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={handleCreateSubmit}
+            />
 
-            {/* Renew Client Modal */}
-            {isRenewModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-sm shadow-xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center">
-                                <RefreshCw className="mr-2 text-green-600" size={20} />
-                                Renovar Suscripción
-                            </h2>
-                            <button onClick={() => setIsRenewModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
-                        </div>
-                        <form onSubmit={handleRenewSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Monto a Pagar</label>
-                                <input
-                                    type="number"
-                                    value={renewAmount}
-                                    onChange={(e) => setRenewAmount(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg font-semibold text-gray-900 focus:ring-2 focus:ring-green-500 outline-none"
-                                    required
-                                    min="0"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Tarifa actual del cliente: ${renewClientData?.rate.toLocaleString()}</p>
-                            </div>
+            <RenewalModal
+                isOpen={isRenewModalOpen}
+                onClose={() => setIsRenewModalOpen(false)}
+                client={selectedClient}
+                onRenew={handleRenewSubmit}
+            />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setRenewPaymentMethod('CASH')}
-                                        className={`py-2 px-4 rounded-lg border font-medium text-sm transition-all ${renewPaymentMethod === 'CASH'
-                                            ? 'bg-green-50 border-green-500 text-green-700 ring-1 ring-green-500'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        💵 Efectivo
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRenewPaymentMethod('TRANSFER')}
-                                        className={`py-2 px-4 rounded-lg border font-medium text-sm transition-all ${renewPaymentMethod === 'TRANSFER'
-                                            ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        🏦 Transferencia
-                                    </button>
-                                </div>
-                            </div>
+            <HistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                client={selectedClient}
+                fetchHistory={getHistory}
+                onReprint={(payment) => {
+                    if (!selectedClient) return;
+                    triggerPrint({
+                        paymentId: payment.id,
+                        plate: selectedClient.plate,
+                        clientName: selectedClient.name,
+                        vehicleType: selectedClient.vehicleType,
+                        amount: payment.amount,
+                        periodStart: payment.periodStart,
+                        periodEnd: payment.periodEnd,
+                        paymentDate: payment.paymentDate,
+                        concept: 'COPIA DE RECIBO'
+                    });
+                }}
+            />
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition-colors mt-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                {isSubmitting ? 'Procesando...' : 'Confirmar Renovación'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={closeConfirmModal}
+                type={confirmModal.type}
+            />
 
-
-            {/* History Modal */}
-            {historyModalOpen && selectedClient && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-xl">
-                        <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2 border-b">
-                            <div>
-                                <h2 className="text-lg font-bold text-gray-800">Historial de Pagos</h2>
-                                <p className="text-sm text-gray-500">{selectedClient.name} - {selectedClient.plate}</p>
-                            </div>
-                            <button onClick={() => setHistoryModalOpen(false)} className="p-1 rounded-full hover:bg-gray-100 transition-colors"><X size={20} /></button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Pago</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {history.map((payment: any) => (
-                                        <tr key={payment.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(payment.paymentDate).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">
-                                                        {new Date(payment.periodStart).toLocaleDateString()} - {new Date(payment.periodEnd).toLocaleDateString()}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        ({Math.round((new Date(payment.periodEnd).getTime() - new Date(payment.periodStart).getTime()) / (1000 * 60 * 60 * 24))} días)
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                                                ${Number(payment.amount).toLocaleString()}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <button
-                                                    onClick={() => handleReprintHistory(payment)}
-                                                    className="text-blue-600 hover:text-blue-900 text-xs font-medium bg-blue-50 px-3 py-1 rounded-full transition-colors hover:bg-blue-100"
-                                                >
-                                                    Imprimir
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {history.length === 0 && (
-                                        <tr><td colSpan={4} className="text-center py-8 text-gray-500 italic">No se encontró historial de pagos</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Clients List */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <>
-                    {/* Desktop Table */}
-                    <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-brand-blue/5">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Cliente</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Contacto</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Estado</th>
-                                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredClients.map((client) => {
-                                    const isExpired = new Date(client.endDate) < new Date();
-                                    return (
-                                        <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{client.name}</div>
-                                                <div className="text-sm text-gray-500 font-mono">{client.plate}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {client.phone || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    {client.isActive ? (
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                                            {isExpired ? 'Vencido' : 'Activo'}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 w-fit">
-                                                            Desactivado
-                                                        </span>
-                                                    )}
-                                                    <div className="text-xs text-gray-400 mt-1">
-                                                        Vence: {new Date(client.endDate).toLocaleDateString()}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                <button
-                                                    onClick={() => handleHistory(client)}
-                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                                >
-                                                    Historial
-                                                </button>
-
-                                                <button
-                                                    onClick={() => openRenewModal(client)}
-                                                    className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                                    title="Renovar y Activar"
-                                                >
-                                                    <RefreshCw size={14} className="inline mr-1" />
-                                                    Renovar
-                                                </button>
-
-                                                {/* Deactivate/Activate button */}
-                                                {client.isActive ? (
-                                                    isExpired && (
-                                                        <button
-                                                            onClick={() => handleToggleStatus(client.id)}
-                                                            className="text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                                        >
-                                                            Desactivar
-                                                        </button>
-                                                    )
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleToggleStatus(client.id)}
-                                                        className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-full text-xs font-medium transition-colors"
-                                                    >
-                                                        Activar
-                                                    </button>
-                                                )}
-
-                                                <button
-                                                    onClick={() => handleAnonymize(client.id)}
-                                                    className="text-gray-400 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-full transition-colors"
-                                                    title="Derecho al Olvido (Anonimizar)"
-                                                >
-                                                    <span className="sr-only">Anonimizar</span>
-                                                    <AlertTriangle size={14} />
-                                                </button>
-
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {filteredClients.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                            No hay clientes {filterStatus === 'ACTIVE' ? 'activos' : filterStatus === 'EXPIRED' ? 'vencidos' : ''}.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Mobile List View */}
-                    <div className="md:hidden divide-y divide-gray-100">
-                        {filteredClients.map((client) => {
-                            const isExpired = new Date(client.endDate) < new Date();
-                            return (
-                                <div key={client.id} className="p-4 flex flex-col gap-3">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">{client.name}</h3>
-                                            <p className="text-sm text-gray-500 font-mono">{client.plate}</p>
-                                        </div>
-                                        {client.isActive ? (
-                                            <span className={`px-2 py-0.5 mt-1 text-xs font-semibold rounded-full ${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                                {isExpired ? 'Vencido' : 'Activo'}
-                                            </span>
-                                        ) : (
-                                            <span className="px-2 py-0.5 mt-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                Desactivado
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="text-sm text-gray-600 flex justify-between">
-                                        <span>Vence: {new Date(client.endDate).toLocaleDateString()}</span>
-                                        <span>{client.phone || 'Sin télefono'}</span>
-                                    </div>
-
-                                    <div className="flex gap-2 justify-end mt-2 pt-2 border-t border-gray-50">
-                                        <button
-                                            onClick={() => handleHistory(client)}
-                                            className="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg text-xs font-medium flex-1 text-center"
-                                        >
-                                            Historial
-                                        </button>
-                                        <button
-                                            onClick={() => openRenewModal(client)}
-                                            className="text-green-600 bg-green-50 px-3 py-2 rounded-lg text-xs font-bold flex-1 text-center"
-                                        >
-                                            <RefreshCw size={14} className="inline mr-1" />
-                                            Renovar
-                                        </button>
-                                        {/* Simplified action menu for mobile can be added here if needed */}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        {filteredClients.length === 0 && (
-                            <div className="p-8 text-center text-gray-500">
-                                No hay clientes coincidentes.
-                            </div>
-                        )}
-                    </div>
-                </>
+            {/* Hidden Print Component */}
+            <div style={{ display: 'none' }}>
+                {printData && (
+                    <PrintMonthlyReceipt
+                        ref={componentRef}
+                        data={printData}
+                        settings={settings}
+                    />
+                )}
             </div>
         </div>
     );
