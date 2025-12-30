@@ -114,6 +114,10 @@ export const PrintMonthlyReceipt = React.forwardRef<HTMLDivElement, MonthlyRecei
                         <p className="font-bold">¡GRACIAS POR SU CONFIANZA!</p>
                     )}
 
+                    <div className="mt-2 text-[6pt] text-gray-500 text-justify leading-tight">
+                        Al pagar este recibo, usted acepta los términos del servicio y autoriza el tratamiento de sus datos personales conforme a la Ley 1581 de 2012 (Habeas Data).
+                    </div>
+
                     <p className="text-[7pt] mt-1 text-gray-500">Software: CUADRA</p>
                 </div>
             </div>

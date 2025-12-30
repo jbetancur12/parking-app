@@ -73,6 +73,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
+    // Auto-Logout Logic
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+
+        const resetTimer = () => {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(() => {
+                console.log('[Auth] User inactive for 1 hour. Logging out.');
+                logout();
+            }, 60 * 60 * 1000); // 1 Hour
+        };
+
+        // Listeners for activity
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+        window.addEventListener('click', resetTimer);
+
+        // Init timer
+        resetTimer();
+
+        return () => {
+            if (timer) clearTimeout(timer);
+            window.removeEventListener('mousemove', resetTimer);
+            window.removeEventListener('keydown', resetTimer);
+            window.removeEventListener('click', resetTimer);
+        };
+    }, []);
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');

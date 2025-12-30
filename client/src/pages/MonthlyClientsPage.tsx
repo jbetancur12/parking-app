@@ -257,6 +257,26 @@ export default function MonthlyClientsPage() {
         });
     };
 
+    const handleAnonymize = (clientId: number) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Derecho al Olvido (Eliminación Legal)',
+            message: '¿Está seguro de ANONIMIZAR este cliente? Esta acción es IRREVERSIBLE. Se eliminará el Nombre, Teléfono y Placa para cumplir con la ley de Protección de Datos. El historial de pagos se mantendrá pero sin datos personales.',
+            type: 'danger',
+            onConfirm: async () => {
+                if (isSubmitting) return;
+                try {
+                    await api.post(`/monthly/${clientId}/anonymize`);
+                    fetchClients();
+                    toast.success('Cliente anonimizado correctamente');
+                } catch (err) {
+                    toast.error('Error al anonimizar cliente');
+                }
+                closeConfirmModal();
+            }
+        });
+    };
+
     const closeConfirmModal = () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
     };
@@ -671,6 +691,16 @@ export default function MonthlyClientsPage() {
                                                         Activar
                                                     </button>
                                                 )}
+
+                                                <button
+                                                    onClick={() => handleAnonymize(client.id)}
+                                                    className="text-gray-400 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-full transition-colors"
+                                                    title="Derecho al Olvido (Anonimizar)"
+                                                >
+                                                    <span className="sr-only">Anonimizar</span>
+                                                    <AlertTriangle size={14} />
+                                                </button>
+
                                             </td>
                                         </tr>
                                     );
