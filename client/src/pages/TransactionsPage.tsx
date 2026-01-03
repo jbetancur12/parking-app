@@ -1,108 +1,19 @@
-import { useEffect, useState } from 'react';
+// React import not needed
 import { Receipt, Download, Filter } from 'lucide-react';
-import api from '../services/api';
-import { exportToExcel } from '../utils/excelExport';
-
-interface Transaction {
-    id: number;
-    type: string;
-    description: string;
-    amount: number;
-    paymentMethod?: string;
-    timestamp: string;
-}
+import { useTransactionsPage } from '../hooks/useTransactionsPage';
+import { TransactionList } from '../components/transactions/TransactionList';
 
 export default function TransactionsPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [filterType, setFilterType] = useState<string>('ALL');
-    const [filterPayment, setFilterPayment] = useState<string>('ALL');
-
-    useEffect(() => {
-        fetchTransactions();
-    }, []);
-
-    const fetchTransactions = async () => {
-        try {
-            const shiftRes = await api.get('/shifts/current');
-            if (shiftRes.data) {
-                const transRes = await api.get(`/transactions/shift/${shiftRes.data.id}`);
-                setTransactions(transRes.data);
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const filteredTransactions = transactions.filter(t => {
-        const typeMatch = filterType === 'ALL' || t.type === filterType;
-        const paymentMatch = filterPayment === 'ALL' || t.paymentMethod === filterPayment;
-        return typeMatch && paymentMatch;
-    });
-
-    const handleExport = () => {
-        const exportData = filteredTransactions.map(t => ({
-            'Tipo': getTypeLabel(t.type),
-            'Descripción': t.description,
-            'Monto': t.amount,
-            'Método de Pago': t.paymentMethod ? (t.paymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia') : 'N/A',
-            'Fecha/Hora': new Date(t.timestamp).toLocaleString()
-        }));
-
-        const filename = `Transacciones_${new Date().toISOString().split('T')[0]}`;
-        exportToExcel(exportData, filename, 'Transacciones');
-    };
-
-    const getTypeLabel = (type: string) => {
-        const labels: Record<string, string> = {
-            'PARKING_REVENUE': 'Parqueo',
-            'MONTHLY_PAYMENT': 'Mensualidad',
-            'WASH_SERVICE': 'Lavadero',
-            'INCOME': 'Ingreso',
-            'EXPENSE': 'Egreso'
-        };
-        return labels[type] || type;
-    };
-
-    const getTypeColor = (type: string) => {
-        if (type === 'EXPENSE') return 'bg-red-100 text-red-800';
-        return 'bg-green-100 text-green-800';
-    };
-
-    const totals = {
-        all: filteredTransactions.reduce((sum, t) => sum + (t.type === 'EXPENSE' ? -t.amount : t.amount), 0),
-        cash: filteredTransactions.filter(t => t.paymentMethod === 'CASH').reduce((sum, t) => sum + (t.type === 'EXPENSE' ? -t.amount : t.amount), 0),
-        transfer: filteredTransactions.filter(t => t.paymentMethod === 'TRANSFER').reduce((sum, t) => sum + (t.type === 'EXPENSE' ? -t.amount : t.amount), 0)
-    };
-
-    const formatDuration = (minutes: number) => {
-        const hrs = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        const secs = 0;
-        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const formatDescription = (desc: string) => {
-        let formatted = desc
-            .replace('Parking[HOUR]', 'Parqueo[HORA]')
-            .replace('Parking[DAY]', 'Parqueo[DÍA]')
-            .replace('Nova Mensualidad', 'Nueva Mensualidad')
-            .replace('New Monthly', 'Nueva Mensualidad')
-            .replace('WASH_SERVICE', 'Lavado')
-            .replace('MONTHLY_PAYMENT', 'Mensualidad')
-            .replace('DESC:', 'Obs:');
-
-        const durationMatch = formatted.match(/\((\d+)\s*mins?\)/);
-        if (durationMatch) {
-            const minutes = parseInt(durationMatch[1]);
-            const formattedTime = formatDuration(minutes);
-            formatted = formatted.replace(durationMatch[0], `(${formattedTime})`);
-        }
-
-        return formatted;
-    };
+    const {
+        loading,
+        filteredTransactions,
+        filterType,
+        setFilterType,
+        filterPayment,
+        setFilterPayment,
+        totals,
+        handleExport
+    } = useTransactionsPage();
 
     if (loading) return <div className="p-8">Cargando...</div>;
 
@@ -179,57 +90,7 @@ export default function TransactionsPage() {
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-brand-blue/5">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Tipo</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Descripción</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Método Pago</th>
-                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Monto</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue uppercase tracking-wider">Fecha/Hora</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredTransactions.map((transaction) => (
-                            <tr key={transaction.id} className="hover:bg-blue-50/50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${getTypeColor(transaction.type)}`}>
-                                        {getTypeLabel(transaction.type)}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm font-medium text-gray-700">{formatDescription(transaction.description)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    {transaction.paymentMethod ? (
-                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${transaction.paymentMethod === 'CASH'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-blue-100 text-blue-800'
-                                            }`}>
-                                            {transaction.paymentMethod === 'CASH' ? '💵 Efectivo' : '🏦 Transferencia'}
-                                        </span>
-                                    ) : (
-                                        <span className="text-gray-400 text-xs">N/A</span>
-                                    )}
-                                </td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${transaction.type === 'EXPENSE' ? 'text-red-500' : 'text-brand-green'
-                                    }`}>
-                                    {transaction.type === 'EXPENSE' ? '-' : '+'}${transaction.amount.toLocaleString()}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {new Date(transaction.timestamp).toLocaleString()}
-                                </td>
-                            </tr>
-                        ))}
-                        {filteredTransactions.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-medium">
-                                    No hay transacciones que coincidan con los filtros.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            <TransactionList transactions={filteredTransactions} />
         </div>
     );
 }
