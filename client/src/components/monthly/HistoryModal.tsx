@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { type Client } from '../../hooks/useMonthlyClients';
+import { formatCurrency } from '../../utils/formatters';
 
 interface HistoryModalProps {
     isOpen: boolean;
@@ -66,7 +67,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, cli
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                                            ${Number(payment.amount).toLocaleString()}
+                                            {formatCurrency(Number(payment.amount))}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <button

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { type Tariff } from '../../services/tariff.service';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ExitPreviewModalProps {
     previewData: any;
@@ -55,9 +56,9 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                 const hourlyRate = previewData.hourlyRate || 0;
                 const discountAmount = hourlyRate * (previewData.loyalty.rewardHours || 0);
                 const finalVal = Math.max(0, originalCost - discountAmount);
-                return { total: finalVal, text: `$${finalVal.toLocaleString()} (Desc. ${previewData.loyalty.rewardHours}h)` };
+                return { total: finalVal, text: `${formatCurrency(finalVal)} (Desc. ${previewData.loyalty.rewardHours}h)` };
             }
-            return { total: 0, text: `$0 (Canje Total)` };
+            return { total: 0, text: `${formatCurrency(0)} (Canje Total)` };
         }
 
         let finalDiscount = 0;
@@ -82,7 +83,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
         finalDiscount = Math.min(originalCost, finalDiscount);
         const finalTotal = Math.max(0, originalCost - finalDiscount);
 
-        return { total: finalTotal, text: `$${finalTotal.toLocaleString()}` };
+        return { total: finalTotal, text: formatCurrency(finalTotal) };
     };
 
     const totalInfo = calculateTotal();
@@ -179,7 +180,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                 <option value="">-- Seleccionar Convenio --</option>
                                 {agreements.map(a => (
                                     <option key={a.id} value={a.id}>
-                                        {a.name} ({a.type === 'FREE_HOURS' ? `${a.value}h Gratis` : a.type === 'PERCENTAGE' ? `${a.value}%` : `$${a.value}`})
+                                        {a.name} ({a.type === 'FREE_HOURS' ? `${a.value}h Gratis` : a.type === 'PERCENTAGE' ? `${a.value}%` : formatCurrency(a.value)})
                                     </option>
                                 ))}
                             </select>
@@ -189,12 +190,12 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                     <div className="border-t pt-2 mt-2">
                         <div className="flex justify-between text-sm text-gray-500 mb-1">
                             <span>Subtotal:</span>
-                            <span>${previewData.cost}</span>
+                            <span>{formatCurrency(previewData.cost)}</span>
                         </div>
                         {discount && Number(discount) > 0 && (
                             <div className="flex justify-between text-sm text-red-500 mb-1">
                                 <span>Descuento:</span>
-                                <span>-${discount}</span>
+                                <span>-{formatCurrency(Number(discount))}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-center">
@@ -228,7 +229,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                             const total = totalInfo.total;
                                             const received = Number(cashReceived) || 0;
                                             const change = received - total;
-                                            return change >= 0 ? `$${change.toLocaleString()}` : '---';
+                                            return change >= 0 ? formatCurrency(change) : '---';
                                         })()}
                                     </span>
                                 </div>
@@ -242,9 +243,9 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                             {selectedAgreementId
                                 ? (() => {
                                     const a = agreements.find(a => a.id.toString() === selectedAgreementId);
-                                    return a ? `${a.name} (${a.type === 'FREE_HOURS' ? `${a.value}h` : a.type === 'PERCENTAGE' ? `${a.value}%` : `$${a.value}`})` : '';
+                                    return a ? `${a.name} (${a.type === 'FREE_HOURS' ? `${a.value}h` : a.type === 'PERCENTAGE' ? `${a.value}%` : formatCurrency(a.value)})` : '';
                                 })()
-                                : `Manual ($${discount})`
+                                : `Manual (${formatCurrency(Number(discount))})`
                             }
                         </div>
                     )}

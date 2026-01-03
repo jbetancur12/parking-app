@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { type Client } from '../../hooks/useMonthlyClients';
+import { formatCurrency } from '../../utils/formatters';
 import { toast } from 'sonner';
 
 interface RenewalModalProps {
@@ -63,7 +64,7 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
                             required
                             min="0"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Tarifa actual del cliente: ${Number(client.monthlyRate).toLocaleString()}</p>
+                        <p className="text-xs text-gray-500 mt-1">Tarifa actual del cliente: {formatCurrency(Number(client.monthlyRate))}</p>
                     </div>
 
                     <div>
