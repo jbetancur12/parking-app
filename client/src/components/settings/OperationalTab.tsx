@@ -1,6 +1,7 @@
 import React from 'react';
 import { Settings, Car, Bike, Receipt, RefreshCw } from 'lucide-react';
 import { type Tariff } from '../../services/tariff.service';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface OperationalTabProps {
     tariffs: Tariff[];
@@ -236,10 +237,9 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
                 <div className="grid grid-cols-2 gap-3 mb-3">
                     <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                         <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={(pricingModel === 'MINUTE' ? tMinute?.dayMaxPrice : tHour?.dayMaxPrice) || 0}
-                            onChange={(e) => handleTariffChange(vehicleType, pricingModel === 'MINUTE' ? 'MINUTE' : 'HOUR', 'dayMaxPrice', Number(e.target.value))}
+                            onValueChange={(val) => handleTariffChange(vehicleType, pricingModel === 'MINUTE' ? 'MINUTE' : 'HOUR', 'dayMaxPrice', Number(val))}
                             className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                         {/* Suggestion Logic */}
@@ -275,10 +275,9 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-3">
                     <div className="flex justify-between items-center">
                         <label className="text-gray-600 text-sm font-medium">Día Completo (24h)</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={tDay?.cost || 0}
-                            onChange={(e) => handleTariffChange(vehicleType, 'DAY', 'cost', Number(e.target.value))}
+                            onValueChange={(val) => handleTariffChange(vehicleType, 'DAY', 'cost', Number(val))}
                             className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
@@ -289,10 +288,9 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
             {pricingModel === 'TRADITIONAL' && (
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                     <label className="text-gray-600 text-sm font-medium">Hora / Fracción</label>
-                    <input
-                        type="number"
+                    <CurrencyInput
                         value={tHour?.cost || 0}
-                        onChange={(e) => handleTariffChange(vehicleType, 'HOUR', 'cost', Number(e.target.value))}
+                        onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'cost', Number(val))}
                         className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                 </div>
@@ -301,10 +299,9 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
             {pricingModel === 'MINUTE' && (
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                     <label className="text-gray-600 text-sm font-medium">Por Minuto</label>
-                    <input
-                        type="number"
+                    <CurrencyInput
                         value={tMinute?.basePrice || 0}
-                        onChange={(e) => handleTariffChange(vehicleType, 'MINUTE', 'basePrice', Number(e.target.value))}
+                        onValueChange={(val) => handleTariffChange(vehicleType, 'MINUTE', 'basePrice', Number(val))}
                         className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                 </div>
@@ -334,19 +331,17 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors mb-2">
                         <label className="text-gray-600 text-sm font-medium">Precio Base (1ra Hora)</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={tHour?.basePrice || 0}
-                            onChange={(e) => handleTariffChange(vehicleType, 'HOUR', 'basePrice', Number(e.target.value))}
+                            onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'basePrice', Number(val))}
                             className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
                         <label className="text-gray-600 text-sm font-medium">Extra Fracción</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={tHour?.extraFracPrice || 0}
-                            onChange={(e) => handleTariffChange(vehicleType, 'HOUR', 'extraFracPrice', Number(e.target.value))}
+                            onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'extraFracPrice', Number(val))}
                             className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
