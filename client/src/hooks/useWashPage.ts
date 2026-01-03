@@ -82,13 +82,13 @@ export const useWashPage = () => {
     };
 
     // Printing Helpers
-    const preparePrintData = (washEntry: any, serviceName: string) => {
+    const preparePrintData = (washEntry: any, serviceName: string, paymentMethod: string = 'CASH') => {
         setPrintData({
             id: washEntry.id,
             timestamp: washEntry.createdAt || new Date().toISOString(),
             description: `Lavado: ${serviceName}`,
             amount: Number(washEntry.cost),
-            paymentMethod: 'CASH', // Wash defaults to CASH usually, or we can add method to response
+            paymentMethod: paymentMethod,
             receiptNumber: washEntry.receiptNumber,
             items: [{
                 productName: serviceName,
@@ -106,7 +106,11 @@ export const useWashPage = () => {
 
     const handleReprint = (entry: WashEntry) => {
         const serviceName = (entry as any).serviceType?.name || 'Lavado';
-        preparePrintData(entry, serviceName);
+        // For reprint, we might not have payment method if not stored on WashEntry.
+        // Ideally we fetch it or update entity. For now default to CASH or check if response has it.
+        // If we want to be accurate, we need to join Transaction on backend.
+        // Assuming CASH for reprints for now unless we update backend.
+        preparePrintData(entry, serviceName, 'CASH');
     };
 
     const handleCreate = async (e: React.FormEvent) => {
@@ -126,7 +130,7 @@ export const useWashPage = () => {
 
             // Prepare for print
             const serviceTypeName = types.find(t => t.id === Number(selectedType))?.name || 'Lavado';
-            preparePrintData(data, serviceTypeName);
+            preparePrintData(data, serviceTypeName, paymentMethod);
 
             // Reset Form Logic
             setPlate('');
