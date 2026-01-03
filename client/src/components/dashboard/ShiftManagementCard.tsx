@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Square } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ShiftManagementCardProps {
     activeShift: any;
@@ -51,7 +52,7 @@ export const ShiftManagementCard: React.FC<ShiftManagementCardProps> = ({
                 <div>
                     <h2 className="text-lg font-display font-bold text-brand-blue">Turno Activo</h2>
                     <p className="text-gray-500 text-sm font-medium mt-1">Iniciado: {new Date(activeShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                    <p className="text-gray-500 text-sm font-medium">Base: ${Number(activeShift.baseAmount).toLocaleString()}</p>
+                    <p className="text-gray-500 text-sm font-medium">Base: {formatCurrency(Number(activeShift.baseAmount))}</p>
                 </div>
                 <div className="mt-4">
                     <button

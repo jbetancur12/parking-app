@@ -1,6 +1,7 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { TrendingUp, Users, Clock } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
 
 interface DashboardChartsProps {
     stats: any;
@@ -28,9 +29,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                             <AreaChart data={stats.weeklyIncome}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => formatCurrency(val)} />
                                 <Tooltip
-                                    formatter={(value: any) => [`$${value.toLocaleString()}`, 'Ingresos']}
+                                    formatter={(value: any) => [formatCurrency(value), 'Ingresos']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Area type="monotone" dataKey="amount" stroke="#28A745" fill="#D1FAE5" strokeWidth={2} />
@@ -112,7 +113,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Ingresos:</span>
-                                        <span className="font-bold text-brand-green">${loc.totalIncome.toLocaleString()}</span>
+                                        <span className="font-bold text-brand-green">{formatCurrency(loc.totalIncome)}</span>
                                     </div>
                                 </div>
                             ))}
