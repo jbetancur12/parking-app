@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDescription, getTypeLabel } from '../../hooks/useReportsPage';
+import { formatCurrency } from '../../utils/formatters';
 
 interface StandardReportViewProps {
     data: any;
@@ -13,7 +14,7 @@ export const StandardReportView: React.FC<StandardReportViewProps> = ({ data, re
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-brand-blue">
                     <div className="text-gray-500 text-sm font-bold uppercase tracking-wider">Ingresos Totales</div>
-                    <div className="text-3xl font-display font-bold text-brand-blue mt-1">${data.summary?.totalIncome || data.totalIncome || 0}</div>
+                    <div className="text-3xl font-display font-bold text-brand-blue mt-1">{formatCurrency(data.summary?.totalIncome || data.totalIncome || 0)}</div>
                 </div>
                 <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-brand-green">
                     <div className="text-gray-500 text-sm font-bold uppercase tracking-wider">Transacciones</div>
@@ -22,7 +23,7 @@ export const StandardReportView: React.FC<StandardReportViewProps> = ({ data, re
                 {reportType === 'SHIFT' && (
                     <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-500">
                         <div className="text-gray-500 text-sm font-bold uppercase tracking-wider">Efectivo en Caja (Est.)</div>
-                        <div className="text-3xl font-display font-bold text-gray-800 mt-1">${data.summary?.cashInHand || 0}</div>
+                        <div className="text-3xl font-display font-bold text-gray-800 mt-1">{formatCurrency(data.summary?.cashInHand || 0)}</div>
                     </div>
                 )}
             </div>
@@ -31,27 +32,27 @@ export const StandardReportView: React.FC<StandardReportViewProps> = ({ data, re
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-red-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Egresos</div>
-                    <div className="text-xl font-bold text-red-600">${data.totalExpenses || 0}</div>
+                    <div className="text-xl font-bold text-red-600">{formatCurrency(data.totalExpenses || 0)}</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-green-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Otros Ingresos</div>
-                    <div className="text-xl font-bold text-gray-800">${data.otherIncome || 0}</div>
+                    <div className="text-xl font-bold text-gray-800">{formatCurrency(data.otherIncome || 0)}</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-blue-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Parqueo (Hora)</div>
-                    <div className="text-xl font-bold text-gray-800">${data.parkingHourly || 0}</div>
+                    <div className="text-xl font-bold text-gray-800">{formatCurrency(data.parkingHourly || 0)}</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-purple-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Parqueo (Día)</div>
-                    <div className="text-xl font-bold text-gray-800">${data.parkingDaily || 0}</div>
+                    <div className="text-xl font-bold text-gray-800">{formatCurrency(data.parkingDaily || 0)}</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-indigo-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Mensualidades</div>
-                    <div className="text-xl font-bold text-gray-800">${data.monthlyIncome || 0}</div>
+                    <div className="text-xl font-bold text-gray-800">{formatCurrency(data.monthlyIncome || 0)}</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm border-b-4 border-cyan-400">
                     <div className="text-gray-500 text-xs font-bold uppercase">Lavadero</div>
-                    <div className="text-xl font-bold text-gray-800">${data.washIncome || 0}</div>
+                    <div className="text-xl font-bold text-gray-800">{formatCurrency(data.washIncome || 0)}</div>
                 </div>
             </div>
 
@@ -86,7 +87,7 @@ export const StandardReportView: React.FC<StandardReportViewProps> = ({ data, re
                                         </span>
                                     </td>
                                     <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-bold font-mono ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>
-                                        ${Number(t.amount).toFixed(2)}
+                                        {formatCurrency(Number(t.amount))}
                                     </td>
                                 </tr>
                             ))}

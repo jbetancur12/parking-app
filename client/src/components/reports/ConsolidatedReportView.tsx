@@ -1,5 +1,6 @@
 import React from 'react';
 import { Building2, MapPin } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ConsolidatedReportViewProps {
     data: any;
@@ -19,16 +20,16 @@ export const ConsolidatedReportView: React.FC<ConsolidatedReportViewProps> = ({ 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white p-6 rounded-lg shadow border-l-4 border-blue-600">
                         <div className="text-gray-500 text-sm">Ingresos Totales</div>
-                        <div className="text-3xl font-bold text-gray-800">${globalStats.totalIncome}</div>
+                        <div className="text-3xl font-bold text-gray-800">{formatCurrency(globalStats.totalIncome)}</div>
                         <div className="text-xs text-gray-400 mt-1">{globalStats.transactionCount} transacciones en total</div>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
                         <div className="text-gray-500 text-sm">Egresos Totales</div>
-                        <div className="text-3xl font-bold text-red-600">${globalStats.totalExpenses}</div>
+                        <div className="text-3xl font-bold text-red-600">{formatCurrency(globalStats.totalExpenses)}</div>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
                         <div className="text-gray-500 text-sm">Utilidad Neta</div>
-                        <div className="text-3xl font-bold text-green-700">${globalStats.totalIncome - globalStats.totalExpenses}</div>
+                        <div className="text-3xl font-bold text-green-700">{formatCurrency(globalStats.totalIncome - globalStats.totalExpenses)}</div>
                     </div>
                 </div>
             </div>
@@ -48,19 +49,19 @@ export const ConsolidatedReportView: React.FC<ConsolidatedReportViewProps> = ({ 
                             <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div>
                                     <div className="text-xs text-gray-500">Ingresos</div>
-                                    <div className="font-bold text-green-700">${loc.totalIncome}</div>
+                                    <div className="font-bold text-green-700">{formatCurrency(loc.totalIncome)}</div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-gray-500">Egresos</div>
-                                    <div className="font-bold text-red-600">${loc.totalExpenses}</div>
+                                    <div className="font-bold text-red-600">{formatCurrency(loc.totalExpenses)}</div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-gray-500">Parqueo</div>
-                                    <div className="font-bold text-gray-700">${loc.parkingHourly + loc.parkingDaily}</div>
+                                    <div className="font-bold text-gray-700">{formatCurrency(loc.parkingHourly + loc.parkingDaily)}</div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-gray-500">Neto</div>
-                                    <div className="font-bold text-blue-700">${loc.totalIncome - loc.totalExpenses}</div>
+                                    <div className="font-bold text-blue-700">{formatCurrency(loc.totalIncome - loc.totalExpenses)}</div>
                                 </div>
                             </div>
                         </div>
