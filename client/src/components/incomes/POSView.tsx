@@ -1,6 +1,7 @@
 import React from 'react';
 import { Package, ShoppingCart, Trash } from 'lucide-react';
 import { type Product } from '../../services/product.service';
+import { formatCurrency } from '../../utils/formatters';
 
 interface CartItem {
     product: Product;
@@ -47,7 +48,7 @@ export const POSView: React.FC<POSViewProps> = ({
                                 }`}
                         >
                             <div className="font-bold text-gray-800 truncate">{p.name}</div>
-                            <div className="text-blue-600 font-bold mt-1">${p.price.toLocaleString()}</div>
+                            <div className="text-blue-600 font-bold mt-1">{formatCurrency(p.price)}</div>
                             <div className={`text-xs mt-2 ${p.stock <= 5 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
                                 Stock: {p.stock}
                             </div>
@@ -88,12 +89,12 @@ export const POSView: React.FC<POSViewProps> = ({
                                 <div>
                                     <div className="font-medium text-sm">{item.product.name}</div>
                                     <div className="text-xs text-gray-500">
-                                        {item.quantity} x ${item.product.price.toLocaleString()}
+                                        {item.quantity} x {formatCurrency(item.product.price)}
                                     </div>
                                 </div>
                                 <div className="flex items-center">
                                     <span className="font-bold text-gray-700 mr-3">
-                                        ${(item.quantity * item.product.price).toLocaleString()}
+                                        {formatCurrency(item.quantity * item.product.price)}
                                     </span>
                                     <button
                                         onClick={() => removeFromCart(item.product.id)}
@@ -111,7 +112,7 @@ export const POSView: React.FC<POSViewProps> = ({
                     <div className="flex justify-between items-end mb-4">
                         <span className="text-gray-600">Total</span>
                         <span className="text-2xl font-bold text-green-600">
-                            ${total.toLocaleString()}
+                            {formatCurrency(total)}
                         </span>
                     </div>
 

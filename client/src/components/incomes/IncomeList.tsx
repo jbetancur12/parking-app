@@ -1,5 +1,6 @@
 import React from 'react';
 import { Printer } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
 
 interface IncomeListProps {
     transactions: any[];
@@ -30,7 +31,7 @@ export const IncomeList: React.FC<IncomeListProps> = ({ transactions, onReprint 
                                     {t.description}
                                 </td>
                                 <td className="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                                    ${Number(t.amount).toLocaleString()}
+                                    {formatCurrency(Number(t.amount))}
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                     <button

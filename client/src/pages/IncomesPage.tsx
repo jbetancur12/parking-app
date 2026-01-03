@@ -3,6 +3,7 @@ import { DollarSign } from 'lucide-react';
 import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintSaleReceipt } from '../components/PrintSaleReceipt';
 import { useIncomesPage } from '../hooks/useIncomesPage';
+import { formatCurrency } from '../utils/formatters';
 
 // Components
 import { ManualIncomeForm } from '../components/incomes/ManualIncomeForm';
@@ -137,7 +138,7 @@ export default function IncomesPage() {
                         <h2 className="text-xl font-bold mb-4 text-green-600">✅ Venta Registrada</h2>
                         <div className="mb-6">
                             <p className="text-gray-600">La transacción se ha guardado correctamente.</p>
-                            <p className="font-bold text-lg mt-2">${printData?.amount?.toLocaleString()}</p>
+                            <p className="font-bold text-lg mt-2">{formatCurrency(printData?.amount || 0)}</p>
                         </div>
                         <p className="text-gray-600 mb-6">¿Desea imprimir el recibo?</p>
                         <div className="flex space-x-3">

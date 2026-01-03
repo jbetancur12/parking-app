@@ -1,5 +1,6 @@
 import React from 'react';
 import { type Expense } from '../../services/expense.service';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ExpenseListProps {
     expenses: Expense[];
@@ -34,7 +35,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
                                             {exp.description}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold text-right">
-                                            - ${Number(exp.amount).toLocaleString()}
+                                            - {formatCurrency(Number(exp.amount))}
                                         </td>
                                     </tr>
                                 ))}
@@ -48,7 +49,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
                             <div key={exp.id} className="p-4 flex flex-col gap-1">
                                 <div className="flex justify-between items-start">
                                     <span className="font-bold text-gray-800">{exp.description}</span>
-                                    <span className="text-red-600 font-bold">- ${Number(exp.amount).toLocaleString()}</span>
+                                    <span className="text-red-600 font-bold">- {formatCurrency(Number(exp.amount))}</span>
                                 </div>
                                 <div className="flex justify-between text-xs text-gray-500">
                                     <span>{new Date(exp.createdAt).toLocaleTimeString()}</span>
