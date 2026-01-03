@@ -20,6 +20,10 @@ export const useWashPage = () => {
     const [message, setMessage] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
 
+    // Print State
+    const [printData, setPrintData] = useState<any>(null);
+    const [showPrintConfirm, setShowPrintConfirm] = useState(false);
+
     // Initial Fetch
     useEffect(() => {
         fetchActiveShift();
@@ -77,13 +81,41 @@ export const useWashPage = () => {
         }
     };
 
+    // Printing Helpers
+    const preparePrintData = (washEntry: any, serviceName: string) => {
+        setPrintData({
+            id: washEntry.id,
+            timestamp: washEntry.createdAt || new Date().toISOString(),
+            description: `Lavado: ${serviceName}`,
+            amount: Number(washEntry.cost),
+            paymentMethod: 'CASH', // Wash defaults to CASH usually, or we can add method to response
+            receiptNumber: washEntry.receiptNumber,
+            items: [{
+                productName: serviceName,
+                quantity: 1,
+                price: Number(washEntry.cost)
+            }]
+        });
+        setShowPrintConfirm(true);
+    };
+
+    const handleConfirmPrint = (triggerPrint: () => void) => {
+        setShowPrintConfirm(false);
+        setTimeout(() => triggerPrint(), 100);
+    };
+
+    const handleReprint = (entry: WashEntry) => {
+        const serviceName = (entry as any).serviceType?.name || 'Lavado';
+        preparePrintData(entry, serviceName);
+    };
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedType || !plate || !activeShift) return;
 
         setLoading(true);
         try {
-            await washService.createEntry(activeShift.id, {
+            const data = await washService.createEntry(activeShift.id, {
                 plate,
                 serviceTypeId: Number(selectedType),
                 operatorName: operator,
@@ -91,6 +123,10 @@ export const useWashPage = () => {
                 paymentMethod
             });
             setMessage('Lavado registrado!');
+
+            // Prepare for print
+            const serviceTypeName = types.find(t => t.id === Number(selectedType))?.name || 'Lavado';
+            preparePrintData(data, serviceTypeName);
 
             // Reset Form Logic
             setPlate('');
@@ -127,6 +163,13 @@ export const useWashPage = () => {
 
         // Handlers
         handleCreate,
-        loadTypes
+        loadTypes,
+
+        // Print
+        printData,
+        showPrintConfirm,
+        setShowPrintConfirm,
+        handleConfirmPrint,
+        handleReprint
     };
 };

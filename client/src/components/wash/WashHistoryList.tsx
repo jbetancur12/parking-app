@@ -3,9 +3,10 @@ import { type WashEntry } from '../../services/wash.service';
 
 interface WashHistoryListProps {
     entries: WashEntry[];
+    onReprint: (entry: WashEntry) => void;
 }
 
-export const WashHistoryList: React.FC<WashHistoryListProps> = ({ entries }) => {
+export const WashHistoryList: React.FC<WashHistoryListProps> = ({ entries, onReprint }) => {
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-200 bg-brand-blue/5">
@@ -25,6 +26,7 @@ export const WashHistoryList: React.FC<WashHistoryListProps> = ({ entries }) => 
                                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Servicio</th>
                                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Operario</th>
                                     <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Monto</th>
+                                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -45,6 +47,15 @@ export const WashHistoryList: React.FC<WashHistoryListProps> = ({ entries }) => 
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-800">
                                             ${Number(entry.cost).toLocaleString()}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => onReprint(entry)}
+                                                className="text-brand-blue hover:text-blue-900"
+                                                title="Imprimir Recibo"
+                                            >
+                                                🖨️
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -64,7 +75,13 @@ export const WashHistoryList: React.FC<WashHistoryListProps> = ({ entries }) => 
                                     <p className="text-xs text-gray-400 mt-1">Op: {entry.operatorName || '-'}</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="font-bold text-brand-green text-lg">${Number(entry.cost).toLocaleString()}</span>
+                                    <span className="font-bold text-brand-green text-lg block">${Number(entry.cost).toLocaleString()}</span>
+                                    <button
+                                        onClick={() => onReprint(entry)}
+                                        className="text-brand-blue text-sm underline mt-1"
+                                    >
+                                        Reimprimir
+                                    </button>
                                 </div>
                             </div>
                         ))}
