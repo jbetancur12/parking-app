@@ -1,4 +1,5 @@
 import React from 'react';
+import { CurrencyInput } from '../common/CurrencyInput';
 import { Plus } from 'lucide-react';
 
 interface ExpenseFormProps {
@@ -41,16 +42,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 </div>
                 <div className="w-full md:w-40">
                     <label className="block text-sm font-bold text-gray-700 mb-1">Monto</label>
-                    <input
-                        type="number"
+                    <CurrencyInput
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onValueChange={setAmount}
                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border outline-none transition-shadow"
                         placeholder="0.00"
-                        min="0"
-                        required
-                        name="amount"
                         id="amount"
+                        name="amount"
                     />
                 </div>
                 <div className="w-full md:w-40">

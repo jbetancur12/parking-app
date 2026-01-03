@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CurrencyInput } from '../common/CurrencyInput';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface MonthlyClientFormProps {
@@ -84,10 +85,9 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Tarifa Mensual</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 value={monthlyRate}
-                                onChange={(e) => setMonthlyRate(e.target.value)}
+                                onValueChange={setMonthlyRate}
                                 className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                             />
                         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { type Client } from '../../hooks/useMonthlyClients';
 import { formatCurrency } from '../../utils/formatters';
+import { CurrencyInput } from '../common/CurrencyInput';
 import { toast } from 'sonner';
 
 interface RenewalModalProps {
@@ -56,13 +57,11 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Monto a Pagar</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={renewAmount}
-                            onChange={(e) => setRenewAmount(e.target.value)}
+                            onValueChange={setRenewAmount}
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg font-semibold text-gray-900 focus:ring-2 focus:ring-green-500 outline-none"
                             required
-                            min="0"
                         />
                         <p className="text-xs text-gray-500 mt-1">Tarifa actual del cliente: {formatCurrency(Number(client.monthlyRate))}</p>
                     </div>

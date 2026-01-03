@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { type Tariff } from '../../services/tariff.service';
 import { formatCurrency } from '../../utils/formatters';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface ExitPreviewModalProps {
     previewData: any;
@@ -210,10 +211,9 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                             <div className="mt-4 border-t pt-3 bg-gray-50 p-3 rounded-lg">
                                 <div className="flex items-center justify-between mb-2">
                                     <label className="text-sm font-bold text-gray-700">Dinero Recibido:</label>
-                                    <input
-                                        type="number"
+                                    <CurrencyInput
                                         value={cashReceived}
-                                        onChange={(e) => setCashReceived(e.target.value)}
+                                        onValueChange={setCashReceived}
                                         className="w-32 border border-gray-300 rounded-md px-2 py-1 text-right font-medium text-lg"
                                         placeholder="$"
                                         autoFocus

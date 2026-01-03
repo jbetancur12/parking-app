@@ -1,4 +1,5 @@
 import React from 'react';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface ManualIncomeFormProps {
     onSubmit: (e: React.FormEvent) => void;
@@ -40,14 +41,12 @@ export const ManualIncomeForm: React.FC<ManualIncomeFormProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-bold text-gray-700">Monto</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onValueChange={setAmount}
                             className="mt-1 block w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
-                            required
-                            name="amount"
                             id="amount"
+                            name="amount"
                         />
                     </div>
                     <div>

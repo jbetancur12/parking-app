@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { type WashServiceType } from '../../services/wash.service';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface WashEntryFormProps {
     onSubmit: (e: React.FormEvent) => void;
@@ -66,10 +67,9 @@ export const WashEntryForm: React.FC<WashEntryFormProps> = ({
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Precio (Opcional)</label>
-                    <input
-                        type="number"
+                    <CurrencyInput
                         value={price}
-                        onChange={e => setPrice(e.target.value)}
+                        onValueChange={setPrice}
                         className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none font-semibold text-gray-700 transition-shadow"
                         placeholder="Sugerido..."
                     />

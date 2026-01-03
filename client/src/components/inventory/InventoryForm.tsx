@@ -1,4 +1,5 @@
 import React from 'react';
+import { CurrencyInput } from '../common/CurrencyInput';
 import { Save, X } from 'lucide-react';
 
 interface InventoryFormProps {
@@ -51,42 +52,33 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Precio Venta</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={price}
-                            onChange={e => setPrice(e.target.value)}
+                            onValueChange={setPrice}
                             className="mt-1 block w-full border rounded-md px-3 py-2"
-                            required
-                            name="price"
                             id="price"
-                            data-testid="input-product-price"
+                            name="price"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Stock Actual</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 value={stock}
-                                onChange={e => setStock(e.target.value)}
+                                onValueChange={setStock}
                                 className="mt-1 block w-full border rounded-md px-3 py-2"
-                                required
-                                name="stock"
                                 id="stock"
-                                data-testid="input-product-stock"
+                                name="stock"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Stock Mínimo</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 value={minStock}
-                                onChange={e => setMinStock(e.target.value)}
+                                onValueChange={setMinStock}
                                 className="mt-1 block w-full border rounded-md px-3 py-2"
-                                required
-                                name="minStock"
                                 id="minStock"
-                                data-testid="input-product-min-stock"
+                                name="minStock"
                             />
                         </div>
                     </div>
