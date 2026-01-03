@@ -46,6 +46,7 @@ export const registerTenant = async (req: Request, res: Response) => {
         name: 'Sede Principal',
         address: 'Dirección Principal',
         isActive: true,
+        currentTicketNumber: 0,
         tenant,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -212,6 +213,7 @@ export const setupAdmin = async (req: Request, res: Response) => {
         name: 'Sede Principal',
         address: 'Dirección Principal',
         isActive: true,
+        currentTicketNumber: 0,
         tenant: tenant, // Link to tenant
         createdAt: new Date(),
         updatedAt: new Date()
