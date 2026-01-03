@@ -191,26 +191,31 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         });
     }
 
-    // --- TICKET NUMBERING LOGIC ---
-    // 1. Fetch Location with Lock to prevent race conditions
-    const locationEntity = await em.findOneOrFail(Location, { id: shift.location.id }, { lockMode: LockMode.PESSIMISTIC_WRITE });
+    // --- TICKET NUMBERING LOGIC & CREATION (Transactional) ---
+    // We wrap everything in a transaction to ensure lock safety and atomicity
+    const session = await em.transactional(async (emTx) => {
+        // 1. Fetch Location with Lock to prevent race conditions
+        const locationEntity = await emTx.findOneOrFail(Location, { id: shift.location.id }, { lockMode: LockMode.PESSIMISTIC_WRITE });
 
-    // 2. Increment
-    locationEntity.currentTicketNumber = (locationEntity.currentTicketNumber || 0) + 1;
-    const ticketNumber = locationEntity.currentTicketNumber.toString();
+        // 2. Increment
+        locationEntity.currentTicketNumber = (locationEntity.currentTicketNumber || 0) + 1;
+        const ticketNumber = locationEntity.currentTicketNumber.toString();
 
-    const session = em.create(ParkingSession, {
-        plate,
-        vehicleType: vehicleType as VehicleType,
-        planType: selectedPlan,
-        entryTime: entryTime ? new Date(entryTime) : new Date(),
-        status: ParkingStatus.ACTIVE,
-        entryShift: shift,
-        tenant: shift.tenant,
-        location: shift.location,
-        ticketNumber, // Assign the new ticket number
-        notes,
-    } as any);
+        const newSession = emTx.create(ParkingSession, {
+            plate,
+            vehicleType: vehicleType as VehicleType,
+            planType: selectedPlan,
+            entryTime: entryTime ? new Date(entryTime) : new Date(),
+            status: ParkingStatus.ACTIVE,
+            entryShift: shift,
+            tenant: shift.tenant,
+            location: shift.location,
+            ticketNumber, // Assign the new ticket number
+            notes,
+        } as any);
+
+        return newSession;
+    });
 
     await em.persistAndFlush(session);
     return res.status(201).json(session);
