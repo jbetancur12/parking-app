@@ -1,6 +1,6 @@
 
 import { Request, Response } from 'express';
-import { RequestContext } from '@mikro-orm/core';
+import { RequestContext, LockMode } from '@mikro-orm/core';
 import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entities/ParkingSession';
 import { Shift } from '../entities/Shift';
 import { Tariff, TariffType, PricingModel } from '../entities/Tariff';
@@ -11,6 +11,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { Loyalty } from '../entities/Loyalty';
 import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
+import { Location } from '../entities/Location';
 
 export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // 1. Determine active pricing model from global setting (stored on any tariff)
@@ -190,6 +191,14 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         });
     }
 
+    // --- TICKET NUMBERING LOGIC ---
+    // 1. Fetch Location with Lock to prevent race conditions
+    const locationEntity = await em.findOneOrFail(Location, { id: shift.location.id }, { lockMode: LockMode.PESSIMISTIC_WRITE });
+
+    // 2. Increment
+    locationEntity.currentTicketNumber = (locationEntity.currentTicketNumber || 0) + 1;
+    const ticketNumber = locationEntity.currentTicketNumber.toString();
+
     const session = em.create(ParkingSession, {
         plate,
         vehicleType: vehicleType as VehicleType,
@@ -199,6 +208,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         entryShift: shift,
         tenant: shift.tenant,
         location: shift.location,
+        ticketNumber, // Assign the new ticket number
         notes,
     } as any);
 

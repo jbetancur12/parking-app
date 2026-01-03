@@ -36,6 +36,9 @@ export class Location {
     };
 
     @Property()
+    currentTicketNumber = 0;
+
+    @Property()
     isActive = true;
 
     @Property()

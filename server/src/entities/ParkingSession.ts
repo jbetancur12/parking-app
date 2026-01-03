@@ -29,6 +29,9 @@ export class ParkingSession extends BaseTenantEntity {
     @Property()
     plate!: string;
 
+    @Property({ nullable: true })
+    ticketNumber?: string;
+
     @Enum(() => VehicleType)
     vehicleType!: VehicleType;
 
