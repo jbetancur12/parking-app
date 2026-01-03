@@ -1,6 +1,7 @@
 import React from 'react';
 import { Play, Square } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface ShiftManagementCardProps {
     activeShift: any;
@@ -25,10 +26,9 @@ export const ShiftManagementCard: React.FC<ShiftManagementCardProps> = ({
                 <div className="flex gap-4 items-end">
                     <div className="flex-1">
                         <label className="block text-sm font-bold text-gray-700 mb-1">Base de Caja</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={baseAmount}
-                            onChange={(e) => onBaseAmountChange(e.target.value)}
+                            onValueChange={onBaseAmountChange}
                             className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-blue transition-shadow"
                             placeholder="0"
                         />
