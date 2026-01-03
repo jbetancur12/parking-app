@@ -65,7 +65,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip formatter={(value: any) => formatCurrency(Number(value || 0))} />
                                 <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
                         </ResponsiveContainer>
