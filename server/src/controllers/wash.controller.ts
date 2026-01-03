@@ -50,6 +50,7 @@ export class WashController {
                     operatorName,
                     cost: finalPrice,
                     status: 'Completed',
+                    paymentMethod: paymentMethod || 'CASH',
                     createdAt: new Date()
                 } as any);
 

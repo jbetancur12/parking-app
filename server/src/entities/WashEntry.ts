@@ -26,6 +26,9 @@ export class WashEntry {
     @Property()
     status: string = 'Completed'; // Pending, Completed
 
+    @Property()
+    paymentMethod: string = 'CASH';
+
     @Property({ onCreate: () => new Date() })
     createdAt: Date = new Date();
 
