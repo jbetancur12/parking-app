@@ -122,6 +122,7 @@ export const useIncomesPage = (handlePrintReceipt: () => void) => {
             description: transaction.description,
             amount: transaction.amount,
             paymentMethod: transaction.paymentMethod || 'CASH',
+            receiptNumber: transaction.receiptNumber,
             items: itemsOverride || []
         });
         setShowPrintConfirm(true);
@@ -139,6 +140,7 @@ export const useIncomesPage = (handlePrintReceipt: () => void) => {
             description: transaction.description,
             amount: transaction.amount,
             paymentMethod: transaction.paymentMethod,
+            receiptNumber: transaction.receiptNumber,
             items: []
         });
         setTimeout(() => handlePrintReceipt(), 100);
@@ -156,7 +158,8 @@ export const useIncomesPage = (handlePrintReceipt: () => void) => {
                 timestamp: new Date().toISOString(),
                 description,
                 amount: Number(amount),
-                paymentMethod: manualPaymentMethod
+                paymentMethod: manualPaymentMethod,
+                receiptNumber: response.receiptNumber
             });
             setDescription('');
             setAmount('');
@@ -193,7 +196,8 @@ export const useIncomesPage = (handlePrintReceipt: () => void) => {
                 description: 'Venta POS',
                 amount: total,
                 paymentMethod: posPaymentMethod,
-                items: itemsForPrint
+                items: itemsForPrint,
+                receiptNumber: response?.receiptNumber
             });
             setShowPrintConfirm(true);
 

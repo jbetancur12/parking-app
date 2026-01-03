@@ -8,6 +8,7 @@ interface PrintSaleReceiptProps {
         description: string;
         amount: number;
         paymentMethod: string;
+        receiptNumber?: string;
     };
     settings?: any;
 }
@@ -52,7 +53,7 @@ export const PrintSaleReceipt = React.forwardRef<HTMLDivElement, PrintSaleReceip
                 <div className="mb-2 uppercase">
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">RECIBO #:</span>
-                        <span>{transaction.id ? transaction.id.toString().padStart(6, '0') : 'N/A'}</span>
+                        <span>{transaction.receiptNumber || (transaction.id ? transaction.id.toString().padStart(6, '0') : 'N/A')}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">FECHA:</span>
