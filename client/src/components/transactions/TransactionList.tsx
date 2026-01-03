@@ -42,7 +42,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions }
                             </td>
                             <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${transaction.type === 'EXPENSE' ? 'text-red-500' : 'text-brand-green'
                                 }`}>
-                                {transaction.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(transaction.amount)}
+                                {transaction.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(Math.abs(transaction.amount))}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(transaction.timestamp).toLocaleString()}
