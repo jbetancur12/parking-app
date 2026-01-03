@@ -70,7 +70,7 @@ export default function MonthlyClientsPage() {
         setIsCreateModalOpen(false);
 
         // Printing Logic for New Client
-        const { client, payment } = response;
+        const { client, payment, receiptNumber } = response;
         if (client && payment) {
             setConfirmModal({
                 isOpen: true,
@@ -87,7 +87,8 @@ export default function MonthlyClientsPage() {
                         periodStart: payment.periodStart,
                         periodEnd: payment.periodEnd,
                         paymentDate: payment.paymentDate,
-                        concept: 'NUEVA MENSUALIDAD'
+                        concept: 'NUEVA MENSUALIDAD',
+                        receiptNumber
                     });
                     closeConfirmModal();
                 }
@@ -99,7 +100,7 @@ export default function MonthlyClientsPage() {
         const response = await renewClient(id, data);
 
         // Printing Logic for Renewal
-        const { client, payment } = response;
+        const { client, payment, receiptNumber } = response;
         if (client && payment) {
             // We might need to wait for themodal to close fully or just show confirm on top (?)
             // Currently logic shows confirm after success toast in hook? No, hook returns data.
@@ -118,7 +119,8 @@ export default function MonthlyClientsPage() {
                         periodStart: payment.periodStart,
                         periodEnd: payment.periodEnd,
                         paymentDate: payment.paymentDate,
-                        concept: 'RENOVACIÓN'
+                        concept: 'RENOVACIÓN',
+                        receiptNumber
                     });
                     closeConfirmModal();
                 }

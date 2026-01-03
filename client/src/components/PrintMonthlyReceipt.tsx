@@ -11,6 +11,7 @@ interface MonthlyReceiptProps {
         periodEnd: string;   // ISO date string
         paymentDate: string; // ISO date string
         concept: string;     // 'Nueva Mensualidad' or 'Renovación'
+        receiptNumber?: string;
     };
     settings?: any;
 }
@@ -57,7 +58,7 @@ export const PrintMonthlyReceipt = React.forwardRef<HTMLDivElement, MonthlyRecei
                 <div className="mb-2 text-[9pt] uppercase">
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">RECIBO #:</span>
-                        <span>{data.paymentId.toString().padStart(6, '0')}</span>
+                        <span>{data.receiptNumber || data.paymentId.toString().padStart(6, '0')}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">FECHA:</span>

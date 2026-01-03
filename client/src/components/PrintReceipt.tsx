@@ -10,6 +10,7 @@ interface PrintReceiptProps {
         planType: string;
         cost: number;
         duration: string;
+        receiptNumber?: string;
     };
     settings?: any;
 }
@@ -50,7 +51,7 @@ export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
                 <div className="mb-2 uppercase">
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">RECIBO #:</span>
-                        <span>{session.id ? session.id.toString().padStart(6, '0') : 'N/A'}</span>
+                        <span>{session.receiptNumber || (session.id ? session.id.toString().padStart(6, '0') : 'N/A')}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">PLACA:</span>
