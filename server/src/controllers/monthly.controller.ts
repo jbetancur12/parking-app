@@ -4,6 +4,7 @@ import { MonthlyClient } from '../entities/MonthlyClient';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { MonthlyPayment } from '../entities/MonthlyPayment';
+import { ReceiptService } from '../services/ReceiptService';
 
 export class MonthlyClientController {
 
@@ -90,30 +91,39 @@ export class MonthlyClientController {
                 });
 
                 // Transaction Logic
-                const activeShift = await em.findOne(Shift, {
-                    user: user.id,
-                    isActive: true,
-                    location: locationId
-                }, { populate: ['tenant', 'location'] });
+                // We must use transactional to ensure sequence safety
+                const transactionResult = await em.transactional(async (emTx) => {
+                    const activeShift = await emTx.findOne(Shift, {
+                        user: user.id,
+                        isActive: true,
+                        location: locationId
+                    }, { populate: ['tenant', 'location'] });
 
-                if (activeShift) {
-                    const transaction = em.create(Transaction, {
-                        shift: activeShift,
-                        tenant: activeShift.tenant,
-                        location: activeShift.location,
-                        type: TransactionType.MONTHLY_PAYMENT,
-                        description: `Reactivación Mensualidad: ${name} (${plate})`,
-                        amount: monthlyRate || 0,
-                        paymentMethod: PaymentMethod.CASH,
-                        timestamp: new Date()
-                    } as any);
-                    em.persist(transaction);
-                }
+                    let receiptNumber = undefined;
 
-                em.persist(payment);
-                await em.flush();
+                    if (activeShift) {
+                        // Generate Receipt Number
+                        receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, locationId);
 
-                return res.status(200).json({ client: existingClient, payment, message: 'Cliente reactivado exitosamente' });
+                        const transaction = emTx.create(Transaction, {
+                            shift: activeShift,
+                            tenant: activeShift.tenant,
+                            location: activeShift.location,
+                            type: TransactionType.MONTHLY_PAYMENT,
+                            description: `Reactivación Mensualidad: ${name} (${plate})`,
+                            amount: monthlyRate || 0,
+                            paymentMethod: PaymentMethod.CASH,
+                            timestamp: new Date(),
+                            receiptNumber
+                        } as any);
+                        emTx.persist(transaction);
+                    }
+
+                    emTx.persist(payment);
+                    return { receiptNumber };
+                });
+
+                return res.status(200).json({ client: existingClient, payment, message: 'Cliente reactivado exitosamente', receiptNumber: transactionResult.receiptNumber });
             }
 
             // 2. New Client Creation
@@ -146,31 +156,40 @@ export class MonthlyClientController {
             });
 
             // Need to create a Transaction for the initial payment as well if there's an active shift
-            const activeShift = await em.findOne(Shift, {
-                user: user.id,
-                isActive: true,
-                location: locationId
-            }, { populate: ['tenant', 'location'] });
+            // Transactional Creation
+            const creationResult = await em.transactional(async (emTx) => {
+                const activeShift = await emTx.findOne(Shift, {
+                    user: user.id,
+                    isActive: true,
+                    location: locationId
+                }, { populate: ['tenant', 'location'] });
 
-            if (activeShift) {
-                const transaction = em.create(Transaction, {
-                    shift: activeShift,
-                    tenant: activeShift.tenant,
-                    location: activeShift.location,
-                    type: TransactionType.MONTHLY_PAYMENT,
-                    description: `Nueva Mensualidad: ${name} (${plate})`,
-                    amount: monthlyRate || 0,
-                    paymentMethod: PaymentMethod.CASH,
-                    timestamp: new Date()
-                } as any);
-                em.persist(transaction);
-            }
+                let receiptNumber = undefined;
 
-            em.persist([client, payment]);
-            await em.flush();
+                if (activeShift) {
+                    // Generate Receipt Number
+                    receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, locationId);
+
+                    const transaction = emTx.create(Transaction, {
+                        shift: activeShift,
+                        tenant: activeShift.tenant,
+                        location: activeShift.location,
+                        type: TransactionType.MONTHLY_PAYMENT,
+                        description: `Nueva Mensualidad: ${name} (${plate})`,
+                        amount: monthlyRate || 0,
+                        paymentMethod: PaymentMethod.CASH,
+                        timestamp: new Date(),
+                        receiptNumber
+                    } as any);
+                    emTx.persist(transaction);
+                }
+
+                emTx.persist([client, payment]);
+                return { receiptNumber };
+            });
 
             // Return both client and payment for receipt
-            res.status(201).json({ client, payment });
+            res.status(201).json({ client, payment, receiptNumber: creationResult.receiptNumber });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error creating client' });
@@ -216,33 +235,42 @@ export class MonthlyClientController {
             });
             em.persist(payment);
 
-            // Create Transaction
-            const activeShift = await em.findOne(Shift, {
-                user: (req as any).user.id,
-                isActive: true,
-                location: locationId
-            }, { populate: ['tenant', 'location'] });
+            // Transactional Renewal
+            const renewalResult = await em.transactional(async (emTx) => {
+                const activeShift = await emTx.findOne(Shift, {
+                    user: (req as any).user.id,
+                    isActive: true,
+                    location: locationId
+                }, { populate: ['tenant', 'location'] });
 
-            // Create transaction
-            if (activeShift) {
-                const transaction = em.create(Transaction, {
-                    shift: activeShift,
-                    tenant: activeShift.tenant,
-                    location: activeShift.location,
-                    type: TransactionType.MONTHLY_PAYMENT,
-                    description: `Renovación: ${client.name} (${client.plate})`,
-                    amount: amount || client.monthlyRate,
-                    paymentMethod: paymentMethod || PaymentMethod.CASH,
-                    timestamp: new Date()
-                } as any);
-                em.persist(transaction);
-            } else {
-                console.warn('Renewing monthly without active shift');
-                return res.status(400).json({ message: 'No active shift found. Please start a shift to renew.' });
-            }
+                let receiptNumber = undefined;
 
-            await em.flush();
-            res.json({ client, payment });
+                if (activeShift) {
+                    // Generate Receipt Number
+                    receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, locationId);
+
+                    const transaction = emTx.create(Transaction, {
+                        shift: activeShift,
+                        tenant: activeShift.tenant,
+                        location: activeShift.location,
+                        type: TransactionType.MONTHLY_PAYMENT,
+                        description: `Renovación: ${client.name} (${client.plate})`,
+                        amount: amount || client.monthlyRate,
+                        paymentMethod: paymentMethod || PaymentMethod.CASH,
+                        timestamp: new Date(),
+                        receiptNumber
+                    } as any);
+                    emTx.persist(transaction);
+                } else {
+                    console.warn('Renewing monthly without active shift');
+                    throw new Error('No active shift found. Please start a shift to renew.');
+                }
+
+                emTx.persist(payment);
+                return { receiptNumber };
+            });
+
+            res.json({ client, payment, receiptNumber: renewalResult.receiptNumber });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error renewing subscription' });

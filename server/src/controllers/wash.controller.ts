@@ -4,6 +4,7 @@ import { WashEntry } from '../entities/WashEntry';
 import { WashServiceType } from '../entities/WashServiceType';
 import { Shift } from '../entities/Shift';
 import { Transaction, TransactionType } from '../entities/Transaction';
+import { ReceiptService } from '../services/ReceiptService';
 
 export class WashController {
 
@@ -35,34 +36,41 @@ export class WashController {
             // Use provided price (override) or default to serviceType price
             const finalPrice = price ? Number(price) : serviceType.price;
 
-            const washEntry = em.create(WashEntry, {
-                plate: plate.toUpperCase(),
-                serviceType,
-                shift,
-                tenant: shift.tenant,
-                location: shift.location,
-                operatorName,
-                cost: finalPrice,
-                status: 'Completed',
-                createdAt: new Date()
-            } as any);
+            // Transactional Wash Entry
+            const transactionResult = await em.transactional(async (emTx) => {
+                // Generate Receipt Number
+                const receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, shift.location.id);
 
-            // Financial Transaction
-            const transaction = em.create(Transaction, {
-                shift,
-                tenant: shift.tenant,
-                location: shift.location,
-                type: TransactionType.WASH_SERVICE, // Wash service
-                amount: finalPrice,
-                description: `Lavado: ${serviceType.name} (${plate})`,
-                paymentMethod: paymentMethod || 'CASH',
-                timestamp: new Date()
-            } as any);
+                const washEntry = emTx.create(WashEntry, {
+                    plate: plate.toUpperCase(),
+                    serviceType,
+                    shift,
+                    tenant: shift.tenant,
+                    location: shift.location,
+                    operatorName,
+                    cost: finalPrice,
+                    status: 'Completed',
+                    createdAt: new Date()
+                } as any);
 
-            em.persist([washEntry, transaction]);
-            await em.flush();
+                // Financial Transaction
+                const transaction = emTx.create(Transaction, {
+                    shift,
+                    tenant: shift.tenant,
+                    location: shift.location,
+                    type: TransactionType.WASH_SERVICE, // Wash service
+                    amount: finalPrice,
+                    description: `Lavado: ${serviceType.name} (${plate})`,
+                    paymentMethod: paymentMethod || 'CASH',
+                    timestamp: new Date(),
+                    receiptNumber
+                } as any);
 
-            res.status(201).json(washEntry);
+                emTx.persist([washEntry, transaction]);
+                return { receiptNumber, washEntry };
+            });
+
+            res.status(201).json({ ...transactionResult.washEntry, receiptNumber: transactionResult.receiptNumber });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error creating wash entry' });

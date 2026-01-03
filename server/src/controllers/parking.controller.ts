@@ -12,6 +12,7 @@ import { Loyalty } from '../entities/Loyalty';
 import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 import { Location } from '../entities/Location';
+import { ReceiptService } from '../services/ReceiptService';
 
 export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // 1. Determine active pricing model from global setting (stored on any tariff)
@@ -472,33 +473,42 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         }
     }
 
-    session.exitTime = exitTime;
-    session.cost = finalCost;
-    session.status = ParkingStatus.COMPLETED;
-    session.exitShift = shift;
-    session.discount = appliedDiscount > 0 ? appliedDiscount : undefined;
-    session.discountReason = finalDiscountReason;
-    if (appliedAgreement) {
-        session.agreement = appliedAgreement;
-    }
+    // Transactional Exit Logic
+    const transactionResult = await em.transactional(async (emTx) => {
+        // Generate Receipt Number
+        const receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, shift.location.id);
 
-    // Create Revenue Transaction
-    const transaction = em.create(Transaction, {
-        shift: shift,
-        tenant: shift.tenant,
-        location: shift.location,
-        type: TransactionType.PARKING_REVENUE,
-        description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)${appliedDiscount > 0 ? ` - DESC: $${appliedDiscount} (${finalDiscountReason})` : ''} `,
-        amount: finalCost,
-        paymentMethod: paymentMethod || PaymentMethod.CASH,
-        timestamp: new Date(),
-        discount: appliedDiscount > 0 ? appliedDiscount : undefined,
-        discountReason: finalDiscountReason,
-        agreement: appliedAgreement
-    } as any);
-    em.persist(transaction);
+        // Update Session
+        const sessionRef = emTx.getReference(ParkingSession, session.id);
+        sessionRef.exitTime = exitTime;
+        sessionRef.cost = finalCost;
+        sessionRef.status = ParkingStatus.COMPLETED;
+        sessionRef.exitShift = shift;
+        sessionRef.discount = appliedDiscount > 0 ? appliedDiscount : undefined;
+        sessionRef.discountReason = finalDiscountReason;
+        if (appliedAgreement) {
+            sessionRef.agreement = appliedAgreement;
+        }
 
-    await em.flush();
+        // Create Revenue Transaction
+        const transaction = emTx.create(Transaction, {
+            shift: shift,
+            tenant: shift.tenant,
+            location: shift.location,
+            type: TransactionType.PARKING_REVENUE,
+            description: `Parking[${session.planType}]: ${session.plate} (${Math.floor(durationMinutes)} mins)${appliedDiscount > 0 ? ` - DESC: $${appliedDiscount} (${finalDiscountReason})` : ''} `,
+            amount: finalCost,
+            paymentMethod: paymentMethod || PaymentMethod.CASH,
+            timestamp: new Date(),
+            discount: appliedDiscount > 0 ? appliedDiscount : undefined,
+            discountReason: finalDiscountReason,
+            agreement: appliedAgreement,
+            receiptNumber
+        } as any);
+
+        emTx.persist(transaction);
+        return { receiptNumber };
+    });
 
     // Return all data needed for printing
     return res.json({
@@ -512,7 +522,8 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
         originalCost: calculatedCost,
         discount: appliedDiscount,
         durationMinutes,
-        agreementName: appliedAgreement?.name
+        agreementName: appliedAgreement?.name,
+        receiptNumber: transactionResult.receiptNumber
     });
 };
 

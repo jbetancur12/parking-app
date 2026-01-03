@@ -3,6 +3,7 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { Product } from '../entities/Product';
+import { ReceiptService } from '../services/ReceiptService';
 
 export class SaleController {
 
@@ -78,19 +79,28 @@ export class SaleController {
                 return res.status(400).json({ message: 'No active shift found. Please start a shift first.' });
             }
 
-            const transaction = em.create(Transaction, {
-                shift: activeShift,
-                tenant: activeShift.tenant,
-                location: activeShift.location,
-                type: TransactionType.INCOME,
-                paymentMethod: paymentMethod || PaymentMethod.CASH,
-                description: finalDescription,
-                amount: finalAmount,
-                timestamp: new Date()
-            } as any);
+            // Transactional Sale
+            const transactionResult = await em.transactional(async (emTx) => {
+                // Generate Receipt Number
+                const receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, activeShift.location.id);
 
-            await em.persistAndFlush(transaction);
-            res.status(201).json(transaction);
+                const transaction = emTx.create(Transaction, {
+                    shift: activeShift,
+                    tenant: activeShift.tenant,
+                    location: activeShift.location,
+                    type: TransactionType.INCOME,
+                    paymentMethod: paymentMethod || PaymentMethod.CASH,
+                    description: finalDescription,
+                    amount: finalAmount,
+                    timestamp: new Date(),
+                    receiptNumber
+                } as any);
+
+                emTx.persist(transaction);
+                return { transaction, receiptNumber };
+            });
+
+            res.status(201).json({ ...transactionResult.transaction, receiptNumber: transactionResult.receiptNumber });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error registering sale' });

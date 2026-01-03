@@ -20,6 +20,9 @@ export class Transaction extends BaseTenantEntity {
     @PrimaryKey()
     id!: number;
 
+    @Property({ nullable: true })
+    receiptNumber?: string;
+
     @Index()
     @ManyToOne(() => Shift)
     shift!: Shift;
