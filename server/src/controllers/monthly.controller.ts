@@ -247,7 +247,7 @@ export class MonthlyClientController {
 
                 if (activeShift) {
                     // Generate Receipt Number
-                    receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, locationId);
+                    receiptNumber = await ReceiptService.getNextReceiptNumber(emTx, locationId as string);
 
                     const transaction = emTx.create(Transaction, {
                         shift: activeShift,
