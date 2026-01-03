@@ -21,6 +21,7 @@ export interface WashEntry {
     operatorName?: string;
     cost: number;
     createdAt: string;
+    paymentMethod?: string;
 }
 
 export const washService = {

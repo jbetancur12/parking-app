@@ -106,11 +106,8 @@ export const useWashPage = () => {
 
     const handleReprint = (entry: WashEntry) => {
         const serviceName = (entry as any).serviceType?.name || 'Lavado';
-        // For reprint, we might not have payment method if not stored on WashEntry.
-        // Ideally we fetch it or update entity. For now default to CASH or check if response has it.
-        // If we want to be accurate, we need to join Transaction on backend.
-        // Assuming CASH for reprints for now unless we update backend.
-        preparePrintData(entry, serviceName, 'CASH');
+        // Now we have paymentMethod on the entry!
+        preparePrintData(entry, serviceName, entry.paymentMethod || 'CASH');
     };
 
     const handleCreate = async (e: React.FormEvent) => {
