@@ -9,6 +9,7 @@ interface PrintTicketProps {
         vehicleType: string;
         entryTime: string;
         planType: string;
+        ticketNumber?: string;
     };
     settings?: any;
 }
@@ -60,7 +61,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                 <div className="mb-2 uppercase">
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">TICKET #:</span>
-                        <span>{session.id.toString().padStart(6, '0')}</span>
+                        <span className="text-xl font-bold">{session.ticketNumber ? session.ticketNumber.padStart(4, '0') : session.id.toString().padStart(6, '0')}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                         <span className="font-bold">PLACA:</span>

@@ -12,6 +12,7 @@ interface ParkingSession {
     vehicleType: string;
     entryTime: string;
     planType?: string;
+    ticketNumber?: string;
 }
 
 export const useParkingPage = (
@@ -124,7 +125,8 @@ export const useParkingPage = (
                     plate: plate.toUpperCase(),
                     vehicleType,
                     entryTime: entryDate.toISOString(),
-                    planType
+                    planType: planType,
+                    ticketNumber: 'OFFLINE'
                 }
             });
 
@@ -132,6 +134,7 @@ export const useParkingPage = (
                 plate: plate.toUpperCase(),
                 vehicleType,
                 planType,
+                ticketNumber: 'OFFLINE'
             });
 
             setIsEntryModalOpen(false);
@@ -153,7 +156,8 @@ export const useParkingPage = (
                     plate: newSession.plate,
                     vehicleType: newSession.vehicleType,
                     entryTime: newSession.entryTime,
-                    planType: newSession.planType
+                    planType: newSession.planType,
+                    ticketNumber: newSession.ticketNumber
                 }
             });
 
