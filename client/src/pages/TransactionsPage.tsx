@@ -2,6 +2,7 @@
 import { Receipt, Download, Filter } from 'lucide-react';
 import { useTransactionsPage } from '../hooks/useTransactionsPage';
 import { TransactionList } from '../components/transactions/TransactionList';
+import { formatCurrency } from '../utils/formatters';
 
 export default function TransactionsPage() {
     const {
@@ -77,15 +78,15 @@ export default function TransactionsPage() {
             <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                     <p className="text-sm font-bold text-brand-blue uppercase tracking-wider">Total General</p>
-                    <p className="text-3xl font-display font-bold text-brand-blue">${totals.all.toLocaleString()}</p>
+                    <div className="text-3xl font-display font-bold text-brand-green">{formatCurrency(totals.all)}</div>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                     <p className="text-sm font-bold text-green-700 uppercase tracking-wider">💵 Efectivo</p>
-                    <p className="text-3xl font-display font-bold text-green-600">${totals.cash.toLocaleString()}</p>
+                    <div className="text-3xl font-display font-bold text-gray-800">{formatCurrency(totals.cash)}</div>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                     <p className="text-sm font-bold text-purple-700 uppercase tracking-wider">🏦 Transferencia</p>
-                    <p className="text-3xl font-display font-bold text-purple-600">${totals.transfer.toLocaleString()}</p>
+                    <div className="text-3xl font-display font-bold text-blue-600">{formatCurrency(totals.transfer)}</div>
                 </div>
             </div>
 
