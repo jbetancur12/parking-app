@@ -1,62 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingDown, Plus } from 'lucide-react';
-import { expenseService, type Expense } from '../services/expense.service';
-import api from '../services/api';
+// React import not needed with new JSX transform
+import { TrendingDown } from 'lucide-react';
+import { useExpensesPage } from '../hooks/useExpensesPage';
+import { ExpenseForm } from '../components/expenses/ExpenseForm';
+import { ExpenseList } from '../components/expenses/ExpenseList';
 
 export default function ExpensesPage() {
-    const [expenses, setExpenses] = useState<Expense[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [description, setDescription] = useState('');
-    const [amount, setAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
-    const [activeShift, setActiveShift] = useState<any>(null);
+    const {
+        // Data
+        expenses,
+        activeShift,
 
-    useEffect(() => {
-        fetchActiveShift();
-    }, []);
+        // Form
+        description, setDescription,
+        amount, setAmount,
+        paymentMethod, setPaymentMethod,
 
-    useEffect(() => {
-        if (activeShift) {
-            fetchExpenses();
-        }
-    }, [activeShift]);
+        // UI
+        loading,
 
-    const fetchActiveShift = async () => {
-        try {
-            const response = await api.get('/shifts/current');
-            setActiveShift(response.data);
-        } catch (err) {
-            setActiveShift(null);
-        }
-    };
-
-    const fetchExpenses = async () => {
-        if (!activeShift) return;
-        try {
-            const data = await expenseService.getAllByShift(activeShift.id);
-            setExpenses(data);
-        } catch (error) {
-            console.error('Failed to fetch expenses');
-        }
-    };
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!description || !amount || !activeShift) return;
-
-        setLoading(true);
-        try {
-            await expenseService.create(activeShift.id, description, Number(amount), paymentMethod);
-            setDescription('');
-            setAmount('');
-            setPaymentMethod('CASH');
-            fetchExpenses();
-        } catch (error) {
-            alert('Error al registrar egreso');
-        } finally {
-            setLoading(false);
-        }
-    };
+        // Handlers
+        handleCreate
+    } = useExpensesPage();
 
     if (!activeShift) {
         return <div className="p-8 text-center text-gray-500">No hay un turno activo. Inicie turno en Inicio para registrar egresos.</div>;
@@ -69,112 +33,19 @@ export default function ExpensesPage() {
             </h1>
 
             {/* Create Form */}
-            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500 mb-8">
-                <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Nuevo Egreso</h2>
-                <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
-                    <div className="flex-1">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-                        <input
-                            type="text"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border outline-none transition-shadow"
-                            placeholder="e.j. Jabón, Almuerzo"
-                            required
-                            name="description"
-                            id="description"
-                        />
-                    </div>
-                    <div className="w-full md:w-40">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Monto</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border outline-none transition-shadow"
-                            placeholder="0.00"
-                            min="0"
-                            required
-                            name="amount"
-                            id="amount"
-                        />
-                    </div>
-                    <div className="w-full md:w-40">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Método de Pago</label>
-                        <select
-                            value={paymentMethod}
-                            onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white outline-none transition-shadow"
-                        >
-                            <option value="CASH">Efectivo</option>
-                            <option value="TRANSFER">Transferencia</option>
-                        </select>
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-brand-yellow text-brand-blue font-bold py-2 px-6 rounded-lg hover:bg-yellow-400 disabled:bg-gray-400 shadow-md transition-transform active:scale-95 flex items-center justify-center h-10 w-full md:w-auto mt-2 md:mt-0"
-                    >
-                        <Plus size={18} className="mr-2" />
-                        Registrar
-                    </button>
-                </form>
-            </div>
+            <ExpenseForm
+                onSubmit={handleCreate}
+                loading={loading}
+                description={description}
+                setDescription={setDescription}
+                amount={amount}
+                setAmount={setAmount}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+            />
 
             {/* List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h3 className="text-lg font-semibold text-gray-800">Historial del Día (Turno Actual)</h3>
-                </div>
-                {expenses.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No hay egresos registrados en este turno.</p>
-                ) : (
-                    <>
-                        <div className="hidden md:block overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-brand-blue/5">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hora</th>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Descripción</th>
-                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Monto</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {expenses.map(exp => (
-                                        <tr key={exp.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(exp.createdAt).toLocaleTimeString()}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                                {exp.description}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold text-right">
-                                                - ${Number(exp.amount).toLocaleString()}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Mobile Card View */}
-                        <div className="md:hidden divide-y divide-gray-100">
-                            {expenses.map(exp => (
-                                <div key={exp.id} className="p-4 flex flex-col gap-1">
-                                    <div className="flex justify-between items-start">
-                                        <span className="font-bold text-gray-800">{exp.description}</span>
-                                        <span className="text-red-600 font-bold">- ${Number(exp.amount).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs text-gray-500">
-                                        <span>{new Date(exp.createdAt).toLocaleTimeString()}</span>
-                                        <span>{exp.paymentMethod || 'CASH'}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
-            </div>
+            <ExpenseList expenses={expenses} />
         </div>
     );
 }
