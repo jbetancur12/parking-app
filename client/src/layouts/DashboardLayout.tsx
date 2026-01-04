@@ -1,8 +1,9 @@
 import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
+import { useOffline } from '../context/OfflineContext';
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle, WifiOff } from 'lucide-react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
 
@@ -20,6 +21,7 @@ type NavGroup = {
 
 export default function DashboardLayout() {
     const { user, logout } = useAuth();
+    const { isOnline } = useOffline();
     const { currentTenant, currentLocation, availableTenants } = useSaas(); // Destructure currentLocation
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<string[]>(
@@ -273,6 +275,7 @@ export default function DashboardLayout() {
                     )}
 
                     {/* Location Context Display */}
+
                     {/* Compact Footer */}
                     <div className="mt-auto border-t border-blue-800/30 bg-blue-900/20 p-3 space-y-2">
                         {currentLocation && (
@@ -304,13 +307,25 @@ export default function DashboardLayout() {
                                 <LogOut size={16} />
                             </button>
                         </div>
-                        <div className="text-[9px] text-center text-blue-500/50 select-none">v0.0.5</div>
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-800/30">
+                            <div className="text-[9px] text-blue-500/50 select-none">v0.0.5</div>
+                            <div className="hidden lg:block">
+                                <OfflineIndicator variant="minimal" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Minimal Offline Banner - Warning Style */}
+                {!isOnline && (
+                    <div className="bg-orange-500 text-white text-[10px] font-bold text-center py-1 shadow-md z-40 relative flex justify-center items-center gap-2 tracking-wider uppercase transition-all duration-300">
+                        <WifiOff size={12} />
+                        Sin Conexión &bull; No Recargar ni Cambiar de Sección
+                    </div>
+                )}
                 <header className="flex h-16 items-center justify-between bg-white px-6 shadow-sm lg:hidden">
                     <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
                         <Menu size={24} />
@@ -395,6 +410,6 @@ export default function DashboardLayout() {
 
             {/* Tenant Selector Modal - shown when user has multiple tenants and none selected */}
             {showTenantSelector && <TenantSelector />}
-        </div>
+        </div >
     );
 }
