@@ -46,13 +46,17 @@ export class UsageService {
     }
 
     /**
-     * Check if tenant can perform action (soft limit)
+     * Check if tenant can perform action with configurable soft/hard limits
      */
     async checkLimits(tenantId: string, action: 'addLocation' | 'addUser' | 'createSession'): Promise<{
         allowed: boolean;
+        blocked: boolean;
         warning?: string;
+        warningLevel?: 'soft' | 'critical';
         currentCount: number;
         limit: number;
+        softLimit: number;
+        hardLimit: number;
     }> {
         const em = RequestContext.getEntityManager();
         if (!em) throw new Error('No EntityManager found');
@@ -62,7 +66,76 @@ export class UsageService {
         });
         if (!tenant) throw new Error('Tenant not found');
 
-        const planFeatures = getPlanFeatures(tenant.plan);
+        // Get plan from database with tolerances
+        const { PricingPlanService } = await import('./pricingPlan.service');
+        const pricingService = new PricingPlanService();
+        const plan = await pricingService.getPlanByCode(tenant.plan);
+
+        if (!plan) {
+            // Fallback to config if plan not found in DB
+            const planFeatures = getPlanFeatures(tenant.plan);
+            return this.checkLimitsWithConfig(action, tenant, planFeatures);
+        }
+
+        let currentCount = 0;
+        let limit = 0;
+
+        switch (action) {
+            case 'addLocation':
+                currentCount = tenant.locations.length;
+                limit = plan.maxLocations;
+                break;
+            case 'addUser':
+                currentCount = tenant.users.length;
+                limit = plan.maxUsers;
+                break;
+            case 'createSession':
+                const usage = await this.getMonthlyUsage(tenantId);
+                currentCount = usage?.sessionsCount || 0;
+                limit = plan.maxSessions;
+                break;
+        }
+
+        // Calculate thresholds
+        const softLimit = limit === -1 ? Infinity : Math.floor(limit * plan.softLimitPercentage);
+        const hardLimit = limit === -1 ? Infinity : Math.floor(limit * plan.hardLimitPercentage);
+
+        // Determine status
+        const blocked = limit !== -1 && currentCount >= hardLimit;
+        const allowed = !blocked;
+
+        let warning: string | undefined;
+        let warningLevel: 'soft' | 'critical' | undefined;
+
+        if (blocked) {
+            warning = `BLOQUEADO: Has excedido el límite máximo (${currentCount}/${hardLimit}). Actualiza tu plan para continuar.`;
+            warningLevel = 'critical';
+        } else if (limit !== -1 && currentCount >= limit) {
+            // Over plan limit but within tolerance
+            warning = `ADVERTENCIA CRÍTICA: Has excedido tu límite del plan (${currentCount}/${limit}). Estás en tolerancia hasta ${hardLimit}.`;
+            warningLevel = 'critical';
+        } else if (limit !== -1 && currentCount >= softLimit) {
+            // Approaching limit
+            warning = `ADVERTENCIA: Estás cerca de tu límite (${currentCount}/${limit}). Considera actualizar tu plan.`;
+            warningLevel = 'soft';
+        }
+
+        return {
+            allowed,
+            blocked,
+            warning,
+            warningLevel,
+            currentCount,
+            limit: limit === -1 ? Infinity : limit,
+            softLimit,
+            hardLimit
+        };
+    }
+
+    /**
+     * Fallback method using config file
+     */
+    private async checkLimitsWithConfig(action: string, tenant: any, planFeatures: any) {
         let currentCount = 0;
         let limit = 0;
 
@@ -76,28 +149,41 @@ export class UsageService {
                 limit = planFeatures.maxUsers;
                 break;
             case 'createSession':
-                const usage = await this.getMonthlyUsage(tenantId);
+                const usage = await this.getMonthlyUsage(tenant.id);
                 currentCount = usage?.sessionsCount || 0;
                 limit = planFeatures.maxSessions;
                 break;
         }
 
-        // Soft limit: allow but warn
-        const allowed = true; // Always allow (soft limit)
-        const isOverLimit = limit !== -1 && currentCount >= limit;
+        const softLimit = limit === -1 ? Infinity : Math.floor(limit * 0.8);
+        const hardLimit = limit === -1 ? Infinity : Math.floor(limit * 1.2);
+
+        const blocked = limit !== -1 && currentCount >= hardLimit;
+        const allowed = !blocked;
 
         let warning: string | undefined;
-        if (isOverLimit) {
-            warning = `You have reached your plan limit of ${limit} ${action.replace('add', '').replace('create', '')}s. Consider upgrading your plan.`;
-        } else if (limit !== -1 && currentCount >= limit * 0.8) {
-            warning = `You are approaching your plan limit (${currentCount}/${limit}). Consider upgrading soon.`;
+        let warningLevel: 'soft' | 'critical' | undefined;
+
+        if (blocked) {
+            warning = `BLOQUEADO: Has excedido el límite máximo. Actualiza tu plan.`;
+            warningLevel = 'critical';
+        } else if (limit !== -1 && currentCount >= limit) {
+            warning = `ADVERTENCIA CRÍTICA: Has excedido tu límite del plan.`;
+            warningLevel = 'critical';
+        } else if (limit !== -1 && currentCount >= softLimit) {
+            warning = `ADVERTENCIA: Estás cerca de tu límite.`;
+            warningLevel = 'soft';
         }
 
         return {
             allowed,
+            blocked,
             warning,
+            warningLevel,
             currentCount,
-            limit: limit === -1 ? Infinity : limit
+            limit: limit === -1 ? Infinity : limit,
+            softLimit,
+            hardLimit
         };
     }
 

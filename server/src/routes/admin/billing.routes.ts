@@ -9,6 +9,7 @@ import {
     getAllPayments,
     getPaymentStats
 } from '../../controllers/billing.controller';
+import { getAllTenantsUsage, getTenantUsage } from '../../controllers/admin/usage.controller';
 import { migrateExistingTenants } from '../../controllers/admin/migration.controller';
 import { requireRole } from '../../middleware/permission.middleware';
 import { UserRole } from '../../entities/User';
@@ -31,5 +32,9 @@ router.post('/invoices', requireRole([UserRole.SUPER_ADMIN]), createInvoice);
 router.get('/payments', requireRole([UserRole.SUPER_ADMIN]), getAllPayments);
 router.post('/payments', requireRole([UserRole.SUPER_ADMIN]), recordPayment);
 router.get('/payments/stats', requireRole([UserRole.SUPER_ADMIN]), getPaymentStats);
+
+// Usage monitoring
+router.get('/usage/tenants', requireRole([UserRole.SUPER_ADMIN]), getAllTenantsUsage);
+router.get('/usage/tenants/:tenantId', requireRole([UserRole.SUPER_ADMIN]), getTenantUsage);
 
 export default router;

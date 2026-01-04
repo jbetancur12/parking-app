@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useDashboardStats } from '../hooks/useDashboardStats';
 import { useShiftActions } from '../hooks/useShiftActions';
 import { useElectronPrint } from '../hooks/useElectronPrint';
+import { useUsageLimits } from '../hooks/useUsageLimits';
 import { settingService } from '../services/setting.service';
 
 import { Skeleton } from '../components/Skeleton';
 import { PrintShiftSummary } from '../components/PrintShiftSummary';
+import { UsageBanner } from '../components/UsageBanner';
 
 // Component Imports
 import { ShiftManagementCard } from '../components/dashboard/ShiftManagementCard';
@@ -28,6 +30,8 @@ export default function DashboardPage() {
         consolidatedData,
         loading,
     } = useDashboardStats();
+
+    const { usage, hasWarnings } = useUsageLimits();
 
     const {
         activeShift,
@@ -93,6 +97,9 @@ export default function DashboardPage() {
     return (
         <div>
             <h1 className="text-3xl font-display font-bold text-brand-blue dark:text-white mb-6">Bienvenido, {user?.username}</h1>
+
+            {/* Usage Warning Banner */}
+            {hasWarnings && usage && <UsageBanner usage={usage} />}
 
             {/* ZONA 1: OPERATIVA INMEDIATA */}
             <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Operativa Inmediata</h2>

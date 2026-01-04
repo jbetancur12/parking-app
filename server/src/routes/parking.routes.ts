@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth.middleware';
 import { verifyTenantAccess } from '../middleware/permission.middleware';
 import { saasContext } from '../middleware/saasContext';
 import { validateBody } from '../middleware/validation.middleware';
+import { checkSessionLimit } from '../middleware/usageLimit.middleware';
 import { CreateParkingEntryDto, CreateParkingExitDto, ExitPreviewDto } from '../dtos/parking.dto';
 
 const router = Router();
@@ -15,7 +16,7 @@ router.get('/public/status/:id', publicStatus);
 router.use(authenticateToken);
 router.use(saasContext);
 router.use(verifyTenantAccess);
-router.post('/entry', validateBody(CreateParkingEntryDto), entryVehicle);
+router.post('/entry', validateBody(CreateParkingEntryDto), checkSessionLimit, entryVehicle);
 router.get('/preview/:plate', previewExit);
 router.post('/exit', validateBody(CreateParkingExitDto), exitVehicle);
 router.get('/active', getActiveSessions);

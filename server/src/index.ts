@@ -31,6 +31,7 @@ import adminRoutes from './routes/admin.routes';
 import productRoutes from './routes/product.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import billingRoutes from './routes/billing.routes';
+import usageRoutes from './routes/usage.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';

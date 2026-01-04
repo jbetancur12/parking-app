@@ -2,6 +2,7 @@ import { Users, Building, MapPin, TrendingUp, Activity } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { Skeleton } from '../Skeleton';
 import { useSuperAdminStats } from '../../hooks/useSuperAdminStats';
+import { TenantsAtRisk } from './TenantsAtRisk';
 
 export const SuperAdminDashboard = () => {
     const { stats, loading } = useSuperAdminStats();
@@ -110,6 +111,9 @@ export const SuperAdminDashboard = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Tenants at Risk */}
+            <TenantsAtRisk />
         </div>
     );
 };
