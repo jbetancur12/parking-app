@@ -35,7 +35,13 @@ export const useDashboardStats = () => {
 
     const fetchConsolidatedStats = useCallback(async () => {
         try {
-            const today = new Date().toISOString().split('T')[0];
+            // Use local date string YYYY-MM-DD, not UTC
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const today = `${year}-${month}-${day}`;
+
             const response = await api.get('/reports/consolidated', { params: { date: today } });
             if (isMounted.current) setConsolidatedData(response.data);
         } catch (error) {
