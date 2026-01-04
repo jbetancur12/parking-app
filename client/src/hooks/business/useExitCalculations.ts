@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Tariff } from '../services/tariff.service';
-import { formatCurrency } from '../utils/formatters';
+import type { Tariff } from '../../services/tariff.service';
+import { formatCurrency } from '../../utils/formatters';
 
 interface UseExitCalculationsProps {
     previewData: any;

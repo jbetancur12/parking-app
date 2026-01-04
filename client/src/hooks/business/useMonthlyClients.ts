@@ -1,7 +1,7 @@
 // Custom hook for Monthly Clients logic
 import { useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
-import { settingService } from '../services/setting.service';
+import api from '../../services/api';
+import { settingService } from '../../services/setting.service';
 import { toast } from 'sonner';
 
 export interface Client {
