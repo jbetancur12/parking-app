@@ -36,7 +36,7 @@ export const registerTenant = async (req: Request, res: Response) => {
         maxUsers: 2,
         createdAt: new Date(),
         updatedAt: new Date()
-    });
+    } as any);
 
     // 3. Create Default Location
     const location = em.create(Location, {
