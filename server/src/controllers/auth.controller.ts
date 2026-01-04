@@ -153,20 +153,29 @@ export const login = async (req: Request, res: Response) => {
         // Find latest subscription
         const subscriptions = primaryTenant.subscriptions.getItems();
 
+        console.log(`[SUBSCRIPTION CHECK] Tenant: ${primaryTenant.name}, ID: ${primaryTenant.id}`);
+        console.log(`[SUBSCRIPTION CHECK] Subscriptions found: ${subscriptions.length}`);
+
         if (subscriptions.length > 0) {
             // Sort by createdAt desc to get latest
             const latestSubscription = subscriptions.sort((a: any, b: any) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )[0];
 
+            console.log(`[SUBSCRIPTION CHECK] Latest Sub ID: ${latestSubscription.id}, Status: ${latestSubscription.status}, CreatedAt: ${latestSubscription.createdAt}`);
+
             const { SubscriptionStatus } = await import('../entities/Subscription');
+            console.log(`[SUBSCRIPTION CHECK] Comparing with PAST_DUE: ${SubscriptionStatus.PAST_DUE}`);
 
             if (latestSubscription.status === SubscriptionStatus.PAST_DUE) {
+                console.log(`[SUBSCRIPTION CHECK] BLOCKED: Subscription is PAST_DUE`);
                 return res.status(403).json({
                     message: 'Suscripcion vencida. Pague su factura pendiente.',
                     code: 'SUBSCRIPTION_PAST_DUE'
                 });
             }
+        } else {
+            console.log(`[SUBSCRIPTION CHECK] No subscriptions found for tenant.`);
         }
     }
 
