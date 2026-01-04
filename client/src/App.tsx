@@ -80,6 +80,7 @@ function App() {
                     <Route path="monthly" element={<MonthlyClientsPage />} />
                     <Route path="reports" element={<ReportsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
+                    <Route path="billing" element={<BillingPage />} />
                     <Route path="audit-logs" element={<AuditLogsPage />} />
                     <Route path="brands" element={<BrandsPage />} />
                     <Route path="expenses" element={<ExpensesPage />} />
