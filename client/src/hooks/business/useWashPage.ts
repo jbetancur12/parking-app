@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { washService, type WashServiceType, type WashEntry } from '../services/wash.service';
-import api from '../services/api';
+import { washService, type WashServiceType, type WashEntry } from '../../services/wash.service';
+import api from '../../services/api';
 
 export const useWashPage = () => {
     // Data State

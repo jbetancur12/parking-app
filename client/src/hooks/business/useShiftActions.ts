@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import api from '../services/api';
-import { useShift } from '../context/ShiftContext';
-import { useSaas } from '../context/SaasContext';
-import { useAuth } from '../context/AuthContext';
+import api from '../../services/api';
+import { useShift } from '../../context/ShiftContext';
+import { useSaas } from '../../context/SaasContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const useShiftActions = () => {
     const { activeShift, checkActiveShift } = useShift();

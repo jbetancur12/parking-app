@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { saleService } from '../services/sale.service';
-import { productService, type Product } from '../services/product.service';
-import { settingService } from '../services/setting.service';
-import api from '../services/api';
+import { saleService } from '../../services/sale.service';
+import { productService, type Product } from '../../services/product.service';
+import { settingService } from '../../services/setting.service';
+import api from '../../services/api';
 
 interface CartItem {
     product: Product;
