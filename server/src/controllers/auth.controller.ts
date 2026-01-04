@@ -118,11 +118,11 @@ export const login = async (req: Request, res: Response) => {
     // Disable tenant filter for login as it is a global lookup (by username)
     // and User entity might be affected by relations or if we add loose filters.
     const user = await em.findOne(User, { username }, {
-        populate: ['tenants', 'locations', 'lastActiveLocation'],
+        populate: ['tenants', 'tenants.subscription', 'locations', 'lastActiveLocation'],
         filters: false // Disable all filters for this query to find the user globally
     });
 
-    if (!user) {
+    if (!user || !user.isActive) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -130,6 +130,31 @@ export const login = async (req: Request, res: Response) => {
 
     if (!isValidPassword) {
         return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if user has at least one active tenant
+    const activeTenants = user.tenants.getItems().filter(t => t.isActive);
+    if (activeTenants.length === 0) {
+        return res.status(403).json({
+            message: 'Cuenta suspendida. Contacte al administrador.',
+            code: 'TENANT_SUSPENDED'
+        });
+    }
+
+    // For non-super-admin users, check subscription status
+    if (user.role !== UserRole.SUPER_ADMIN) {
+        const primaryTenant = activeTenants[0];
+
+        if (primaryTenant.subscription) {
+            const { SubscriptionStatus } = await import('../entities/Subscription');
+
+            if (primaryTenant.subscription.status === SubscriptionStatus.PAST_DUE) {
+                return res.status(403).json({
+                    message: 'Suscripcion vencida. Pague su factura pendiente.',
+                    code: 'SUBSCRIPTION_PAST_DUE'
+                });
+            }
+        }
     }
 
     const secret = process.env.JWT_SECRET;
