@@ -10,11 +10,8 @@ import { addDays } from 'date-fns';
 
 
 export const registerTenant = async (req: Request, res: Response) => {
+    // Validation now handled by middleware
     const { companyName, username, password, email } = req.body;
-
-    if (!companyName || !username || !password) {
-        return res.status(400).json({ message: 'Company Name, Username and Password are required' });
-    }
 
     const em = RequestContext.getEntityManager();
     if (!em) return res.status(500).json({ message: 'No EM' });
@@ -99,13 +96,8 @@ export const registerTenant = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+    // Validation now handled by middleware
     const { username, password } = req.body;
-
-
-
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
 
     const em = RequestContext.getEntityManager();
     if (!em) {
@@ -190,11 +182,8 @@ export const setupAdmin = async (req: Request, res: Response) => {
         return res.status(403).json({ message: 'System is already configured' });
     }
 
+    // Validation now handled by middleware
     const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
 
     // 1. Create Default Tenant
     const tenant = em?.create(Tenant, {

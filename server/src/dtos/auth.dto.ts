@@ -4,9 +4,10 @@ import { IsString, IsEmail, MinLength, MaxLength, Matches, IsOptional } from 'cl
  * DTO for user login
  */
 export class LoginDto {
-    @IsEmail({}, { message: 'Email must be a valid email address' })
-    @MaxLength(255, { message: 'Email must not exceed 255 characters' })
-    email!: string;
+    @IsString({ message: 'Username must be a string' })
+    @MinLength(3, { message: 'Username must be at least 3 characters long' })
+    @MaxLength(50, { message: 'Username must not exceed 50 characters' })
+    username!: string;
 
     @IsString({ message: 'Password must be a string' })
     @MinLength(6, { message: 'Password must be at least 6 characters long' })
@@ -37,6 +38,11 @@ export class RegisterDto {
         message: 'Username can only contain letters, numbers, underscores, and hyphens',
     })
     username!: string;
+
+    @IsString({ message: 'Company name must be a string' })
+    @MinLength(3, { message: 'Company name must be at least 3 characters long' })
+    @MaxLength(255, { message: 'Company name must not exceed 255 characters' })
+    companyName!: string;
 
     @IsOptional()
     @IsString({ message: 'Full name must be a string' })
