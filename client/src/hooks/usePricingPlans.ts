@@ -23,7 +23,7 @@ export const usePricingPlans = () => {
         const fetchPlans = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/admin/pricing');
+                const response = await api.get('/admin/pricing/plans');
                 setPlans(response.data.filter((p: PricingPlan) => p.isActive));
                 setError(null);
             } catch (err: any) {
