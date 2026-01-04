@@ -3,6 +3,7 @@ import { useAdminBilling } from '../../hooks/useAdminBilling';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { DollarSign, FileText, TrendingUp } from 'lucide-react';
+import api from '../../services/api';
 
 // Simple currency formatter
 const formatCurrency = (amount: number) => {
@@ -78,12 +79,35 @@ export default function AdminBillingPage() {
         <div className="p-6 max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
-                    Admin - Facturación
-                </h1>
-                <p className="text-gray-600">
-                    Gestiona suscripciones, facturas y pagos de todos los tenants
-                </p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
+                            Admin - Facturación
+                        </h1>
+                        <p className="text-gray-600">
+                            Gestiona suscripciones, facturas y pagos de todos los tenants
+                        </p>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            if (confirm('¿Verificar suscripciones vencidas y generar facturas?')) {
+                                try {
+                                    const response = await api.post('/admin/billing/subscriptions/check-expired');
+                                    alert(`✅ Verificación completada:\n- Revisadas: ${response.data.checked}\n- Vencidas: ${response.data.expired}\n- Facturas generadas: ${response.data.invoicesGenerated}`);
+                                    window.location.reload();
+                                } catch (err: any) {
+                                    alert('Error: ' + (err.response?.data?.message || err.message));
+                                }
+                            }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Verificar Suscripciones
+                    </button>
+                </div>
             </div>
 
             {/* Stats Cards */}

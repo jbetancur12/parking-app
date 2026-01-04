@@ -39,6 +39,7 @@ import bcrypt from 'bcryptjs';
 import { saasContext } from './middleware/saasContext';
 import { authenticateToken } from './middleware/auth.middleware';
 import { verifyTenantAccess } from './middleware/permission.middleware';
+import { startSubscriptionCronJob } from './jobs/subscription.cron';
 
 const app = express();
 const port = process.env.PORT || 3000;
