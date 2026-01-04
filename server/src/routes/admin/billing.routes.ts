@@ -35,7 +35,9 @@ router.get('/payments/stats', requireRole([UserRole.SUPER_ADMIN]), getPaymentSta
 
 // Subscription management
 import { checkExpiredSubscriptions } from '../../controllers/admin/subscription.controller';
+import { renewSubscription } from '../../controllers/admin/subscription-renew.controller';
 router.post('/subscriptions/check-expired', requireRole([UserRole.SUPER_ADMIN]), checkExpiredSubscriptions);
+router.post('/subscriptions/:subscriptionId/renew', requireRole([UserRole.SUPER_ADMIN]), renewSubscription);
 
 // Usage monitoring
 router.get('/usage/tenants', requireRole([UserRole.SUPER_ADMIN]), getAllTenantsUsage);
