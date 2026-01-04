@@ -3,7 +3,10 @@ import { RequestContext } from '@mikro-orm/core';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { ParkingSession, ParkingStatus, VehicleType } from '../entities/ParkingSession';
 import { SystemSetting } from '../entities/SystemSetting';
-import { subDays, startOfDay, endOfDay, format } from 'date-fns';
+import { subDays, startOfDay, endOfDay, format, startOfMonth } from 'date-fns';
+import { Tenant, TenantStatus } from '../entities/Tenant';
+import { Location } from '../entities/Location';
+import { User } from '../entities/User';
 
 export const getPeakHours = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -191,4 +194,54 @@ export const getOccupancy = async (req: Request, res: Response) => {
         },
         checkEnabled
     });
+};
+
+export const getSuperAdminStats = async (req: Request, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em) return res.status(500).json({ message: 'Internal error' });
+
+    try {
+        // Counts
+        const tenantsCount = await em.count(Tenant, { status: TenantStatus.ACTIVE });
+        const locationsCount = await em.count(Location, { isActive: true });
+        const usersCount = await em.count(User, { isActive: true });
+
+        // Financials (Global)
+        const startOfCurrentMonth = startOfMonth(new Date());
+        const transactions = await em.find(Transaction, {
+            type: { $in: [TransactionType.PARKING_REVENUE, TransactionType.MONTHLY_PAYMENT, TransactionType.WASH_SERVICE, TransactionType.INCOME] },
+            timestamp: { $gte: startOfCurrentMonth }
+        });
+
+        const totalRevenueMonth = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+
+        // Recent Activity (Last 5 transactions globally)
+        const recentTransactions = await em.find(Transaction, {}, {
+            orderBy: { timestamp: 'DESC' },
+            limit: 5,
+            populate: ['tenant', 'location']
+        });
+
+        const activity = recentTransactions.map(t => ({
+            id: t.id,
+            description: t.description,
+            amount: t.amount,
+            timestamp: t.timestamp,
+            tenant: t.tenant?.name || 'Unknown',
+            location: t.location?.name || 'Unknown'
+        }));
+
+        return res.json({
+            counts: {
+                tenants: tenantsCount,
+                locations: locationsCount,
+                users: usersCount,
+                revenue: totalRevenueMonth
+            },
+            activity
+        });
+    } catch (error) {
+        console.error('Super Admin Stats Error:', error);
+        return res.status(500).json({ message: 'Error fetching super admin stats' });
+    }
 };
