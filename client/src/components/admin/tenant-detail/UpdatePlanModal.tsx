@@ -1,12 +1,6 @@
 import React from 'react';
 import { X, CheckCircle, MapPin, Users } from 'lucide-react';
-
-const SAAS_PLANS: Record<string, { maxLocations: number; maxUsers: number; price: number; label: string }> = {
-    basic: { maxLocations: 1, maxUsers: 2, price: 50000, label: 'Básico' },
-    trial: { maxLocations: 1, maxUsers: 2, price: 0, label: 'Prueba (14 Días)' },
-    pro: { maxLocations: 5, maxUsers: 10, price: 150000, label: 'Pro' },
-    enterprise: { maxLocations: 100, maxUsers: 1000, price: 300000, label: 'Enterprise' }
-};
+import { usePricingPlans } from '../../../hooks/usePricingPlans';
 
 interface UpdatePlanModalProps {
     selectedPlan: string;
@@ -23,6 +17,21 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
     handleUpdatePlan,
     setShowPlanModal
 }) => {
+    const { plans, loading } = usePricingPlans();
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6">
+                    <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+                        <p className="text-gray-600 dark:text-gray-400">Cargando planes...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 transition-colors">
@@ -34,32 +43,32 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    {Object.entries(SAAS_PLANS).map(([key, plan]) => (
+                    {plans.map((plan) => (
                         <div
-                            key={key}
-                            className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === key
+                            key={plan.slug}
+                            className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === plan.slug
                                 ? 'border-brand-blue dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-brand-blue dark:ring-blue-400 ring-opacity-20 transform scale-105 shadow-lg'
                                 : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-md'
                                 }`}
-                            onClick={() => setSelectedPlan(key)}
+                            onClick={() => setSelectedPlan(plan.slug)}
                         >
-                            {selectedPlan === key && (
+                            {selectedPlan === plan.slug && (
                                 <div className="absolute top-3 right-3 text-brand-blue dark:text-blue-400">
                                     <CheckCircle className="h-6 w-6 fill-current" />
                                 </div>
                             )}
-                            <h4 className="text-xl font-bold text-brand-blue dark:text-blue-300 mb-2 uppercase">{plan.label}</h4>
+                            <h4 className="text-xl font-bold text-brand-blue dark:text-blue-300 mb-2 uppercase">{plan.name}</h4>
                             <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                 ${plan.price.toLocaleString()} <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">/mes</span>
                             </p>
                             <ul className="space-y-3 text-sm">
                                 <li className="flex items-center text-gray-700 dark:text-gray-300">
                                     <MapPin className="h-4 w-4 text-brand-green dark:text-green-400 mr-2" />
-                                    <span className="font-bold">{plan.maxLocations}</span> &nbsp; Sedes Máximas
+                                    <span className="font-bold">{plan.maxLocations === -1 ? '∞' : plan.maxLocations}</span> &nbsp; Sedes Máximas
                                 </li>
                                 <li className="flex items-center text-gray-700 dark:text-gray-300">
                                     <Users className="h-4 w-4 text-brand-green dark:text-green-400 mr-2" />
-                                    <span className="font-bold">{plan.maxUsers}</span> &nbsp; Usuarios Admin/Op
+                                    <span className="font-bold">{plan.maxUsers === -1 ? '∞' : plan.maxUsers}</span> &nbsp; Usuarios Admin/Op
                                 </li>
                             </ul>
                         </div>
