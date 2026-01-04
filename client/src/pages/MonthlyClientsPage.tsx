@@ -256,7 +256,8 @@ export default function MonthlyClientsPage() {
                         periodStart: payment.periodStart,
                         periodEnd: payment.periodEnd,
                         paymentDate: payment.paymentDate,
-                        concept: 'COPIA DE RECIBO'
+                        concept: 'COPIA DE RECIBO',
+                        receiptNumber: payment.receiptNumber // Added receiptNumber
                     });
                 }}
             />
