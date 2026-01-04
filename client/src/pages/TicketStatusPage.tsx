@@ -1,50 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Clock, DollarSign, Calendar, AlertCircle } from 'lucide-react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-interface TicketStatus {
-    id: number;
-    plate: string;
-    vehicleType: string;
-    entryTime: string;
-    planType: string;
-    cost: number;
-    durationMinutes: number;
-    currentTime: string;
-}
+import { useTicketStatus } from '../hooks/useTicketStatus';
 
 export default function TicketStatusPage() {
     const { ticketId } = useParams();
-    const [status, setStatus] = useState<TicketStatus | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                // Direct axios call to bypass auth interceptor if configured globally
-                // But our interceptor only adds token if present, so it should be fine.
-                // However, we need to ensure we hit the public endpoint.
-                const response = await axios.get(`${API_URL}/parking/public/status/${ticketId}`);
-                setStatus(response.data);
-            } catch (err) {
-                console.error(err);
-                setError('No se pudo encontrar el ticket o ya no está activo.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (ticketId) {
-            fetchStatus();
-            // Poll every minute for real-time updates
-            const interval = setInterval(fetchStatus, 60000);
-            return () => clearInterval(interval);
-        }
-    }, [ticketId]);
+    const { status, loading, error, refresh } = useTicketStatus(ticketId);
 
     if (loading) {
         return (
@@ -120,7 +80,7 @@ export default function TicketStatusPage() {
                         </div>
                         <div className="flex justify-center mt-4">
                             <button
-                                onClick={() => window.location.reload()}
+                                onClick={refresh}
                                 className="bg-brand-yellow text-brand-blue font-bold px-6 py-3 rounded-lg shadow-md hover:brightness-105 active:scale-95 transition-all text-sm uppercase tracking-wide w-full"
                             >
                                 Actualizar Estado

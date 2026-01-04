@@ -1,80 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
-
-// Detect if running in Electron
-const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
+import { useLoginFlow } from '../hooks/useLoginFlow';
 
 export default function LoginPage() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const { login, isAuthenticated } = useAuth();
-    const navigate = useNavigate();
-
-    // Redirect if already authenticated
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/');
-        }
-    }, [isAuthenticated, navigate]);
-
-    // Unified check for Electron: License -> Setup
-    useEffect(() => {
-        if (!isElectron) return; // Skip in web version
-
-        const initChecks = async () => {
-            // 1. Check License first
-            try {
-                const result = await (window as any).electronAPI?.validateLicense();
-                if (!result || !result.isValid) {
-                    console.log('No valid license found, redirecting to /license');
-                    navigate('/license');
-                    return; // Stop here, do not check setup
-                }
-            } catch (error) {
-                console.error('Error checking license:', error);
-                navigate('/license');
-                return;
-            }
-
-            // 2. Check Setup (only if license is valid)
-            try {
-                const response = await api.get('/auth/setup-status');
-                if (!response.data.isConfigured) {
-                    navigate('/setup');
-                }
-            } catch (error) {
-                console.error('Error checking setup status', error);
-            }
-        };
-
-        // Add a small delay to ensure Electron IPC is ready if necessary, 
-        // though typically window.electronAPI is available on mount.
-        initChecks();
-    }, [navigate]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await api.post('/auth/login', { username, password });
-            const userData = response.data.user;
-            login(response.data.token, userData);
-
-            // Redirect based on role and locations
-            if (userData.role === 'SUPER_ADMIN') {
-                navigate('/admin/tenants');
-            } else if (userData.locations && userData.locations.length > 1) {
-                navigate('/select-location');
-            } else {
-                navigate('/');
-            }
-        } catch (err) {
-            setError('Credenciales inválidas');
-        }
-    };
+    const {
+        username,
+        setUsername,
+        password,
+        setPassword,
+        error,
+        handleLogin
+    } = useLoginFlow();
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-brand-blue p-4 bg-[url('/pattern.png')] bg-repeat">
@@ -90,7 +26,7 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleLogin} className="space-y-6">
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Usuario</label>
                         <div className="relative">
