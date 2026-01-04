@@ -29,6 +29,8 @@ import auditRoutes from './routes/audit.routes';
 import agreementRoutes from './routes/agreement.routes';
 import adminRoutes from './routes/admin.routes';
 import productRoutes from './routes/product.routes';
+import subscriptionRoutes from './routes/subscription.routes';
+import billingRoutes from './routes/billing.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
@@ -88,6 +90,8 @@ const startServer = async () => {
         protectedApi.use('/agreements', agreementRoutes);
         protectedApi.use('/admin', adminRoutes); // SuperAdmin routes
         protectedApi.use('/products', productRoutes);
+        protectedApi.use('/subscription', subscriptionRoutes); // Subscription management
+        protectedApi.use('/billing', billingRoutes); // Invoices and payments
 
         app.use('/api', protectedApi);
 

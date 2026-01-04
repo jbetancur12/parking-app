@@ -65,6 +65,17 @@ export const registerTenant = async (req: Request, res: Response) => {
 
     await em.persistAndFlush([tenant, location, user]);
 
+    // Create trial subscription for new tenant
+    try {
+        const { SubscriptionService } = await import('../services/subscription.service');
+        const subscriptionService = new SubscriptionService();
+        await subscriptionService.createSubscription(tenant.id, 'trial');
+        console.log(`✅ Trial subscription created for tenant ${tenant.id}`);
+    } catch (error) {
+        console.error('Failed to create subscription:', error);
+        // Don't fail registration if subscription creation fails
+    }
+
     // 5. Login immediately
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error('JWT_SECRET not defined');

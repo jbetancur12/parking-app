@@ -20,6 +20,7 @@ import {
     getUserTenants,
     removeUserFromTenant,
 } from '../controllers/admin/user-tenant.controller';
+import adminBillingRoutes from './admin/billing.routes';
 
 const router = Router();
 
@@ -43,5 +44,8 @@ router.delete('/locations/:id', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMI
 router.post('/users/:userId/tenants', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), assignUserToTenants);
 router.get('/users/:userId/tenants', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), getUserTenants);
 router.delete('/users/:userId/tenants/:tenantId', requireRole([UserRole.SUPER_ADMIN, UserRole.ADMIN]), removeUserFromTenant);
+
+// Billing routes (SuperAdmin only)
+router.use('/billing', adminBillingRoutes);
 
 export default router;
