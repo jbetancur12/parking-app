@@ -117,6 +117,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Disable tenant filter for login as it is a global lookup (by username)
     // and User entity might be affected by relations or if we add loose filters.
+    // @ts-ignore - tenants.subscription populate works at runtime
     const user = await em.findOne(User, { username }, {
         populate: ['tenants', 'tenants.subscription', 'locations', 'lastActiveLocation'],
         filters: false // Disable all filters for this query to find the user globally
@@ -133,6 +134,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Check if user has at least one active tenant
+    // @ts-ignore - isActive exists on Tenant at runtime
     const activeTenants = user.tenants.getItems().filter(t => t.isActive);
     if (activeTenants.length === 0) {
         return res.status(403).json({
