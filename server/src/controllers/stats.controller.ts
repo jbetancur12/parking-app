@@ -17,23 +17,29 @@ export const getPeakHours = async (req: Request, res: Response) => {
     // For simplicity, let's analyze last 30 days of transactions (type PARKING_REVENUE)
     const thirtyDaysAgo = subDays(new Date(), 30);
 
-    const transactions = await em.find(Transaction, {
-        type: TransactionType.PARKING_REVENUE,
-        timestamp: { $gte: thirtyDaysAgo }
+    // Use ParkingSession to differentiate Vehicle Types
+    const sessions = await em.find(ParkingSession, {
+        status: ParkingStatus.COMPLETED,
+        exitTime: { $gte: thirtyDaysAgo }
     });
 
     // Initialize 0-23 counters
-    const hoursDistribution = Array(24).fill(0);
-
-    transactions.forEach(t => {
-        const hour = new Date(t.timestamp).getHours();
-        hoursDistribution[hour]++;
-    });
-
-    const hourlyData = hoursDistribution.map((count, hour) => ({
-        hour: `${hour}:00`,
-        count
+    const hourlyData = Array.from({ length: 24 }, (_, i) => ({
+        hour: `${i}:00`,
+        car: 0,
+        motorcycle: 0,
+        total: 0
     }));
+
+    sessions.forEach(s => {
+        if (!s.exitTime) return;
+        const hour = new Date(s.exitTime).getHours();
+
+        if (s.vehicleType === VehicleType.CAR) hourlyData[hour].car++;
+        else if (s.vehicleType === VehicleType.MOTORCYCLE) hourlyData[hour].motorcycle++;
+
+        hourlyData[hour].total++;
+    });
 
     return res.json(hourlyData);
 };
@@ -102,15 +108,24 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     });
 
     // Hourly
-    const hoursDistribution = Array(24).fill(0);
-    transactions.forEach(t => {
-        const hour = new Date(t.timestamp).getHours();
-        hoursDistribution[hour]++;
+    // Hourly (Peak Hours) with Vehicle Split
+    const sessions = await em.find(ParkingSession, {
+        status: ParkingStatus.COMPLETED,
+        exitTime: { $gte: thirtyDaysAgo }
     });
-    const hourlyData = hoursDistribution.map((count, hour) => ({
-        hour: `${hour}:00`,
-        count
+
+    const hourlyData = Array.from({ length: 24 }, (_, i) => ({
+        hour: `${i}:00`,
+        car: 0,
+        motorcycle: 0
     }));
+
+    sessions.forEach(s => {
+        if (!s.exitTime) return;
+        const hour = new Date(s.exitTime).getHours();
+        if (s.vehicleType === VehicleType.CAR) hourlyData[hour].car++;
+        else if (s.vehicleType === VehicleType.MOTORCYCLE) hourlyData[hour].motorcycle++;
+    });
 
     // Weekly Income (Last 7 days)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
