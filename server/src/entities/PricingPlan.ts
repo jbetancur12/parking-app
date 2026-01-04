@@ -33,6 +33,12 @@ export class PricingPlan {
     @Property()
     support!: string; // 'Email', 'Priority', '24/7'
 
+    @Property({ type: 'decimal', precision: 5, scale: 2, default: 0.8 })
+    softLimitPercentage = 0.8; // 80% - Warning threshold
+
+    @Property({ type: 'decimal', precision: 5, scale: 2, default: 1.2 })
+    hardLimitPercentage = 1.2; // 120% - Block threshold
+
     @Property({ default: true })
     isActive = true;
 

@@ -49,6 +49,8 @@ export default function AdminPricingPage() {
             maxSessions: plan.maxSessions,
             features: [...plan.features],
             support: plan.support,
+            softLimitPercentage: plan.softLimitPercentage,
+            hardLimitPercentage: plan.hardLimitPercentage,
             displayOrder: plan.displayOrder,
         });
     };
@@ -157,8 +159,8 @@ export default function AdminPricingPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${plan.isActive
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-gray-100 text-gray-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
                                         }`}>
                                         {plan.isActive ? 'Activo' : 'Inactivo'}
                                     </span>
@@ -175,8 +177,8 @@ export default function AdminPricingPage() {
                                         <button
                                             onClick={() => handleToggleStatus(plan)}
                                             className={`p-2 rounded-lg transition-colors ${plan.isActive
-                                                    ? 'text-gray-600 hover:bg-gray-100'
-                                                    : 'text-green-600 hover:bg-green-50'
+                                                ? 'text-gray-600 hover:bg-gray-100'
+                                                : 'text-green-600 hover:bg-green-50'
                                                 }`}
                                             title={plan.isActive ? 'Desactivar' : 'Activar'}
                                         >
@@ -289,6 +291,75 @@ export default function AdminPricingPage() {
                                     <option value="Priority">Priority</option>
                                     <option value="24/7">24/7</option>
                                 </select>
+                            </div>
+
+                            {/* Tolerances */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Tolerancias de Uso</h3>
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                    <p className="text-sm text-blue-800 mb-2">
+                                        <strong>Soft Limit (Advertencia):</strong> Porcentaje del límite donde se muestra advertencia
+                                    </p>
+                                    <p className="text-sm text-blue-800">
+                                        <strong>Hard Limit (Bloqueo):</strong> Porcentaje del límite donde se bloquea el servicio
+                                    </p>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Soft Limit (%)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={(formData.softLimitPercentage ?? 0.8) * 100}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                softLimitPercentage: parseFloat(e.target.value) / 100
+                                            }))}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                                            min="0"
+                                            max="100"
+                                            step="5"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Ej: 80% = advertencia al llegar al 80% del límite
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Hard Limit (%)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={(formData.hardLimitPercentage ?? 1.2) * 100}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                hardLimitPercentage: parseFloat(e.target.value) / 100
+                                            }))}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                                            min="100"
+                                            max="200"
+                                            step="5"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Ej: 120% = bloqueo al llegar al 120% del límite
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-xs text-yellow-800">
+                                        💡 <strong>Ejemplo:</strong> Plan con 1,000 sesiones/mes, Soft=80%, Hard=120%
+                                        <br />
+                                        • 0-800 sesiones: ✅ Normal
+                                        <br />
+                                        • 801-1,000 sesiones: ⚠️ Advertencia suave
+                                        <br />
+                                        • 1,001-1,200 sesiones: ⚠️ Advertencia crítica (tolerancia)
+                                        <br />
+                                        • 1,201+ sesiones: 🚫 Bloqueado
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Features */}

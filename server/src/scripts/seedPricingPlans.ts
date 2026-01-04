@@ -26,6 +26,8 @@ const defaultPlans = [
             'Soporte por email'
         ],
         support: 'Email',
+        softLimitPercentage: 0.8,  // 80% warning
+        hardLimitPercentage: 1.2,  // 120% block
         isActive: true,
         displayOrder: 0
     },
@@ -45,6 +47,8 @@ const defaultPlans = [
             'Soporte por email'
         ],
         support: 'Email',
+        softLimitPercentage: 0.8,
+        hardLimitPercentage: 1.2,
         isActive: true,
         displayOrder: 1
     },
@@ -65,6 +69,8 @@ const defaultPlans = [
             'Integraciones API'
         ],
         support: 'Priority',
+        softLimitPercentage: 0.8,
+        hardLimitPercentage: 1.2,
         isActive: true,
         displayOrder: 2
     },
@@ -87,6 +93,8 @@ const defaultPlans = [
             'Gerente de cuenta dedicado'
         ],
         support: '24/7',
+        softLimitPercentage: 0.9,  // Enterprise gets more tolerance
+        hardLimitPercentage: 1.5,  // 150% before block
         isActive: true,
         displayOrder: 3
     }

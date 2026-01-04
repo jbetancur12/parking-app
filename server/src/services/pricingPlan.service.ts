@@ -37,6 +37,8 @@ export class PricingPlanService {
         maxSessions?: number;
         features?: string[];
         support?: string;
+        softLimitPercentage?: number;
+        hardLimitPercentage?: number;
         displayOrder?: number;
     }): Promise<PricingPlan> {
         const em = RequestContext.getEntityManager();
@@ -53,6 +55,8 @@ export class PricingPlanService {
         if (data.maxSessions !== undefined) plan.maxSessions = data.maxSessions;
         if (data.features !== undefined) plan.features = data.features;
         if (data.support !== undefined) plan.support = data.support;
+        if (data.softLimitPercentage !== undefined) plan.softLimitPercentage = data.softLimitPercentage;
+        if (data.hardLimitPercentage !== undefined) plan.hardLimitPercentage = data.hardLimitPercentage;
         if (data.displayOrder !== undefined) plan.displayOrder = data.displayOrder;
 
         await em.flush();

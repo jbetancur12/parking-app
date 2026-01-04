@@ -13,6 +13,8 @@ export interface PricingPlan {
     maxSessions: number;
     features: string[];
     support: string;
+    softLimitPercentage: number;
+    hardLimitPercentage: number;
     isActive: boolean;
     displayOrder: number;
     createdAt: string;
