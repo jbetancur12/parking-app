@@ -45,6 +45,17 @@ export const createTenant = async (req: Request, res: Response) => {
 
         await em.persistAndFlush(tenant);
 
+        // Create subscription for the new tenant
+        try {
+            const { SubscriptionService } = await import('../../services/subscription.service');
+            const subscriptionService = new SubscriptionService();
+            await subscriptionService.createSubscription(tenant.id, selectedPlan);
+            console.log(`✅ Subscription created for tenant ${tenant.name} with plan ${selectedPlan}`);
+        } catch (error) {
+            console.error('Failed to create subscription for tenant:', error);
+            // Don't fail tenant creation if subscription fails
+        }
+
         await AuditService.log(
             em,
             'CREATE_TENANT',
@@ -171,13 +182,26 @@ export const updateTenant = async (req: Request, res: Response) => {
 
         if (name) tenant.name = name;
         if (contactEmail) tenant.contactEmail = contactEmail;
-        // Logic to change plan and update limits could be here, but for now just updating propery
-        if (plan) {
+
+        // Update plan and sync with subscription
+        if (plan && plan !== tenant.plan) {
+            const oldPlan = tenant.plan;
             tenant.plan = plan;
             const planConfig = SAAS_PLANS[plan as TenantPlan];
             if (planConfig) {
                 tenant.maxLocations = planConfig.maxLocations;
                 tenant.maxUsers = planConfig.maxUsers;
+            }
+
+            // Update subscription to match new plan
+            try {
+                const { SubscriptionService } = await import('../../services/subscription.service');
+                const subscriptionService = new SubscriptionService();
+                await subscriptionService.changePlan(tenant.id, plan);
+                console.log(`✅ Subscription updated for tenant ${tenant.name}: ${oldPlan} → ${plan}`);
+            } catch (error) {
+                console.error('Failed to update subscription:', error);
+                // Continue with tenant update even if subscription update fails
             }
         }
 
