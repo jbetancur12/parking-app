@@ -147,10 +147,18 @@ export const login = async (req: Request, res: Response) => {
     if (user.role !== UserRole.SUPER_ADMIN) {
         const primaryTenant = activeTenants[0];
 
-        if (primaryTenant.subscription) {
+        // Find latest subscription
+        const subscriptions = primaryTenant.subscriptions.getItems();
+
+        if (subscriptions.length > 0) {
+            // Sort by createdAt desc to get latest
+            const latestSubscription = subscriptions.sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )[0];
+
             const { SubscriptionStatus } = await import('../entities/Subscription');
 
-            if (primaryTenant.subscription.status === SubscriptionStatus.PAST_DUE) {
+            if (latestSubscription.status === SubscriptionStatus.PAST_DUE) {
                 return res.status(403).json({
                     message: 'Suscripcion vencida. Pague su factura pendiente.',
                     code: 'SUBSCRIPTION_PAST_DUE'
