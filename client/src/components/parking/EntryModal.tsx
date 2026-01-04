@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { X, Car, Bike, Truck, Clock, Calendar } from 'lucide-react';
-import { type Tariff } from '../../services/tariff.service';
+import type { Tariff } from '../../services/tariff.service';
+import { useEntryForm } from '../../hooks/useEntryForm';
 
 interface EntryModalProps {
     isOpen: boolean;
@@ -17,33 +18,21 @@ export const EntryModal: React.FC<EntryModalProps> = ({
     tariffs,
     isSubmitting
 }) => {
-    const [plate, setPlate] = useState('');
-    const [vehicleType, setVehicleType] = useState('CAR');
-    const [planType, setPlanType] = useState('HOUR');
-
-    useEffect(() => {
-        if (isOpen) {
-            // Reset logic could go here if needed, but simple re-mount or useEffect dependency handles it
-            setPlate('');
-            setVehicleType('CAR');
-            setPlanType('HOUR');
-        }
-    }, [isOpen]);
-
-    // Auto-select plan type logic
-    useEffect(() => {
-        const currentTariff = tariffs.find(t => t.vehicleType === vehicleType);
-        // If NOT traditional, force HOUR (Standard) plan
-        if (currentTariff && currentTariff.pricingModel !== 'TRADITIONAL') {
-            setPlanType('HOUR');
-        }
-    }, [vehicleType, tariffs]);
+    const {
+        plate,
+        setPlate,
+        vehicleType,
+        setVehicleType,
+        planType,
+        setPlanType,
+        getFormData
+    } = useEntryForm({ isOpen, tariffs });
 
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(e, { plate, vehicleType, planType });
+        onSubmit(e, getFormData());
     };
 
     return (
