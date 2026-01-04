@@ -22,6 +22,7 @@ export interface WashEntry {
     cost: number;
     createdAt: string;
     paymentMethod?: string;
+    receiptNumber?: string;
 }
 
 export const washService = {
