@@ -34,7 +34,6 @@ export const getAllTenantsUsage = async (req: Request, res: Response) => {
                     id: tenant.id,
                     name: tenant.name,
                     plan: tenant.plan,
-                    isActive: tenant.isActive,
                     usage: {
                         sessions: {
                             current: sessionsCheck.currentCount,
