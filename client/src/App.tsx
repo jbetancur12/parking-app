@@ -34,6 +34,7 @@ const TenantsPage = lazy(() => import('./pages/admin/TenantsPage'));
 const TenantFormPage = lazy(() => import('./pages/admin/TenantFormPage'));
 const TenantDetailPage = lazy(() => import('./pages/admin/TenantDetailPage'));
 const LocationsPage = lazy(() => import('./pages/admin/LocationsPage'));
+const BillingPage = lazy(() => import('./pages/BillingPage'));
 
 // Detect if running in Electron
 const isElectron = import.meta.env.VITE_APP_MODE === 'electron';

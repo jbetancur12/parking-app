@@ -1,8 +1,17 @@
 import { useState } from 'react';
 import { useBilling } from '../hooks/useBilling';
-import { formatCurrency } from '../utils/format';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+// Simple currency formatter
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
+};
 
 export default function BillingPage() {
     const { subscription, plans, invoices, loading, error, changePlan } = useBilling();
@@ -133,8 +142,8 @@ export default function BillingPage() {
                         <div className="flex justify-between">
                             <span className="text-gray-600">Estado:</span>
                             <span className={`font-semibold ${subscription.status === 'active' ? 'text-brand-green' :
-                                    subscription.status === 'trialing' ? 'text-blue-600' :
-                                        'text-gray-600'
+                                subscription.status === 'trialing' ? 'text-blue-600' :
+                                    'text-gray-600'
                                 }`}>
                                 {subscription.status === 'active' ? 'Activo' :
                                     subscription.status === 'trialing' ? 'Prueba' :
@@ -201,8 +210,8 @@ export default function BillingPage() {
                                         </td>
                                         <td className="px-4 py-3 text-sm">
                                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                                    invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-gray-100 text-gray-800'
+                                                invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-gray-100 text-gray-800'
                                                 }`}>
                                                 {invoice.status === 'paid' ? 'Pagada' :
                                                     invoice.status === 'open' ? 'Pendiente' :
@@ -237,8 +246,8 @@ export default function BillingPage() {
                                 <div
                                     key={key}
                                     className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${selectedPlan === key
-                                            ? 'border-brand-blue bg-blue-50'
-                                            : 'border-gray-200 hover:border-brand-blue'
+                                        ? 'border-brand-blue bg-blue-50'
+                                        : 'border-gray-200 hover:border-brand-blue'
                                         }`}
                                     onClick={() => setSelectedPlan(key)}
                                 >
