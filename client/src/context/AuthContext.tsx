@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useAutoLogout } from '../hooks/useAutoLogout';
 
 interface Tenant {
     id: string;
@@ -42,6 +43,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
     };
 
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+    };
+
     // Hydrate user from server on load (to get fresh locations/roles)
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -74,38 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     // Auto-Logout Logic
-    useEffect(() => {
-        let timer: ReturnType<typeof setTimeout>;
-
-        const resetTimer = () => {
-            if (timer) clearTimeout(timer);
-            timer = setTimeout(() => {
-                console.log('[Auth] User inactive for 1 hour. Logging out.');
-                logout();
-            }, 60 * 60 * 1000); // 1 Hour
-        };
-
-        // Listeners for activity
-        window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('keydown', resetTimer);
-        window.addEventListener('click', resetTimer);
-
-        // Init timer
-        resetTimer();
-
-        return () => {
-            if (timer) clearTimeout(timer);
-            window.removeEventListener('mousemove', resetTimer);
-            window.removeEventListener('keydown', resetTimer);
-            window.removeEventListener('click', resetTimer);
-        };
-    }, []);
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-    };
+    useAutoLogout({ onLogout: logout });
 
     return (
         <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
