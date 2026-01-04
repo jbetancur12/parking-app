@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './api';
 import type { Subscription, Invoice, Payment } from './billing.service';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -39,13 +39,13 @@ export interface PaymentWithDetails extends Payment {
 export const adminBillingService = {
     // Subscriptions
     async getAllSubscriptions(): Promise<SubscriptionWithTenant[]> {
-        const response = await axios.get(`${API_URL}/admin/billing/subscriptions`);
+        const response = await api.get(`${API_URL}/admin/billing/subscriptions`);
         return response.data;
     },
 
     // Invoices
     async getAllInvoices(): Promise<InvoiceWithTenant[]> {
-        const response = await axios.get(`${API_URL}/admin/billing/invoices`);
+        const response = await api.get(`${API_URL}/admin/billing/invoices`);
         return response.data;
     },
 
@@ -54,13 +54,13 @@ export const adminBillingService = {
         items: Array<{ description: string; quantity: number; unitPrice: number }>;
         dueDate: string;
     }): Promise<Invoice> {
-        const response = await axios.post(`${API_URL}/admin/billing/invoices`, data);
+        const response = await api.post(`${API_URL}/admin/billing/invoices`, data);
         return response.data;
     },
 
     // Payments
     async getAllPayments(): Promise<PaymentWithDetails[]> {
-        const response = await axios.get(`${API_URL}/admin/billing/payments`);
+        const response = await api.get(`${API_URL}/admin/billing/payments`);
         return response.data;
     },
 
@@ -71,12 +71,12 @@ export const adminBillingService = {
         notes?: string;
         transactionId?: string;
     }): Promise<Payment> {
-        const response = await axios.post(`${API_URL}/admin/billing/payments`, data);
+        const response = await api.post(`${API_URL}/admin/billing/payments`, data);
         return response.data;
     },
 
     async getPaymentStats(): Promise<PaymentStats> {
-        const response = await axios.get(`${API_URL}/admin/billing/payments/stats`);
+        const response = await api.get(`${API_URL}/admin/billing/payments/stats`);
         return response.data;
     },
 };
