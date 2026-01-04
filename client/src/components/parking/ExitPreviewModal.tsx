@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { type Tariff } from '../../services/tariff.service';
+import React from 'react';
+import type { Tariff } from '../../services/tariff.service';
 import { formatCurrency } from '../../utils/formatters';
 import { CurrencyInput } from '../common/CurrencyInput';
+import { useExitCalculations } from '../../hooks/useExitCalculations';
 
 interface ExitPreviewModalProps {
     previewData: any;
@@ -20,12 +21,22 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
     onConfirm,
     isSubmitting
 }) => {
-    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
-    const [discount, setDiscount] = useState('');
-    const [discountReason, setDiscountReason] = useState('');
-    const [selectedAgreementId, setSelectedAgreementId] = useState('');
-    const [redeem, setRedeem] = useState(false);
-    const [cashReceived, setCashReceived] = useState('');
+    const {
+        paymentMethod,
+        setPaymentMethod,
+        discount,
+        discountReason,
+        selectedAgreementId,
+        redeem,
+        cashReceived,
+        setCashReceived,
+        getPlanLabel,
+        calculateTotal,
+        calculateChange,
+        getAppliedDiscountText,
+        handleRedeemToggle,
+        handleAgreementChange
+    } = useExitCalculations({ previewData, agreements, tariffs });
 
     const handleConfirm = () => {
         onConfirm({
@@ -35,56 +46,6 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
             agreementId: selectedAgreementId,
             redeem
         });
-    };
-
-    const getPlanLabel = () => {
-        const tariff = tariffs.find(t => t.vehicleType === previewData.vehicleType);
-        if (!tariff) return 'Por Hora';
-        if (tariff.pricingModel === 'TRADITIONAL') {
-            return previewData.planType === 'DAY' ? 'Por Día' : 'Por Hora';
-        } else if (tariff.pricingModel === 'MINUTE') {
-            return 'Por Minuto';
-        } else {
-            return 'Por Bloques';
-        }
-    };
-
-    const calculateTotal = () => {
-        const originalCost = previewData.cost;
-        // 1. Check for Redemption First (Highest Priority)
-        if (redeem && previewData.loyalty) {
-            if (previewData.loyalty.rewardType === 'HOURS') {
-                const hourlyRate = previewData.hourlyRate || 0;
-                const discountAmount = hourlyRate * (previewData.loyalty.rewardHours || 0);
-                const finalVal = Math.max(0, originalCost - discountAmount);
-                return { total: finalVal, text: `${formatCurrency(finalVal)} (Desc. ${previewData.loyalty.rewardHours}h)` };
-            }
-            return { total: 0, text: `${formatCurrency(0)} (Canje Total)` };
-        }
-
-        let finalDiscount = 0;
-
-        if (selectedAgreementId) {
-            const agreement = agreements.find(a => a.id.toString() === selectedAgreementId);
-            if (agreement) {
-                if (agreement.type === 'FREE_HOURS') {
-                    const hourlyRate = previewData.hourlyRate || 0;
-                    finalDiscount = hourlyRate * agreement.value;
-                } else if (agreement.type === 'PERCENTAGE') {
-                    finalDiscount = (originalCost * agreement.value) / 100;
-                } else if (agreement.type === 'FLAT_DISCOUNT') {
-                    finalDiscount = agreement.value;
-                }
-            }
-        } else if (discount) {
-            finalDiscount = Number(discount) || 0;
-        }
-
-        // Cap discount to cost
-        finalDiscount = Math.min(originalCost, finalDiscount);
-        const finalTotal = Math.max(0, originalCost - finalDiscount);
-
-        return { total: finalTotal, text: formatCurrency(finalTotal) };
     };
 
     const totalInfo = calculateTotal();
@@ -110,14 +71,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                 </span>
                                 {previewData.canRedeem && (
                                     <button
-                                        onClick={() => {
-                                            setRedeem(!redeem);
-                                            if (!redeem) {
-                                                // Disable other discounts if redeeming
-                                                setDiscount('');
-                                                setSelectedAgreementId('');
-                                            }
-                                        }}
+                                        onClick={handleRedeemToggle}
                                         className={`text-xs px-3 py-1 rounded-full font-bold transition-colors ${redeem
                                             ? 'bg-green-600 text-white shadow-inner'
                                             : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'
@@ -169,13 +123,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Convenio / Descuento Predefinido</label>
                             <select
                                 value={selectedAgreementId}
-                                onChange={(e) => {
-                                    setSelectedAgreementId(e.target.value);
-                                    if (e.target.value) {
-                                        setDiscount('');
-                                        setDiscountReason('');
-                                    }
-                                }}
+                                onChange={(e) => handleAgreementChange(e.target.value)}
                                 className="w-full border rounded-md px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
                             >
                                 <option value="">-- Seleccionar Convenio --</option>
@@ -225,12 +173,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                         ? 'text-blue-600 dark:text-blue-400'
                                         : 'text-gray-400 dark:text-gray-500'
                                         }`}>
-                                        {(() => {
-                                            const total = totalInfo.total;
-                                            const received = Number(cashReceived) || 0;
-                                            const change = received - total;
-                                            return change >= 0 ? formatCurrency(change) : '---';
-                                        })()}
+                                        {calculateChange()}
                                     </span>
                                 </div>
                             </div>
@@ -240,13 +183,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                     {(selectedAgreementId || (discount && Number(discount) > 0)) && (
                         <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200 text-xs text-yellow-800">
                             <span className="font-bold">Descuento aplicado: </span>
-                            {selectedAgreementId
-                                ? (() => {
-                                    const a = agreements.find(a => a.id.toString() === selectedAgreementId);
-                                    return a ? `${a.name} (${a.type === 'FREE_HOURS' ? `${a.value}h` : a.type === 'PERCENTAGE' ? `${a.value}%` : formatCurrency(a.value)})` : '';
-                                })()
-                                : `Manual (${formatCurrency(Number(discount))})`
-                            }
+                            {getAppliedDiscountText()}
                         </div>
                     )}
                 </div>
