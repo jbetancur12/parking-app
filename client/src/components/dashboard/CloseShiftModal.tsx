@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { CurrencyInput } from '../common/CurrencyInput';
 
 interface CloseShiftModalProps {
     isOpen: boolean;
@@ -37,10 +38,9 @@ export const CloseShiftModal: React.FC<CloseShiftModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Efectivo en Caja (Declarado)
                         </label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             value={declaredAmount}
-                            onChange={(e) => setDeclaredAmount(e.target.value)}
+                            onValueChange={setDeclaredAmount}
                             className="w-full border rounded-md px-3 py-2"
                             placeholder="0"
                             required
