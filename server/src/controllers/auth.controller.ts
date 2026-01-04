@@ -136,7 +136,9 @@ export const login = async (req: Request, res: Response) => {
     // Check if user has at least one active tenant
     // @ts-ignore - isActive exists on Tenant at runtime
     const activeTenants = user.tenants.getItems().filter(t => t.isActive);
-    if (activeTenants.length === 0) {
+
+    // Only block if NOT super admin AND no active tenants
+    if (activeTenants.length === 0 && user.role !== UserRole.SUPER_ADMIN) {
         return res.status(403).json({
             message: 'Cuenta suspendida. Contacte al administrador.',
             code: 'TENANT_SUSPENDED'
