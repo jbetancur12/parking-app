@@ -119,7 +119,7 @@ export const login = async (req: Request, res: Response) => {
     // and User entity might be affected by relations or if we add loose filters.
     // @ts-ignore - tenants.subscription populate works at runtime
     const user = await em.findOne(User, { username }, {
-        populate: ['tenants', 'tenants.subscription', 'locations', 'lastActiveLocation'],
+        populate: ['tenants', 'tenants.subscriptions', 'locations', 'lastActiveLocation'],
         filters: false // Disable all filters for this query to find the user globally
     });
 
