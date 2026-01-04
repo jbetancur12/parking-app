@@ -158,10 +158,18 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         { name: 'Transferencia', value: transferTotal }
     ];
 
+    // Calculate Peak Hours
+    const peakCar = hourlyData.reduce((max, current) => current.car > max.count ? { hour: current.hour, count: current.car } : max, { hour: '-', count: 0 });
+    const peakMoto = hourlyData.reduce((max, current) => current.motorcycle > max.count ? { hour: current.hour, count: current.motorcycle } : max, { hour: '-', count: 0 });
+
     return res.json({
         hourlyData,
         weeklyIncome,
-        pieData
+        pieData,
+        peaks: {
+            car: peakCar,
+            motorcycle: peakMoto
+        }
     });
 };
 
