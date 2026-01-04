@@ -143,6 +143,62 @@ export class SubscriptionService {
     }
 
     /**
+     * Check for expired subscriptions and generate invoices
+     * Should be called periodically (cron job) or manually
+     */
+    async checkExpiredSubscriptions(): Promise<{ checked: number; expired: number; invoicesGenerated: number }> {
+        const em = RequestContext.getEntityManager();
+        if (!em) throw new Error('No EntityManager found');
+
+        const { InvoiceService } = await import('./invoice.service');
+        const invoiceService = new InvoiceService();
+
+        const now = new Date();
+        const subscriptions = await em.find(Subscription, {
+            status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING] }
+        }, {
+            populate: ['tenant', 'invoices']
+        });
+
+        let expiredCount = 0;
+        let invoicesGenerated = 0;
+
+        for (const subscription of subscriptions) {
+            // Check if period has ended
+            if (subscription.currentPeriodEnd < now) {
+                expiredCount++;
+
+                // Check if invoice already exists for this period
+                const existingInvoice = subscription.invoices.getItems().find(inv =>
+                    inv.dueDate.getTime() === subscription.currentPeriodEnd.getTime() &&
+                    inv.status !== 'void'
+                );
+
+                if (!existingInvoice) {
+                    // Generate invoice for the expired period
+                    await invoiceService.generateMonthlyInvoice(subscription.id);
+                    invoicesGenerated++;
+                    console.log(`Generated invoice for expired subscription ${subscription.id}`);
+                }
+
+                // Mark subscription as past_due if not cancelled
+                if (!subscription.cancelAtPeriodEnd) {
+                    subscription.status = SubscriptionStatus.PAST_DUE;
+                    console.log(`Marked subscription ${subscription.id} as PAST_DUE`);
+                }
+            }
+        }
+
+        await em.flush();
+
+        return {
+            checked: subscriptions.length,
+            expired: expiredCount,
+            invoicesGenerated
+        };
+    }
+
+    /**
      * Get all subscriptions (admin)
      */
     async getAll(): Promise<Subscription[]> {

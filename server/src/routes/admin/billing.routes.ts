@@ -33,6 +33,10 @@ router.get('/payments', requireRole([UserRole.SUPER_ADMIN]), getAllPayments);
 router.post('/payments', requireRole([UserRole.SUPER_ADMIN]), recordPayment);
 router.get('/payments/stats', requireRole([UserRole.SUPER_ADMIN]), getPaymentStats);
 
+// Subscription management
+import { checkExpiredSubscriptions } from '../../controllers/admin/subscription.controller';
+router.post('/subscriptions/check-expired', requireRole([UserRole.SUPER_ADMIN]), checkExpiredSubscriptions);
+
 // Usage monitoring
 router.get('/usage/tenants', requireRole([UserRole.SUPER_ADMIN]), getAllTenantsUsage);
 router.get('/usage/tenants/:tenantId', requireRole([UserRole.SUPER_ADMIN]), getTenantUsage);
