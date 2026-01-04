@@ -4,6 +4,7 @@ import { Transaction, TransactionType, PaymentMethod } from '../entities/Transac
 import { ParkingSession, ParkingStatus, VehicleType } from '../entities/ParkingSession';
 import { SystemSetting } from '../entities/SystemSetting';
 import { subDays, startOfDay, endOfDay, format, startOfMonth } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Tenant, TenantStatus } from '../entities/Tenant';
 import { Location } from '../entities/Location';
 import { User } from '../entities/User';
@@ -49,7 +50,7 @@ export const getWeeklyOccupancy = async (req: Request, res: Response) => {
         const d = subDays(new Date(), 6 - i);
         return {
             date: d,
-            label: format(d, 'EEE dd') // e.g. Mon 21
+            label: format(d, 'EEE dd', { locale: es }) // e.g. lun 21
         };
     });
 
@@ -116,7 +117,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         const d = subDays(new Date(), 6 - i);
         return {
             date: d,
-            label: format(d, 'EEE dd')
+            label: format(d, 'EEE dd', { locale: es })
         };
     });
 
