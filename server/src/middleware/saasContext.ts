@@ -24,6 +24,23 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
     const tenantId = req.headers['x-tenant-id'] as string;
     let locationId = req.headers['x-location-id'] as string;
 
+    // Apply default filter if tenant is present
+    if (tenantId) {
+        em.setFilterParams('tenant', { tenantId });
+    } else {
+        // Strict Isolation: If no tenant header is present (e.g. Login, Global Admin, Public Routes),
+        // we normally want to enforce strictness and return NOTHING.
+        // However, for Auth (Login), we need to check if the entity (User) has the filter enabled.
+        // The 'tenant' filter is defined on BaseTenantEntity. User might NOT be extending BaseTenantEntity directly, 
+        // but if it has relations to it, it might trigger.
+        // To be safe and strict: We set a dummy tenant ID so the filter returns nothing by default 
+        // unless the controller explicitly disables the filter.
+        em.setFilterParams('tenant', { tenantId: '00000000-0000-0000-0000-000000000000' });
+    }
+
+    if (locationId) {
+        em.setFilterParams('location', { locationId });
+    }
 
     // NEW: If user is authenticated and has locations assigned
     const authReq = req as AuthRequest;
@@ -58,26 +75,7 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
         }
     }
 
-    // Apply default filter if tenant is present
-    if (tenantId) {
-        em.setFilterParams('tenant', { tenantId });
-    } else {
-        // Strict Isolation: If no tenant header is present (e.g. Login, Global Admin, Public Routes),
-        // we normally want to enforce strictness and return NOTHING.
-        // However, for Auth (Login), we need to check if the entity (User) has the filter enabled.
-        // The 'tenant' filter is defined on BaseTenantEntity. User might NOT be extending BaseTenantEntity directly, 
-        // but if it has relations to it, it might trigger.
-        // To be safe and strict: We set a dummy tenant ID so the filter returns nothing by default 
-        // unless the controller explicitly disables the filter.
-        em.setFilterParams('tenant', { tenantId: '00000000-0000-0000-0000-000000000000' });
-    }
-
-
-    if (locationId) {
-        em.setFilterParams('location', { locationId });
-        // We might want to enable location filter explicitly if it defaults to false
-        // em.enableFilter('location');  <-- This depends if we want strict location isolation or just context
-    }
+    // Filter logic moved up
 
     // Skip for public routes (like login or health check) if needed, 
     // but for now we just try to resolve if headers are present.

@@ -233,6 +233,8 @@ export class ReportController {
                 const locId = (t as any).location?.id;
 
                 // Update location-specific stats
+
+                // Update location-specific stats
                 if (locId && locationStats[locId]) {
                     locationStats[locId].transactionCount++;
 
