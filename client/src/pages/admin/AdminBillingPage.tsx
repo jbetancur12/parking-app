@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAdminBilling } from '../../hooks/useAdminBilling';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { DollarSign, FileText, CreditCard, TrendingUp } from 'lucide-react';
+import { DollarSign, FileText, TrendingUp } from 'lucide-react';
 
 // Simple currency formatter
 const formatCurrency = (amount: number) => {
@@ -128,8 +128,8 @@ export default function AdminBillingPage() {
                         <button
                             onClick={() => setActiveTab('subscriptions')}
                             className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'subscriptions'
-                                    ? 'border-brand-blue text-brand-blue'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                                ? 'border-brand-blue text-brand-blue'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Suscripciones ({subscriptions.length})
@@ -137,8 +137,8 @@ export default function AdminBillingPage() {
                         <button
                             onClick={() => setActiveTab('invoices')}
                             className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'invoices'
-                                    ? 'border-brand-blue text-brand-blue'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                                ? 'border-brand-blue text-brand-blue'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Facturas ({invoices.length})
@@ -146,8 +146,8 @@ export default function AdminBillingPage() {
                         <button
                             onClick={() => setActiveTab('payments')}
                             className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'payments'
-                                    ? 'border-brand-blue text-brand-blue'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                                ? 'border-brand-blue text-brand-blue'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Pagos ({payments.length})
@@ -193,8 +193,8 @@ export default function AdminBillingPage() {
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${sub.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                        sub.status === 'trialing' ? 'bg-blue-100 text-blue-800' :
-                                                            'bg-gray-100 text-gray-800'
+                                                    sub.status === 'trialing' ? 'bg-blue-100 text-blue-800' :
+                                                        'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {sub.status === 'active' ? 'Activo' :
                                                         sub.status === 'trialing' ? 'Trial' :
@@ -257,8 +257,8 @@ export default function AdminBillingPage() {
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                                        invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
-                                                            'bg-gray-100 text-gray-800'
+                                                    invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {invoice.status === 'paid' ? 'Pagada' :
                                                         invoice.status === 'open' ? 'Pendiente' :
@@ -338,8 +338,8 @@ export default function AdminBillingPage() {
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${payment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                        payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                            'bg-gray-100 text-gray-800'
+                                                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {payment.status === 'completed' ? 'Completado' :
                                                         payment.status === 'pending' ? 'Pendiente' :
