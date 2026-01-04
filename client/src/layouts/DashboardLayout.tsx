@@ -1,146 +1,31 @@
-import { useAuth } from '../context/AuthContext';
-import { useSaas } from '../context/SaasContext';
-import { useOffline } from '../context/OfflineContext';
-import { useTheme } from '../context/ThemeContext';
-import { useEffect, useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle, WifiOff, Moon, Sun } from 'lucide-react';
-import { OfflineIndicator } from '../components/OfflineIndicator';
+import { Outlet } from 'react-router-dom';
 import TenantSelector from '../components/TenantSelector';
-
-type NavItem = {
-    name: string;
-    href: string;
-    icon: any;
-    roles?: string[]; // If undefined, accessible by all. If defined, only by those roles.
-};
-
-type NavGroup = {
-    title: string;
-    items: NavItem[];
-};
+import { useDashboardLogic } from '../hooks/useDashboardLogic';
+import { DashboardSidebar } from '../components/dashboard/layout/DashboardSidebar';
+import { DashboardHeader } from '../components/dashboard/layout/DashboardHeader';
+import { DashboardOfflineBanner } from '../components/dashboard/layout/DashboardOfflineBanner';
+import { Rocket, AlertCircle } from 'lucide-react';
 
 export default function DashboardLayout() {
-    const { user, logout } = useAuth();
-    const { isOnline } = useOffline();
-    const { theme, toggleTheme } = useTheme();
-    const { currentTenant, currentLocation, availableTenants } = useSaas(); // Destructure currentLocation
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [openGroups, setOpenGroups] = useState<string[]>(
-        user?.role === 'SUPER_ADMIN' ? ['SaaS Management'] : ['Operación', 'Finanzas']
-    );
-    const location = useLocation();
-    const navigate = useNavigate();
-
-    // Force selection if user has multiple locations but none selected
-    useEffect(() => {
-        if (user?.locations && user.locations.length > 1 && !currentTenant && !location.pathname.includes('select-location')) {
-            // Actually check SaasContext for currentLocation. 
-            // We need to access currentLocation from hook to check it properly
-            // But wait, we have `currentTenant` from hook above, `availableTenants`. 
-            // We need `currentLocation` from useSaas.
-        }
-    }, [user, navigate]);
-
-    // Show tenant selector if user has multiple tenants and none selected
-    const showTenantSelector = availableTenants.length > 1 && !currentTenant;
-
-    // Redirect to location selection if needed
-    useEffect(() => {
-        if (user?.locations && user.locations.length > 1 && !currentLocation) {
-            navigate('/select-location');
-        }
-    }, [user, currentLocation, navigate]);
-
-    // STRICT CHECK: Validate license on every dashboard load
-    // This prevents users with saved sessions from bypassing revocation
-    useEffect(() => {
-        // Only checking in Electron mode
-        const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
-        if (!isElectron) return;
-
-        const verifyAccess = async () => {
-            try {
-                const result = await (window as any).electronAPI?.validateLicense();
-                if (!result || !result.isValid) {
-                    console.warn('License invalid during session - forcing logout/activation');
-                    // Optional: logout(); // If you want to clear session too
-                    navigate('/license');
-                }
-            } catch (error) {
-                console.error('Security check failed:', error);
-            }
-        };
-
-        verifyAccess();
-    }, [navigate]);
-
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-    const toggleGroup = (groupTitle: string) => {
-        setOpenGroups(prev =>
-            prev.includes(groupTitle)
-                ? prev.filter(g => g !== groupTitle)
-                : [...prev, groupTitle]
-        );
-    };
-
-    // Navigation for Tenant/Operation Users (ADMIN, USER)
-    const tenantNavigationGroups: NavGroup[] = [
-        {
-            title: 'Operación',
-            items: [
-                { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
-                { name: 'Parqueo', href: '/parking', icon: Car },
-                { name: 'Lavadero', href: '/wash', icon: Droplets },
-                { name: 'Mensualidades', href: '/monthly', icon: Users },
-            ]
-        },
-        {
-            title: 'Finanzas',
-            items: [
-                { name: 'Egresos', href: '/expenses', icon: TrendingDown },
-                { name: 'Ingresos', href: '/incomes', icon: DollarSign },
-                { name: 'Transacciones', href: '/transactions', icon: Receipt, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-                { name: 'Historial Turnos', href: '/shifts', icon: History, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-                { name: 'Reportes', href: '/reports', icon: FileText, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-            ]
-        },
-        {
-            title: 'Administración',
-            items: [
-                { name: 'Convenios', href: '/agreements', icon: Briefcase, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-                { name: 'Inventario', href: '/inventory', icon: Package, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Added for LocMgr
-                { name: 'Usuarios', href: '/users', icon: UserCog, roles: ['ADMIN'] }, // Removed SUPER_ADMIN
-                { name: 'Auditoría', href: '/audit-logs', icon: Shield, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-                { name: 'Ajustes', href: '/settings', icon: Settings, roles: ['ADMIN', 'LOCATION_MANAGER'] }, // Removed SUPER_ADMIN
-            ]
-        }
-    ];
-
-    // Navigation for SaaS SuperAdmin
-    const saasNavigationGroups: NavGroup[] = [
-        {
-            title: 'SaaS Management',
-            items: [
-                { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
-                { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard }, // Assuming this is general audit
-            ]
-        }
-    ];
-
-    // Select based on role
-    const activeGroups = user?.role === 'SUPER_ADMIN' ? saasNavigationGroups : tenantNavigationGroups;
-
-    // Filter groups and items based on permissions (though activeGroups is already role-separated)
-    const filteredGroups = activeGroups.map(group => {
-        const filteredItems = group.items.filter(item => {
-            if (!item.roles) return true;
-            return item.roles.includes(user?.role || '');
-        });
-        return { ...group, items: filteredItems };
-    }).filter(group => group.items.length > 0);
-
+    const {
+        isSidebarOpen,
+        setIsSidebarOpen,
+        filteredGroups,
+        openGroups,
+        toggleGroup,
+        location,
+        currentTenant,
+        currentLocation,
+        user,
+        navigate,
+        theme,
+        toggleTheme,
+        logout,
+        toggleSidebar,
+        availableTenants,
+        isOnline,
+        showTenantSelector
+    } = useDashboardLogic();
 
     // Prevent rendering content until tenant context is established
     if (user?.role !== 'SUPER_ADMIN' && !currentTenant && availableTenants.length > 0) {
@@ -165,198 +50,30 @@ export default function DashboardLayout() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-brand-blue shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
-                <div className="flex h-20 items-center justify-center px-6 border-b border-blue-800 flex-shrink-0">
-                    <img
-                        src="/logo_cuadra.png"
-                        alt="Cuadra"
-                        className="h-16 w-auto"
-                        style={{ filter: 'grayscale(1) invert(1) brightness(2) contrast(1.2)', mixBlendMode: 'screen' }}
-                    />
-                    {user?.role === 'SUPER_ADMIN' && (
-                        <span className="absolute bottom-2 right-4 text-[10px] font-bold text-brand-yellow tracking-widest bg-brand-blue px-1 rounded">SAAS</span>
-                    )}
-                    <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden absolute right-4 text-white">
-                        <X size={24} />
-                    </button>
-                </div>
-
-                <nav className="mt-6 px-3 space-y-2 flex-1 overflow-y-auto">
-                    {filteredGroups.map((group) => {
-                        const isOpen = openGroups.includes(group.title);
-                        return (
-                            <div key={group.title} className="mb-2">
-                                <button
-                                    onClick={() => toggleGroup(group.title)}
-                                    className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-blue-200 uppercase tracking-wider hover:text-white focus:outline-none"
-                                >
-                                    <span>{group.title}</span>
-                                    {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                </button>
-
-                                {isOpen && (
-                                    <div className="space-y-1 mt-1">
-                                        {group.items.map((item) => {
-                                            const Icon = item.icon;
-                                            const isActive = location.pathname === item.href;
-                                            return (
-                                                <Link
-                                                    key={item.name}
-                                                    to={item.href}
-                                                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
-                                                        ? 'bg-brand-yellow text-brand-blue shadow-md transform scale-[1.02]'
-                                                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
-                                                        }`}
-                                                >
-                                                    <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-brand-blue' : 'text-blue-300'}`} />
-                                                    {item.name}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </nav>
-
-                <div className="w-full border-t border-blue-800 p-4 flex-shrink-0 bg-brand-blue">
-                    {/* Tenant Context Display */}
-                    {/* Tenant Context Display */}
-                    {currentTenant && (
-                        <div className="mb-2 px-4 py-2 bg-blue-900/50 rounded-lg border border-blue-700">
-                            <div className="flex items-center text-xs mb-1">
-                                <Building2 className="mr-2 h-4 w-4 text-brand-yellow" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-white truncate">{currentTenant.name}</p>
-                                </div>
-                            </div>
-
-                            {/* Plan Badge */}
-                            <div className="pl-6">
-                                {(() => {
-                                    const plan = currentTenant.plan || 'free';
-                                    const status = currentTenant.planStatus;
-
-                                    let label = 'Gratis';
-                                    let colorClass = 'bg-gray-600 text-gray-200';
-
-                                    if (plan === 'trial') {
-                                        label = 'Prueba';
-                                        colorClass = 'bg-purple-600 text-white';
-                                        if (currentTenant.trialEndsAt) {
-                                            const end = new Date(currentTenant.trialEndsAt);
-                                            const diff = Math.ceil((end.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-                                            if (diff > 0) label += ` (${diff}d)`;
-                                            else label = 'Prueba Vencida';
-                                        }
-                                    } else if (plan === 'basic') {
-                                        label = 'Básico';
-                                        colorClass = 'bg-blue-600 text-white';
-                                    } else if (plan === 'pro') {
-                                        label = 'Pro';
-                                        colorClass = 'bg-green-600 text-white';
-                                    } else if (plan === 'enterprise') {
-                                        label = 'Enterprise';
-                                        colorClass = 'bg-yellow-600 text-white';
-                                    }
-
-                                    if (status === 'past_due') {
-                                        label += ' (Pagos Pendientes)';
-                                        colorClass = 'bg-red-600 text-white';
-                                    }
-
-                                    return (
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide ${colorClass}`}>
-                                            {label}
-                                        </span>
-                                    );
-                                })()}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Location Context Display */}
-                </div>
-
-
-                {/* Compact Footer */}
-                <div className="mt-auto border-t border-blue-800/30 bg-blue-900/20 p-3 space-y-2">
-                    {currentLocation && (
-                        <div
-                            className="flex items-center gap-2 text-xs text-blue-200 cursor-pointer hover:text-white transition-colors"
-                            onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}
-                            title="Cambiar Sede"
-                        >
-                            <MapPin size={12} className="text-brand-green shrink-0" />
-                            <span className="font-semibold truncate flex-1">{currentLocation.name}</span>
-                            {user?.locations && user.locations.length > 1 && <ChevronRight size={10} />}
-                        </div>
-                    )}
-
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white truncate">{user?.username}</p>
-                            <p className="text-[10px] text-blue-300 truncate">
-                                {user?.role === 'SUPER_ADMIN' ? 'Super Admin' :
-                                    user?.role === 'ADMIN' ? 'Admin' :
-                                        user?.role === 'LOCATION_MANAGER' ? 'Admin Sede' : 'Operador'}
-                            </p>
-
-                        </div>
-                        <button
-                            onClick={toggleTheme}
-                            className="p-1.5 text-blue-300 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-                            title={theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
-                        >
-                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                        </button>
-                        <button
-                            onClick={logout}
-                            className="p-1.5 text-red-300 hover:text-red-100 hover:bg-red-900/30 rounded-md transition-colors"
-                            title="Cerrar Sesión"
-                        >
-                            <LogOut size={16} />
-                        </button>
-                    </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-800/30">
-                        <div className="text-[9px] text-blue-500/50 select-none">v0.0.5</div>
-                        <div className="hidden lg:block">
-                            <OfflineIndicator variant="minimal" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <DashboardSidebar
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                filteredGroups={filteredGroups}
+                openGroups={openGroups}
+                toggleGroup={toggleGroup}
+                location={location}
+                currentTenant={currentTenant}
+                currentLocation={currentLocation}
+                user={user}
+                navigate={navigate}
+                theme={theme}
+                toggleTheme={toggleTheme}
+                logout={logout}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Minimal Offline Banner - Warning Style */}
-                {!isOnline && (
-                    <div className="bg-orange-500 text-white text-[10px] font-bold text-center py-1 shadow-md z-40 relative flex justify-center items-center gap-2 tracking-wider uppercase transition-all duration-300">
-                        <WifiOff size={12} />
-                        Sin Conexión &bull; No Recargar ni Cambiar de Sección
-                    </div>
-                )}
+                <DashboardOfflineBanner isOnline={isOnline} />
 
-
-                <header className="flex h-16 items-center justify-between bg-white dark:bg-gray-800 px-6 shadow-sm lg:hidden transition-colors duration-200">
-                    <button onClick={toggleSidebar} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
-                        <Menu size={24} />
-                    </button>
-                    <div className="flex flex-col items-center">
-                        <img src="/logo_cuadra.png" alt="Cuadra" className="h-8 w-auto mb-1" />
-                        {currentLocation && (
-                            <span className="text-xs text-green-600 font-medium flex items-center">
-                                <MapPin size={10} className="mr-1" />
-                                {currentLocation.name}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center">
-                        <OfflineIndicator />
-                    </div>
-                </header>
+                <DashboardHeader
+                    toggleSidebar={toggleSidebar}
+                    currentLocation={currentLocation}
+                />
 
                 {/* Trial Expired Blocking Overlay */}
                 {
