@@ -94,6 +94,7 @@ const startServer = async () => {
         protectedApi.use('/products', productRoutes);
         protectedApi.use('/subscription', subscriptionRoutes); // Subscription management
         protectedApi.use('/billing', billingRoutes); // Invoices and payments
+        protectedApi.use('/usage', usageRoutes); // Usage limits and monitoring
 
         app.use('/api', protectedApi);
 
