@@ -92,10 +92,10 @@ export default function DashboardPage() {
 
     return (
         <div>
-            <h1 className="text-3xl font-display font-bold text-brand-blue mb-6">Bienvenido, {user?.username}</h1>
+            <h1 className="text-3xl font-display font-bold text-brand-blue dark:text-white mb-6">Bienvenido, {user?.username}</h1>
 
             {/* ZONA 1: OPERATIVA INMEDIATA */}
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Operativa Inmediata</h2>
+            <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Operativa Inmediata</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
                 {/* Columna 1 & 2: Gestión de Turno */}
@@ -124,11 +124,11 @@ export default function DashboardPage() {
             {/* ZONA 2: KPIS FINANCIEROS (Admin Only) */}
             {isAdminOrManager && consolidatedData && (
                 <>
-                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">KPIs Financieros (Hoy)</h2>
+                    <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">KPIs Financieros (Hoy)</h2>
                     <FinancialStatsGrid consolidatedData={consolidatedData} />
 
                     {/* ZONA 3: ANÁLISIS PROFUNDO */}
-                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Análisis Profundo</h2>
+                    <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Análisis Profundo</h2>
                     <DashboardCharts stats={stats} consolidatedData={consolidatedData} />
                 </>
             )}

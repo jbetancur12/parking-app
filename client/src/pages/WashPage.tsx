@@ -56,19 +56,19 @@ export default function WashPage() {
     // So I can pass handlePrintReceipt to handleConfirmPrint here.
 
     if (!activeShift) {
-        return <div className="p-8 text-center text-gray-500">No hay un turno activo. Inicie turno en Inicio para registrar servicios.</div>;
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No hay un turno activo. Inicie turno en Inicio para registrar servicios.</div>;
     }
 
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
+                <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white flex items-center">
                     <Car className="mr-2" /> Lavadero de Autos
                 </h1>
                 {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER') && (
                     <button
                         onClick={() => setModalOpen(true)}
-                        className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg flex items-center font-medium transition-colors"
+                        className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg flex items-center font-medium transition-colors"
                     >
                         <Settings size={18} className="mr-2" />
                         Configurar Servicios
@@ -83,7 +83,7 @@ export default function WashPage() {
             />
 
             {message && (
-                <div className="mb-4 bg-brand-green/10 text-brand-green p-3 rounded-lg text-sm text-center font-bold border border-brand-green/20">
+                <div className="mb-4 bg-brand-green/10 dark:bg-green-900/30 text-brand-green dark:text-green-300 p-3 rounded-lg text-sm text-center font-bold border border-brand-green/20 dark:border-green-800">
                     {message}
                 </div>
             )}
@@ -115,18 +115,18 @@ export default function WashPage() {
 
             {/* Print Confirmation Modal */}
             {showPrintConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                        <h2 className="text-xl font-bold mb-4 text-green-600">✅ Lavado Registrado</h2>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors">
+                        <h2 className="text-xl font-bold mb-4 text-green-600 dark:text-green-400">✅ Lavado Registrado</h2>
                         <div className="mb-6">
-                            <p className="text-gray-600">El servicio se ha guardado correctamente.</p>
-                            <p className="font-bold text-lg mt-2">{formatCurrency(printData?.amount || 0)}</p>
+                            <p className="text-gray-600 dark:text-gray-300">El servicio se ha guardado correctamente.</p>
+                            <p className="font-bold text-lg mt-2 text-gray-900 dark:text-white">{formatCurrency(printData?.amount || 0)}</p>
                         </div>
-                        <p className="text-gray-600 mb-6">¿Desea imprimir el recibo?</p>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">¿Desea imprimir el recibo?</p>
                         <div className="flex space-x-3">
                             <button
                                 onClick={() => setShowPrintConfirm(false)}
-                                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                             >
                                 No
                             </button>

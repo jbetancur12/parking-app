@@ -21,10 +21,10 @@ export default function ReportsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
+            <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white flex items-center">
                 <FileText className="mr-3" /> Reportes Financieros
                 {reportData?.timezone && (
-                    <span className="ml-4 text-xs font-bold text-brand-blue bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                    <span className="ml-4 text-xs font-bold text-brand-blue dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
                         Zona: {reportData.timezone}
                     </span>
                 )}

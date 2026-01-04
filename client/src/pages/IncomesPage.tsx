@@ -65,25 +65,25 @@ export default function IncomesPage() {
     } = useIncomesPage(handlePrintReceipt);
 
     if (!activeShift) {
-        return <div className="p-8 text-center text-gray-500">No hay un turno activo. Inicie turno en Inicio para registrar ingresos.</div>;
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No hay un turno activo. Inicie turno en Inicio para registrar ingresos.</div>;
     }
 
     return (
         <div className="p-6 h-[calc(100vh-4rem)] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-display font-bold text-brand-blue flex items-center">
+                <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white flex items-center">
                     <DollarSign className="mr-2" /> Ingresos & Ventas
                 </h1>
-                <div className="flex bg-gray-100 p-1 rounded-lg">
+                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
                     <button
                         onClick={() => setMode('POS')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'POS' ? 'bg-white text-brand-blue ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'POS' ? 'bg-white dark:bg-gray-600 text-brand-blue dark:text-white ring-1 ring-black/5 dark:ring-gray-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
                         Punto de Venta
                     </button>
                     <button
                         onClick={() => setMode('MANUAL')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'MANUAL' ? 'bg-white text-brand-blue ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${mode === 'MANUAL' ? 'bg-white dark:bg-gray-600 text-brand-blue dark:text-white ring-1 ring-black/5 dark:ring-gray-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
                         Manual
                     </button>
@@ -133,18 +133,18 @@ export default function IncomesPage() {
 
             {/* Print Confirmation Modal */}
             {showPrintConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                        <h2 className="text-xl font-bold mb-4 text-green-600">✅ Venta Registrada</h2>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm border dark:border-gray-700 transition-colors">
+                        <h2 className="text-xl font-bold mb-4 text-green-600 dark:text-green-400">✅ Venta Registrada</h2>
                         <div className="mb-6">
-                            <p className="text-gray-600">La transacción se ha guardado correctamente.</p>
-                            <p className="font-bold text-lg mt-2">{formatCurrency(printData?.amount || 0)}</p>
+                            <p className="text-gray-600 dark:text-gray-300">La transacción se ha guardado correctamente.</p>
+                            <p className="font-bold text-lg mt-2 text-gray-900 dark:text-white">{formatCurrency(printData?.amount || 0)}</p>
                         </div>
-                        <p className="text-gray-600 mb-6">¿Desea imprimir el recibo?</p>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">¿Desea imprimir el recibo?</p>
                         <div className="flex space-x-3">
                             <button
                                 onClick={() => setShowPrintConfirm(false)}
-                                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                             >
                                 No
                             </button>

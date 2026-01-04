@@ -17,9 +17,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
             {/* Row 1: Ingresos y Distribución */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Ingresos Semanales (2/3) */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                        <h3 className="text-lg font-display font-bold text-brand-blue dark:text-white flex items-center">
                             <TrendingUp size={20} className="mr-2 text-brand-green" />
                             Ingresos Semanales
                         </h3>
@@ -41,10 +41,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                 </div>
 
                 {/* Distribución de Ingresos (1/3) */}
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
-                            <Users size={20} className="mr-2 text-brand-blue" />
+                        <h3 className="text-lg font-display font-bold text-brand-blue dark:text-white flex items-center">
+                            <Users size={20} className="mr-2 text-brand-blue dark:text-blue-300" />
                             Distribución
                         </h3>
                     </div>
@@ -76,9 +76,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
             {/* Row 2: Actividad y Desglose */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Actividad por Hora (2/3) */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-display font-bold text-brand-blue flex items-center">
+                        <h3 className="text-lg font-display font-bold text-brand-blue dark:text-white flex items-center">
                             <Clock size={20} className="mr-2 text-purple-500" />
                             Actividad por Hora (30 días)
                         </h3>
@@ -111,19 +111,19 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
 
                 {/* Desglose por Sede (1/3) */}
                 {consolidatedData && (
-                    <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4">
-                        <h3 className="text-lg font-display font-bold text-brand-blue mb-4">Desglose por Sede</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 p-4">
+                        <h3 className="text-lg font-display font-bold text-brand-blue dark:text-white mb-4">Desglose por Sede</h3>
                         <div className="flex flex-col gap-3 h-64 overflow-y-auto pr-2 custom-scrollbar">
                             {consolidatedData.locationStats?.map((loc: any) => (
-                                <div key={loc.locationId} className="border rounded-lg p-3 hover:bg-brand-blue/5 transition-colors">
+                                <div key={loc.locationId} className="border dark:border-gray-600 rounded-lg p-3 hover:bg-brand-blue/5 dark:hover:bg-brand-blue/20 transition-colors">
                                     <div className="flex justify-between items-center mb-1">
-                                        <h4 className="font-bold text-sm text-brand-blue truncate max-w-[120px]" title={loc.locationName}>{loc.locationName}</h4>
-                                        <span className="text-xs font-bold bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">
+                                        <h4 className="font-bold text-sm text-brand-blue dark:text-blue-300 truncate max-w-[120px]" title={loc.locationName}>{loc.locationName}</h4>
+                                        <span className="text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
                                             {loc.transactionCount} Tx
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Ingresos:</span>
+                                        <span className="text-gray-500 dark:text-gray-400">Ingresos:</span>
                                         <span className="font-bold text-brand-green">{formatCurrency(loc.totalIncome)}</span>
                                     </div>
                                 </div>

@@ -43,13 +43,13 @@ export const POSView: React.FC<POSViewProps> = ({
                             disabled={p.stock <= 0}
                             data-testid={`product-pos-btn-${p.name}`}
                             className={`p-4 rounded-xl shadow-sm border text-left transition-all ${p.stock > 0
-                                ? 'bg-white hover:border-blue-500 hover:shadow-md cursor-pointer'
-                                : 'bg-gray-100 opacity-60 cursor-not-allowed'
+                                ? 'bg-white dark:bg-gray-800 hover:border-blue-500 hover:shadow-md cursor-pointer dark:border-gray-700'
+                                : 'bg-gray-100 dark:bg-gray-700 opacity-60 cursor-not-allowed dark:border-gray-600'
                                 }`}
                         >
-                            <div className="font-bold text-gray-800 truncate">{p.name}</div>
-                            <div className="text-blue-600 font-bold mt-1">{formatCurrency(p.price)}</div>
-                            <div className={`text-xs mt-2 ${p.stock <= 5 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                            <div className="font-bold text-gray-800 dark:text-gray-100 truncate">{p.name}</div>
+                            <div className="text-blue-600 dark:text-blue-400 font-bold mt-1">{formatCurrency(p.price)}</div>
+                            <div className={`text-xs mt-2 ${p.stock <= 5 ? 'text-red-500 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
                                 Stock: {p.stock}
                             </div>
                         </button>
@@ -65,40 +65,40 @@ export const POSView: React.FC<POSViewProps> = ({
             </div>
 
             {/* Right Panel: Cart */}
-            <div className="w-full md:w-80 bg-white shadow-lg rounded-xl flex flex-col h-auto md:h-full border border-gray-200 md:relative fixed bottom-0 left-0 z-20 max-h-[50vh] md:max-h-none">
+            <div className="w-full md:w-80 bg-white dark:bg-gray-800 shadow-lg rounded-xl flex flex-col h-auto md:h-full border border-gray-200 dark:border-gray-700 md:relative fixed bottom-0 left-0 z-20 max-h-[50vh] md:max-h-none transition-colors">
                 {/* Mobile Handle */}
-                <div className="md:hidden w-full flex justify-center pt-2 pb-1 bg-gray-50 rounded-t-xl border-t border-gray-200">
-                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                <div className="md:hidden w-full flex justify-center pt-2 pb-1 bg-gray-50 dark:bg-gray-700 rounded-t-xl border-t border-gray-200 dark:border-gray-600">
+                    <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-500 rounded-full"></div>
                 </div>
 
-                <div className="p-4 border-b bg-gray-50 rounded-t-xl hidden md:block">
-                    <h2 className="font-bold text-gray-800 flex items-center">
+                <div className="p-4 border-b bg-gray-50 dark:bg-gray-700/50 rounded-t-xl hidden md:block border-gray-200 dark:border-gray-700">
+                    <h2 className="font-bold text-gray-800 dark:text-gray-100 flex items-center">
                         <ShoppingCart className="mr-2" size={20} /> Pedido Actual
                     </h2>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {cart.length === 0 ? (
-                        <div className="text-center text-gray-400 py-4 md:py-10 text-sm md:text-base">
+                        <div className="text-center text-gray-400 dark:text-gray-500 py-4 md:py-10 text-sm md:text-base">
                             <ShoppingCart className="mx-auto mb-2 opacity-50 md:hidden" size={24} />
                             Carro vacío
                         </div>
                     ) : (
                         cart.map(item => (
-                            <div key={item.product.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                            <div key={item.product.id} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-transparent dark:border-gray-700">
                                 <div>
-                                    <div className="font-medium text-sm">{item.product.name}</div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{item.product.name}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                         {item.quantity} x {formatCurrency(item.product.price)}
                                     </div>
                                 </div>
                                 <div className="flex items-center">
-                                    <span className="font-bold text-gray-700 mr-3">
+                                    <span className="font-bold text-gray-700 dark:text-gray-300 mr-3">
                                         {formatCurrency(item.quantity * item.product.price)}
                                     </span>
                                     <button
                                         onClick={() => removeFromCart(item.product.id)}
-                                        className="text-red-400 hover:text-red-600"
+                                        className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
                                     >
                                         <Trash size={16} />
                                     </button>
@@ -108,20 +108,20 @@ export const POSView: React.FC<POSViewProps> = ({
                     )}
                 </div>
 
-                <div className="p-4 border-t bg-gray-50 rounded-b-xl">
+                <div className="p-4 border-t bg-gray-50 dark:bg-gray-700/50 rounded-b-xl border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-end mb-4">
-                        <span className="text-gray-600">Total</span>
-                        <span className="text-2xl font-bold text-green-600">
+                        <span className="text-gray-600 dark:text-gray-400">Total</span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                             {formatCurrency(total)}
                         </span>
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
+                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Método de Pago</label>
                         <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 text-sm bg-white"
+                            className="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         >
                             <option value="CASH">Efectivo</option>
                             <option value="TRANSFER">Transferencia</option>
@@ -132,7 +132,7 @@ export const POSView: React.FC<POSViewProps> = ({
                         onClick={onSubmit}
                         disabled={cart.length === 0 || loading}
                         data-testid="btn-confirm-pos-sale"
-                        className={`w-full bg-brand-yellow text-brand-blue py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 transition-all active:scale-95 flex justify-center items-center ${loading || cart.length === 0 ? 'opacity-50 cursor-not-allowed bg-gray-300' : ''}`}
+                        className={`w-full bg-brand-yellow text-brand-blue dark:bg-yellow-500 dark:text-gray-900 py-3 rounded-lg font-bold shadow-lg hover:bg-yellow-400 dark:hover:bg-yellow-400 transition-all active:scale-95 flex justify-center items-center ${loading || cart.length === 0 ? 'opacity-50 cursor-not-allowed bg-gray-300 dark:bg-gray-600' : ''}`}
                     >
                         {loading ? 'Procesando...' : 'Confirmar Venta'}
                     </button>

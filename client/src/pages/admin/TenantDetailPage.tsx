@@ -243,18 +243,18 @@ export default function TenantDetailPage() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/tenants')}
-                        className="text-gray-600 hover:text-gray-900"
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                         <ArrowLeft className="h-6 w-6" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-brand-blue">{tenant.name}</h1>
-                        <p className="text-sm font-medium text-gray-500">@{tenant.slug}</p>
+                        <h1 className="text-3xl font-display font-bold text-brand-blue dark:text-white">{tenant.name}</h1>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">@{tenant.slug}</p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate(`/admin/tenants/${id}/edit`)}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold"
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition-colors"
                 >
                     <Edit className="mr-2 h-4 w-4" />
                     Editar Empresa
@@ -262,15 +262,15 @@ export default function TenantDetailPage() {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200">
+            <div className="border-b border-gray-200 dark:border-gray-700">
                 <nav className="flex gap-4">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                                ? 'border-brand-blue text-brand-blue font-bold'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-brand-blue text-brand-blue dark:text-blue-400 dark:border-blue-400 font-bold'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             <tab.icon className="h-4 w-4" />
@@ -281,42 +281,42 @@ export default function TenantDetailPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
                 {activeTab === 'info' && (
                     <dl className="grid grid-cols-2 gap-6">
                         <div>
-                            <dt className="text-sm font-bold text-gray-500 mb-1">Plan Actual</dt>
+                            <dt className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1">Plan Actual</dt>
                             <dd className="flex items-center gap-2">
                                 <span className={`px-2 py-1 text-xs font-bold rounded-full uppercase
-                                    ${tenant.plan === 'enterprise' ? 'bg-yellow-100 text-yellow-800' :
-                                        tenant.plan === 'pro' ? 'bg-purple-100 text-purple-800' :
-                                            'bg-gray-100 text-gray-800'}`}>
+                                    ${tenant.plan === 'enterprise' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                                        tenant.plan === 'pro' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300' :
+                                            'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
                                     {tenant.plan}
                                 </span>
                                 <button
                                     onClick={openPlanModal}
-                                    className="text-xs text-brand-blue hover:text-blue-800 underline font-semibold"
+                                    className="text-xs text-brand-blue dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-semibold transition-colors"
                                 >
                                     Cambiar Plan
                                 </button>
                             </dd>
                         </div>
                         <div>
-                            <dt className="text-sm font-bold text-gray-500 mb-1">Estado</dt>
-                            <dd className="mt-1 text-sm text-gray-900 font-medium">
+                            <dt className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1">Estado</dt>
+                            <dd className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
                                 <span className={`px-2 py-1 text-xs font-bold rounded-full
-                                    ${tenant.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                    ${tenant.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}`}>
                                     {tenant.status}
                                 </span>
                             </dd>
                         </div>
                         <div>
-                            <dt className="text-sm font-bold text-gray-500 mb-1">Email de Contacto</dt>
-                            <dd className="mt-1 text-sm text-gray-900">{tenant.contactEmail || '-'}</dd>
+                            <dt className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1">Email de Contacto</dt>
+                            <dd className="mt-1 text-sm text-gray-900 dark:text-white">{tenant.contactEmail || '-'}</dd>
                         </div>
                         <div>
-                            <dt className="text-sm font-bold text-gray-500 mb-1">Fecha de Creación</dt>
-                            <dd className="mt-1 text-sm text-gray-900">
+                            <dt className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1">Fecha de Creación</dt>
+                            <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                                 {new Date(tenant.createdAt).toLocaleDateString()}
                             </dd>
                         </div>
@@ -326,10 +326,10 @@ export default function TenantDetailPage() {
                 {activeTab === 'locations' && (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-xl font-display font-bold text-brand-blue">Sedes</h3>
+                            <h3 className="text-xl font-display font-bold text-brand-blue dark:text-blue-300">Sedes</h3>
                             <button
                                 onClick={() => setShowAddLocationModal(true)}
-                                className="flex items-center px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md transition-transform active:scale-95"
+                                className="flex items-center px-4 py-2 bg-brand-yellow dark:bg-yellow-500 text-brand-blue dark:text-gray-900 font-bold rounded-lg hover:bg-yellow-400 dark:hover:bg-yellow-400 shadow-md transition-transform active:scale-95"
                             >
                                 <Plus className="mr-2 h-5 w-5" />
                                 Nueva Sede
@@ -339,23 +339,23 @@ export default function TenantDetailPage() {
                         {tenant.locations && tenant.locations.length > 0 ? (
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 {tenant.locations.map(loc => (
-                                    <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition-shadow">
+                                    <div key={loc.id} className="bg-white dark:bg-gray-700/50 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-start hover:shadow-md transition-all">
                                         <div>
-                                            <h4 className="font-bold text-gray-900">{loc.name}</h4>
-                                            <p className="text-sm text-gray-500 flex items-center mt-1">
+                                            <h4 className="font-bold text-gray-900 dark:text-white">{loc.name}</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
                                                 <MapPin className="h-3 w-3 mr-1" />
                                                 {loc.address || 'Sin dirección'}
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${loc.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}`}>
                                                 {loc.isActive ? 'Activa' : 'Inactiva'}
                                             </span>
                                             <div className="flex gap-1">
                                                 {loc.isActive ? (
                                                     <button
                                                         onClick={() => handleDeleteLocation(loc.id)}
-                                                        className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                                        className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors"
                                                         title="Desactivar Sede"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -363,7 +363,7 @@ export default function TenantDetailPage() {
                                                 ) : (
                                                     <button
                                                         onClick={() => handleReactivateLocation(loc)}
-                                                        className="text-green-500 hover:text-green-700 p-1 rounded hover:bg-green-50"
+                                                        className="text-green-500 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/50 transition-colors"
                                                         title="Reactivar Sede"
                                                     >
                                                         <RotateCcw className="h-4 w-4" />
@@ -375,7 +375,7 @@ export default function TenantDetailPage() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-gray-500 italic">No hay sedes registradas para esta empresa.</p>
+                            <p className="text-gray-500 dark:text-gray-400 italic">No hay sedes registradas para esta empresa.</p>
                         )}
                     </div>
                 )}
@@ -383,7 +383,7 @@ export default function TenantDetailPage() {
                 {activeTab === 'users' && (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-xl font-display font-bold text-brand-blue">Usuarios</h3>
+                            <h3 className="text-xl font-display font-bold text-brand-blue dark:text-blue-300">Usuarios</h3>
                             <button
                                 onClick={openCreateUserModal}
                                 className="flex items-center px-4 py-2 bg-brand-blue text-white font-bold rounded-lg hover:bg-blue-800 shadow-md transition-transform active:scale-95"
@@ -393,34 +393,34 @@ export default function TenantDetailPage() {
                             </button>
                         </div>
                         {tenant.users.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">No hay usuarios asignados</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No hay usuarios asignados</p>
                         ) : (
                             <div className="grid gap-3 md:grid-cols-2">
                                 {tenant.users.map((user) => (
                                     <div
                                         key={user.id}
-                                        className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-500">
+                                            <div className="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-gray-500 dark:text-gray-300">
                                                 {user.username.substring(0, 2).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-gray-900">{user.username}</p>
-                                                <p className="text-xs font-medium text-gray-500 uppercase">{user.role}</p>
+                                                <p className="font-bold text-gray-900 dark:text-white">{user.username}</p>
+                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{user.role}</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-1">
                                             <button
                                                 onClick={() => openEditUserModal(user)}
-                                                className="text-blue-500 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                                                className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                                 title="Editar Usuario"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => removeUserFromTenant(user.id)}
-                                                className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                                 title="Remover acceso"
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -437,14 +437,14 @@ export default function TenantDetailPage() {
             {/* Create User Modal */}
             {
                 showAddUserModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-                            <h3 className="text-xl font-display font-bold text-brand-blue mb-4">
+                    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md transition-colors">
+                            <h3 className="text-xl font-display font-bold text-brand-blue dark:text-blue-300 mb-4">
                                 {editingUser ? 'Editar Usuario' : 'Crear y Asignar Usuario'}
                             </h3>
                             <form onSubmit={handleSubmitUser} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                                         Username *
                                     </label>
                                     <input
@@ -452,12 +452,12 @@ export default function TenantDetailPage() {
                                         value={newUser.username}
                                         onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                         placeholder="admin.empresa"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                                         Password {editingUser && '(Opcional)'}
                                     </label>
                                     <input
@@ -466,12 +466,12 @@ export default function TenantDetailPage() {
                                         onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                                         required={!editingUser}
                                         placeholder={editingUser ? '••••••••' : ''}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                     />
                                 </div>
                                 {(newUser.password || !editingUser) && (
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                                             Confirmar Password *
                                         </label>
                                         <input
@@ -479,19 +479,19 @@ export default function TenantDetailPage() {
                                             value={newUser.confirmPassword}
                                             onChange={(e) => setNewUser({ ...newUser, confirmPassword: e.target.value })}
                                             required={!editingUser || !!newUser.password}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                         />
                                     </div>
                                 )}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                                         Rol *
                                     </label>
                                     <select
                                         value={newUser.role}
                                         onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                     >
                                         <option value="ADMIN">ADMIN</option>
                                         <option value="LOCATION_MANAGER">LOCATION_MANAGER</option>
@@ -503,7 +503,7 @@ export default function TenantDetailPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowAddUserModal(false)}
-                                        className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
+                                        className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     >
                                         Cancelar
                                     </button>
@@ -523,38 +523,38 @@ export default function TenantDetailPage() {
             {/* Add Location Modal */}
             {
                 showAddLocationModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-6">
-                            <h3 className="text-xl font-display font-bold text-brand-blue mb-4">Nueva Sede</h3>
+                    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 transition-colors">
+                            <h3 className="text-xl font-display font-bold text-brand-blue dark:text-blue-300 mb-4">Nueva Sede</h3>
                             <form onSubmit={createLocation} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Sede</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Nombre de la Sede</label>
                                     <input
                                         type="text"
                                         required
                                         value={newLocation.name}
                                         onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
                                         placeholder="Ej. Sede Norte"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Dirección</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
                                     <input
                                         type="text"
                                         value={newLocation.address}
                                         onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
                                         placeholder="Ej. Calle 123 #45-67"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
                                     <input
                                         type="text"
                                         value={newLocation.phone}
                                         onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
+                                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none"
                                         placeholder="Ej. 300 123 4567"
                                     />
                                 </div>
@@ -562,13 +562,13 @@ export default function TenantDetailPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowAddLocationModal(false)}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
+                                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-4 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                        className="px-4 py-2 bg-brand-yellow dark:bg-yellow-500 text-brand-blue dark:text-gray-900 font-bold rounded-lg hover:bg-yellow-400 dark:hover:bg-yellow-400 shadow-md"
                                     >
                                         Crear Sede
                                     </button>
@@ -582,11 +582,11 @@ export default function TenantDetailPage() {
             {/* Change Plan Modal */}
             {
                 showPlanModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6">
+                    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 transition-colors">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-display font-bold text-brand-blue">Cambiar Plan de Suscripción</h3>
-                                <button onClick={() => setShowPlanModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <h3 className="text-2xl font-display font-bold text-brand-blue dark:text-blue-300">Cambiar Plan de Suscripción</h3>
+                                <button onClick={() => setShowPlanModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 scale-110">
                                     <X className="h-6 w-6" />
                                 </button>
                             </div>
@@ -596,27 +596,27 @@ export default function TenantDetailPage() {
                                     <div
                                         key={key}
                                         className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === key
-                                            ? 'border-brand-blue bg-blue-50 ring-2 ring-brand-blue ring-opacity-20 transform scale-105 shadow-lg'
-                                            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                            ? 'border-brand-blue dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-brand-blue dark:ring-blue-400 ring-opacity-20 transform scale-105 shadow-lg'
+                                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-md'
                                             }`}
                                         onClick={() => setSelectedPlan(key)}
                                     >
                                         {selectedPlan === key && (
-                                            <div className="absolute top-3 right-3 text-brand-blue">
+                                            <div className="absolute top-3 right-3 text-brand-blue dark:text-blue-400">
                                                 <CheckCircle className="h-6 w-6 fill-current" />
                                             </div>
                                         )}
-                                        <h4 className="text-xl font-bold text-brand-blue mb-2 uppercase">{plan.label}</h4>
-                                        <p className="text-3xl font-bold text-gray-900 mb-4">
-                                            ${plan.price.toLocaleString()} <span className="text-sm text-gray-500 font-normal">/mes</span>
+                                        <h4 className="text-xl font-bold text-brand-blue dark:text-blue-300 mb-2 uppercase">{plan.label}</h4>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                                            ${plan.price.toLocaleString()} <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">/mes</span>
                                         </p>
                                         <ul className="space-y-3 text-sm">
-                                            <li className="flex items-center text-gray-700">
-                                                <MapPin className="h-4 w-4 text-brand-green mr-2" />
+                                            <li className="flex items-center text-gray-700 dark:text-gray-300">
+                                                <MapPin className="h-4 w-4 text-brand-green dark:text-green-400 mr-2" />
                                                 <span className="font-bold">{plan.maxLocations}</span> &nbsp; Sedes Máximas
                                             </li>
-                                            <li className="flex items-center text-gray-700">
-                                                <Users className="h-4 w-4 text-brand-green mr-2" />
+                                            <li className="flex items-center text-gray-700 dark:text-gray-300">
+                                                <Users className="h-4 w-4 text-brand-green dark:text-green-400 mr-2" />
                                                 <span className="font-bold">{plan.maxUsers}</span> &nbsp; Usuarios Admin/Op
                                             </li>
                                         </ul>
@@ -624,16 +624,16 @@ export default function TenantDetailPage() {
                                 ))}
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <button
                                     onClick={() => setShowPlanModal(false)}
-                                    className="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200"
+                                    className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleUpdatePlan}
-                                    className="px-6 py-2 bg-brand-yellow text-brand-blue font-bold rounded-lg hover:bg-yellow-400 shadow-md"
+                                    className="px-6 py-2 bg-brand-yellow dark:bg-yellow-500 text-brand-blue dark:text-gray-900 font-bold rounded-lg hover:bg-yellow-400 dark:hover:bg-yellow-400 shadow-md transition-colors"
                                     disabled={selectedPlan === tenant.plan}
                                 >
                                     Guardar Cambios

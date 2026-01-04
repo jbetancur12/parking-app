@@ -185,7 +185,7 @@ export default function MonthlyClientsPage() {
         <div>
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left flex items-center justify-center md:justify-start">
+                <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white w-full md:w-auto text-center md:text-left flex items-center justify-center md:justify-start">
                     <Users className="mr-2" /> Clientes Mensuales
                 </h1>
 
@@ -200,7 +200,7 @@ export default function MonthlyClientsPage() {
 
                     <button
                         onClick={handleExport}
-                        className="text-brand-blue border border-brand-blue bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 font-medium flex-1 md:flex-none"
+                        className="text-brand-blue dark:text-blue-300 border border-brand-blue dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-center gap-2 font-medium flex-1 md:flex-none"
                     >
                         <Download size={18} />
                         Exportar

@@ -23,16 +23,16 @@ export const ManualIncomeForm: React.FC<ManualIncomeFormProps> = ({
     setPaymentMethod
 }) => {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-brand-green">
-            <h2 className="text-lg font-display font-bold mb-4 text-gray-700">Registrar Ingreso Vario</h2>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-brand-green dark:border-green-500 transition-colors">
+            <h2 className="text-lg font-display font-bold mb-4 text-gray-700 dark:text-gray-200">Registrar Ingreso Vario</h2>
             <form onSubmit={onSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-bold text-gray-700">Descripción</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">Descripción</label>
                     <input
                         type="text"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="mt-1 block w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                         name="description"
                         id="description"
@@ -40,21 +40,21 @@ export const ManualIncomeForm: React.FC<ManualIncomeFormProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-bold text-gray-700">Monto</label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">Monto</label>
                         <CurrencyInput
                             value={amount}
                             onValueChange={setAmount}
-                            className="mt-1 block w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             id="amount"
                             name="amount"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-gray-700">Pago</label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">Pago</label>
                         <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                            className="mt-1 block w-full border rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow text-gray-900 dark:text-white"
                         >
                             <option value="CASH">Efectivo</option>
                             <option value="TRANSFER">Transferencia</option>
@@ -64,7 +64,7 @@ export const ManualIncomeForm: React.FC<ManualIncomeFormProps> = ({
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full bg-brand-yellow text-brand-blue dark:bg-yellow-500 dark:text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 dark:hover:bg-yellow-400 shadow-md transform transition-transform active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     {loading ? 'Registrando...' : 'Registrar'}
                 </button>

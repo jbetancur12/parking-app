@@ -35,26 +35,26 @@ export const WashEntryForm: React.FC<WashEntryFormProps> = ({
     setPaymentMethod
 }) => {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8 border-l-4 border-brand-blue">
-            <h2 className="text-lg font-display font-bold mb-4 text-brand-blue">Nuevo Servicio</h2>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8 border-l-4 border-brand-blue dark:border-brand-blue/80 transition-colors">
+            <h2 className="text-lg font-display font-bold mb-4 text-brand-blue dark:text-blue-300">Nuevo Servicio</h2>
             <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Placa</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Placa</label>
                     <input
                         type="text"
                         value={plate}
                         onChange={e => setPlate(e.target.value.toUpperCase())}
-                        className="w-full border rounded-lg px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
+                        className="w-full border rounded-lg px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="ABC-123"
                         required
                     />
                 </div>
                 <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Servicio</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Servicio</label>
                     <select
                         value={selectedType}
                         onChange={e => setSelectedType(Number(e.target.value))}
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
                         required
                     >
                         <option value="">Seleccione Servicio...</option>
@@ -66,30 +66,30 @@ export const WashEntryForm: React.FC<WashEntryFormProps> = ({
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Precio (Opcional)</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Precio (Opcional)</label>
                     <CurrencyInput
                         value={price}
                         onValueChange={setPrice}
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none font-semibold text-gray-700 transition-shadow"
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none font-semibold text-gray-700 transition-shadow bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="Sugerido..."
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Operario (Opcional)</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Operario (Opcional)</label>
                     <input
                         type="text"
                         value={operator}
                         onChange={e => setOperator(e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow"
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-shadow bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="Nombre"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Pago</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Pago</label>
                     <select
                         value={paymentMethod}
                         onChange={e => setPaymentMethod(e.target.value as 'CASH' | 'TRANSFER')}
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none bg-white transition-shadow"
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white transition-shadow"
                     >
                         <option value="CASH">Efectivo</option>
                         <option value="TRANSFER">Transf.</option>

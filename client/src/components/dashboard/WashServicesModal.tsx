@@ -92,48 +92,48 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-                <div className="p-4 border-b flex justify-between items-center bg-brand-blue text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border dark:border-gray-700 transition-colors">
+                <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-brand-blue text-white">
                     <h2 className="text-lg font-bold">Configurar Servicios de Lavado</h2>
-                    <button onClick={onClose} className="hover:bg-white/20 p-1 rounded">
+                    <button onClick={onClose} className="hover:bg-white/20 p-1 rounded transition-colors">
                         <X size={20} />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase">
+                    <form onSubmit={handleSubmit} className="mb-8 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors">
+                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase">
                             {editingId ? 'Editar Servicio' : 'Nuevo Servicio'}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Nombre</label>
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
                                 <input
                                     type="text"
                                     required
-                                    className="w-full border rounded p-2 text-sm"
+                                    className="w-full border rounded p-2 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors focus:ring-2 focus:ring-brand-blue outline-none"
                                     value={name}
                                     onChange={e => setName(e.target.value)}
                                     placeholder="Ej: General Moto"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Precio Sugerido</label>
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Precio Sugerido</label>
                                 <input
                                     type="number"
                                     required
-                                    className="w-full border rounded p-2 text-sm"
+                                    className="w-full border rounded p-2 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors focus:ring-2 focus:ring-brand-blue outline-none"
                                     value={price}
                                     onChange={e => setPrice(e.target.value)}
                                     placeholder="$"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Vehículo</label>
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Vehículo</label>
                                 <select
-                                    className="w-full border rounded p-2 text-sm"
+                                    className="w-full border rounded p-2 text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white transition-colors focus:ring-2 focus:ring-brand-blue outline-none"
                                     value={vehicleType}
                                     onChange={e => setVehicleType(e.target.value)}
                                 >
@@ -149,7 +149,7 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded"
+                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -170,7 +170,7 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                         <div className="text-center py-4 text-gray-400">Cargando...</div>
                     ) : (
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                            <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700/50">
                                 <tr>
                                     <th className="px-4 py-2">Nombre</th>
                                     <th className="px-4 py-2">Tipo</th>
@@ -178,24 +178,24 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                                     <th className="px-4 py-2 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {services.map(service => (
-                                    <tr key={service.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 font-medium text-gray-900">{service.name}</td>
-                                        <td className="px-4 py-3 text-gray-500">{service.vehicleType}</td>
-                                        <td className="px-4 py-3 font-mono">${service.price.toLocaleString()}</td>
+                                    <tr key={service.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{service.name}</td>
+                                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{service.vehicleType}</td>
+                                        <td className="px-4 py-3 font-mono text-gray-700 dark:text-gray-300">${service.price.toLocaleString()}</td>
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() => handleEdit(service)}
-                                                    className="text-blue-600 hover:bg-blue-50 p-1 rounded"
+                                                    className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded transition-colors"
                                                     title="Editar"
                                                 >
                                                     <Pencil size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(service.id)}
-                                                    className="text-red-600 hover:bg-red-50 p-1 rounded"
+                                                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded transition-colors"
                                                     title="Eliminar"
                                                 >
                                                     <Trash2 size={16} />
@@ -206,7 +206,7 @@ export const WashServicesModal: React.FC<WashServicesModalProps> = ({ isOpen, on
                                 ))}
                                 {services.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="text-center py-4 text-gray-400">
+                                        <td colSpan={4} className="text-center py-4 text-gray-400 dark:text-gray-500">
                                             No hay servicios configurados.
                                         </td>
                                     </tr>

@@ -29,18 +29,18 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
             {/* Tariffs Section */}
             <div className="md:col-span-2 space-y-6">
                 {/* Global Pricing Model Selector */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm transition-colors">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                                <Settings size={18} className="text-gray-600" />
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                                <Settings size={18} className="text-gray-600 dark:text-gray-400" />
                                 Modelo de Tarificación Global
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 Este modelo se aplicará a todos los tipos de vehículos.
                             </p>
                         </div>
-                        <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
+                        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
                             {[
                                 { value: 'MINUTE', label: 'Por Minuto' },
                                 { value: 'BLOCKS', label: 'Por Bloques' },
@@ -53,7 +53,7 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
                                     }}
                                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${tariffs[0]?.pricingModel === value
                                         ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-gray-700 hover:bg-gray-200'
+                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     {label}
@@ -63,15 +63,15 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
+                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
                         <div>
-                            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                                 <Receipt className="mr-2 text-brand-blue" size={20} /> Tarifas de Parqueo
                             </h2>
-                            <p className="text-sm text-gray-500">Define los precios por fracción para cada vehículo.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Define los precios por fracción para cada vehículo.</p>
                         </div>
-                        <button onClick={onSeed} className="text-xs text-blue-600 hover:text-blue-800 flex items-center bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                        <button onClick={onSeed} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
                             <RefreshCw size={12} className="mr-1" /> Restablecer
                         </button>
                     </div>
@@ -104,52 +104,52 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
 
             {/* General Settings Sidebar */}
             <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                        <Settings className="mr-2 text-gray-500" size={18} /> General
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <Settings className="mr-2 text-gray-500 dark:text-gray-400" size={18} /> General
                     </h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Tiempo de Gracia (min)
                             </label>
                             <input
                                 type="number"
                                 value={settings.grace_period || ''}
                                 onChange={(e) => updateSetting('grace_period', e.target.value)}
-                                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Tiempo libre antes de cobrar.</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tiempo libre antes de cobrar.</p>
                         </div>
 
-                        <div className="pt-4 border-t">
+                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                             <div className="flex items-center justify-between mb-2">
-                                <label className="text-sm font-medium text-gray-700">Control de Capacidad</label>
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Control de Capacidad</label>
                                 <input
                                     type="checkbox"
                                     checked={settings.check_capacity === 'true'}
                                     onChange={(e) => updateSetting('check_capacity', String(e.target.checked))}
-                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                                 />
                             </div>
                             {settings.check_capacity === 'true' && (
                                 <div className="grid grid-cols-2 gap-3 mt-2">
                                     <div>
-                                        <label className="text-xs block text-gray-600">Cupos Carro</label>
+                                        <label className="text-xs block text-gray-600 dark:text-gray-400">Cupos Carro</label>
                                         <input
                                             type="number"
                                             value={settings.capacity_car || ''}
                                             onChange={(e) => updateSetting('capacity_car', e.target.value)}
-                                            className="w-full border rounded px-2 py-1 text-sm"
+                                            className="w-full border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs block text-gray-600">Cupos Moto</label>
+                                        <label className="text-xs block text-gray-600 dark:text-gray-400">Cupos Moto</label>
                                         <input
                                             type="number"
                                             value={settings.capacity_motorcycle || ''}
                                             onChange={(e) => updateSetting('capacity_motorcycle', e.target.value)}
-                                            className="w-full border rounded px-2 py-1 text-sm"
+                                            className="w-full border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                         />
                                     </div>
                                 </div>
@@ -173,7 +173,7 @@ const TariffBlock: React.FC<any> = ({
 
     return (
         <div>
-            <div className="flex items-center text-lg font-bold text-gray-700 mb-3">
+            <div className="flex items-center text-lg font-bold text-gray-700 dark:text-gray-200 mb-3">
                 {icon} {title}
             </div>
             <div className="space-y-3">
@@ -215,11 +215,11 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
     return (
         <>
             {/* Toggle for Flat Rate */}
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 mb-3">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 mb-3 transition-colors">
                 <div className="flex items-center justify-between">
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-blue-900 mb-1">Tarifa Plena (Cap Opcional)</p>
-                        <p className="text-xs text-blue-700">Activa para limitar el cobro.</p>
+                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Tarifa Plena (Cap Opcional)</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">Activa para limitar el cobro.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer ml-4">
                         <input
@@ -228,43 +228,43 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
                             onChange={(e) => handleDayRateToggle(e.target.checked)}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 dark:peer-focus:ring-blue-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                 </div>
             </div>
 
             {isDayRateActive && (
                 <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                        <label className="text-gray-600 text-xs font-medium block mb-1">Tarifa Plena $</label>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                        <label className="text-gray-600 dark:text-gray-300 text-xs font-medium block mb-1">Tarifa Plena $</label>
                         <CurrencyInput
                             value={(pricingModel === 'MINUTE' ? tMinute?.dayMaxPrice : tHour?.dayMaxPrice) || 0}
                             onValueChange={(val) => handleTariffChange(vehicleType, pricingModel === 'MINUTE' ? 'MINUTE' : 'HOUR', 'dayMaxPrice', Number(val))}
-                            className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-2 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                         />
                         {/* Suggestion Logic */}
                         {(() => {
                             const t = pricingModel === 'MINUTE' ? tMinute : tHour;
                             if (t) {
                                 const suggHours = calculateSmartSuggestion(t, 'HOURS_FROM_PRICE');
-                                if (suggHours) return <p className="text-[10px] text-blue-600 mt-1">💡 ~{suggHours}h</p>;
+                                if (suggHours) return <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1">💡 ~{suggHours}h</p>;
                             }
                         })()}
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                        <label className="text-gray-600 text-xs font-medium block mb-1">Desde (horas)</label>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                        <label className="text-gray-600 dark:text-gray-300 text-xs font-medium block mb-1">Desde (horas)</label>
                         <input
                             type="number"
                             value={(pricingModel === 'MINUTE' ? tMinute?.dayMinHours : tHour?.dayMinHours) || 0}
                             onChange={(e) => handleTariffChange(vehicleType, pricingModel === 'MINUTE' ? 'MINUTE' : 'HOUR', 'dayMinHours', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-2 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                         />
                         {/* Suggestion Logic */}
                         {(() => {
                             const t = pricingModel === 'MINUTE' ? tMinute : tHour;
                             if (t) {
                                 const suggPrice = calculateSmartSuggestion(t, 'PRICE_FROM_HOURS');
-                                if (suggPrice) return <p className="text-[10px] text-green-600 mt-1">💰 ${Number(suggPrice).toLocaleString()}</p>;
+                                if (suggPrice) return <p className="text-[10px] text-green-600 dark:text-green-400 mt-1">💰 ${Number(suggPrice).toLocaleString()}</p>;
                             }
                         })()}
                     </div>
@@ -272,13 +272,13 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
             )}
 
             {!isDayRateActive && pricingModel === 'TRADITIONAL' && (
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-3">
+                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-3 transition-colors">
                     <div className="flex justify-between items-center">
-                        <label className="text-gray-600 text-sm font-medium">Día Completo (24h)</label>
+                        <label className="text-gray-600 dark:text-gray-300 text-sm font-medium">Día Completo (24h)</label>
                         <CurrencyInput
                             value={tDay?.cost || 0}
                             onValueChange={(val) => handleTariffChange(vehicleType, 'DAY', 'cost', Number(val))}
-                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                         />
                     </div>
                 </div>
@@ -286,23 +286,23 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
 
             {/* Model Specific Fields */}
             {pricingModel === 'TRADITIONAL' && (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                    <label className="text-gray-600 text-sm font-medium">Hora / Fracción</label>
+                <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                    <label className="text-gray-600 dark:text-gray-300 text-sm font-medium">Hora / Fracción</label>
                     <CurrencyInput
                         value={tHour?.cost || 0}
                         onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'cost', Number(val))}
-                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                     />
                 </div>
             )}
 
             {pricingModel === 'MINUTE' && (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                    <label className="text-gray-600 text-sm font-medium">Por Minuto</label>
+                <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                    <label className="text-gray-600 dark:text-gray-300 text-sm font-medium">Por Minuto</label>
                     <CurrencyInput
                         value={tMinute?.basePrice || 0}
                         onValueChange={(val) => handleTariffChange(vehicleType, 'MINUTE', 'basePrice', Number(val))}
-                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                     />
                 </div>
             )}
@@ -310,39 +310,39 @@ const renderTariffFields = (vehicleType: string, pricingModel: string, getTariff
             {pricingModel === 'BLOCKS' && (
                 <>
                     <div className="grid grid-cols-2 gap-3 mb-2">
-                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                            <label className="text-gray-600 text-xs font-medium block mb-1">Minutos Base</label>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                            <label className="text-gray-600 dark:text-gray-300 text-xs font-medium block mb-1">Minutos Base</label>
                             <input
                                 type="number"
                                 value={tHour?.baseTimeMinutes || 60}
                                 onChange={(e) => handleTariffChange(vehicleType, 'HOUR', 'baseTimeMinutes', Number(e.target.value))}
-                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-2 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                             />
                         </div>
-                        <div className="p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                            <label className="text-gray-600 text-xs font-medium block mb-1">Minutos Fracción</label>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                            <label className="text-gray-600 dark:text-gray-300 text-xs font-medium block mb-1">Minutos Fracción</label>
                             <input
                                 type="number"
                                 value={tHour?.extraFracTimeMinutes || 15}
                                 onChange={(e) => handleTariffChange(vehicleType, 'HOUR', 'extraFracTimeMinutes', Number(e.target.value))}
-                                className="w-full px-2 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-2 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                             />
                         </div>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors mb-2">
-                        <label className="text-gray-600 text-sm font-medium">Precio Base (1ra Hora)</label>
+                    <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors mb-2">
+                        <label className="text-gray-600 dark:text-gray-300 text-sm font-medium">Precio Base (1ra Hora)</label>
                         <CurrencyInput
                             value={tHour?.basePrice || 0}
                             onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'basePrice', Number(val))}
-                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                         />
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-transparent hover:border-blue-200 transition-colors">
-                        <label className="text-gray-600 text-sm font-medium">Extra Fracción</label>
+                    <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
+                        <label className="text-gray-600 dark:text-gray-300 text-sm font-medium">Extra Fracción</label>
                         <CurrencyInput
                             value={tHour?.extraFracPrice || 0}
                             onValueChange={(val) => handleTariffChange(vehicleType, 'HOUR', 'extraFracPrice', Number(val))}
-                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
                         />
                     </div>
                 </>

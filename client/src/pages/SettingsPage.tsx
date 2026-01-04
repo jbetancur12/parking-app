@@ -34,7 +34,7 @@ export default function SettingsPage() {
     if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'LOCATION_MANAGER') {
         return (
             <div className="p-8">
-                <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center">
+                <div className="bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg flex items-center">
                     <AlertCircle className="mr-2" />
                     No tienes permisos para acceder a esta página.
                 </div>
@@ -106,10 +106,10 @@ export default function SettingsPage() {
             {/* Header & Main Save Button */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
                         <Settings className="mr-3 text-brand-blue" size={32} /> Configuración
                     </h1>
-                    <p className="text-gray-500 mt-1 ml-11">Gestiona todos los parámetros de tu sistema.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 ml-11">Gestiona todos los parámetros de tu sistema.</p>
                 </div>
 
                 <button
@@ -123,12 +123,12 @@ export default function SettingsPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
+            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8 overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('operational')}
                     className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'operational'
-                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-blue-900/20 rounded-t-lg'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                 >
                     <Car className="mr-2" size={18} />
@@ -137,8 +137,8 @@ export default function SettingsPage() {
                 <button
                     onClick={() => setActiveTab('business')}
                     className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'business'
-                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-blue-900/20 rounded-t-lg'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                 >
                     <Building2 className="mr-2" size={18} />
@@ -147,8 +147,8 @@ export default function SettingsPage() {
                 <button
                     onClick={() => setActiveTab('system')}
                     className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system'
-                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 rounded-t-lg'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-blue-900/20 rounded-t-lg'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                 >
                     <Settings className="mr-2" size={18} />

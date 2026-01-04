@@ -40,13 +40,15 @@ export const UserForm: React.FC<UserFormProps> = ({
     currentUserRole
 }) => {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md shadow-xl transition-all border dark:border-gray-700">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
                     </h2>
-                    <button onClick={onCancel}><X size={20} /></button>
+                    <button onClick={onCancel} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                        <X size={20} />
+                    </button>
                 </div>
 
                 {error && (
@@ -57,27 +59,27 @@ export const UserForm: React.FC<UserFormProps> = ({
 
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Usuario
                         </label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Contraseña {editingUser && '(Opcional)'}
                         </label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
                             required={!editingUser}
                             placeholder={editingUser ? 'Dejar en blanco para mantener actual' : ''}
                         />
@@ -85,27 +87,27 @@ export const UserForm: React.FC<UserFormProps> = ({
 
                     {(password || !editingUser) && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Confirmar Contraseña
                             </label>
                             <input
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full border rounded-md px-3 py-2"
+                                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
                                 required={!editingUser || !!password}
                             />
                         </div>
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Rol
                         </label>
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
                         >
                             {currentUserRole === 'SUPER_ADMIN' && (
                                 <option value="SUPER_ADMIN">Super Administrador</option>
@@ -123,9 +125,9 @@ export const UserForm: React.FC<UserFormProps> = ({
                                 type="checkbox"
                                 checked={isActive}
                                 onChange={(e) => setIsActive(e.target.checked)}
-                                className="mr-2"
+                                className="mr-2 h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded"
                             />
-                            <label className="text-sm font-medium text-gray-700">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Usuario Activo
                             </label>
                         </div>
@@ -135,14 +137,14 @@ export const UserForm: React.FC<UserFormProps> = ({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`flex-1 bg-brand-blue text-white py-2 rounded-md hover:bg-blue-800 transition-colors font-medium ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isSubmitting ? 'Guardando...' : (editingUser ? 'Actualizar' : 'Crear')}
                         </button>
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300"
+                            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
                         >
                             Cancelar
                         </button>

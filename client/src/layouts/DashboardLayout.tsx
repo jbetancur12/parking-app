@@ -1,9 +1,10 @@
 import { useAuth } from '../context/AuthContext';
 import { useSaas } from '../context/SaasContext';
 import { useOffline } from '../context/OfflineContext';
+import { useTheme } from '../context/ThemeContext';
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle, WifiOff } from 'lucide-react';
+import { LayoutDashboard, Car, LogOut, FileText, Settings, Menu, X, Users, TrendingDown, DollarSign, Droplets, UserCog, History, Receipt, Shield, Briefcase, ChevronDown, ChevronRight, Building2, MapPin, Rocket, Package, AlertCircle, WifiOff, Moon, Sun } from 'lucide-react';
 import { OfflineIndicator } from '../components/OfflineIndicator';
 import TenantSelector from '../components/TenantSelector';
 
@@ -22,6 +23,7 @@ type NavGroup = {
 export default function DashboardLayout() {
     const { user, logout } = useAuth();
     const { isOnline } = useOffline();
+    const { theme, toggleTheme } = useTheme();
     const { currentTenant, currentLocation, availableTenants } = useSaas(); // Destructure currentLocation
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<string[]>(
@@ -143,17 +145,17 @@ export default function DashboardLayout() {
     // Prevent rendering content until tenant context is established
     if (user?.role !== 'SUPER_ADMIN' && !currentTenant && availableTenants.length > 0) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="text-gray-600">Cargando empresa...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                    <p className="text-gray-600 dark:text-gray-300">Cargando empresa...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -275,47 +277,57 @@ export default function DashboardLayout() {
                     )}
 
                     {/* Location Context Display */}
+                </div>
 
-                    {/* Compact Footer */}
-                    <div className="mt-auto border-t border-blue-800/30 bg-blue-900/20 p-3 space-y-2">
-                        {currentLocation && (
-                            <div
-                                className="flex items-center gap-2 text-xs text-blue-200 cursor-pointer hover:text-white transition-colors"
-                                onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}
-                                title="Cambiar Sede"
-                            >
-                                <MapPin size={12} className="text-brand-green shrink-0" />
-                                <span className="font-semibold truncate flex-1">{currentLocation.name}</span>
-                                {user?.locations && user.locations.length > 1 && <ChevronRight size={10} />}
-                            </div>
-                        )}
 
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-white truncate">{user?.username}</p>
-                                <p className="text-[10px] text-blue-300 truncate">
-                                    {user?.role === 'SUPER_ADMIN' ? 'Super Admin' :
-                                        user?.role === 'ADMIN' ? 'Admin' :
-                                            user?.role === 'LOCATION_MANAGER' ? 'Admin Sede' : 'Operador'}
-                                </p>
-                            </div>
-                            <button
-                                onClick={logout}
-                                className="p-1.5 text-red-300 hover:text-red-100 hover:bg-red-900/30 rounded-md transition-colors"
-                                title="Cerrar Sesión"
-                            >
-                                <LogOut size={16} />
-                            </button>
+                {/* Compact Footer */}
+                <div className="mt-auto border-t border-blue-800/30 bg-blue-900/20 p-3 space-y-2">
+                    {currentLocation && (
+                        <div
+                            className="flex items-center gap-2 text-xs text-blue-200 cursor-pointer hover:text-white transition-colors"
+                            onClick={() => user?.locations && user.locations.length > 1 && navigate('/select-location')}
+                            title="Cambiar Sede"
+                        >
+                            <MapPin size={12} className="text-brand-green shrink-0" />
+                            <span className="font-semibold truncate flex-1">{currentLocation.name}</span>
+                            {user?.locations && user.locations.length > 1 && <ChevronRight size={10} />}
                         </div>
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-800/30">
-                            <div className="text-[9px] text-blue-500/50 select-none">v0.0.5</div>
-                            <div className="hidden lg:block">
-                                <OfflineIndicator variant="minimal" />
-                            </div>
+                    )}
+
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-white truncate">{user?.username}</p>
+                            <p className="text-[10px] text-blue-300 truncate">
+                                {user?.role === 'SUPER_ADMIN' ? 'Super Admin' :
+                                    user?.role === 'ADMIN' ? 'Admin' :
+                                        user?.role === 'LOCATION_MANAGER' ? 'Admin Sede' : 'Operador'}
+                            </p>
+
+                        </div>
+                        <button
+                            onClick={toggleTheme}
+                            className="p-1.5 text-blue-300 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                            title={theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+                        >
+                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                        </button>
+                        <button
+                            onClick={logout}
+                            className="p-1.5 text-red-300 hover:text-red-100 hover:bg-red-900/30 rounded-md transition-colors"
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-800/30">
+                        <div className="text-[9px] text-blue-500/50 select-none">v0.0.5</div>
+                        <div className="hidden lg:block">
+                            <OfflineIndicator variant="minimal" />
                         </div>
                     </div>
                 </div>
             </div>
+
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -326,8 +338,10 @@ export default function DashboardLayout() {
                         Sin Conexión &bull; No Recargar ni Cambiar de Sección
                     </div>
                 )}
-                <header className="flex h-16 items-center justify-between bg-white px-6 shadow-sm lg:hidden">
-                    <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
+
+
+                <header className="flex h-16 items-center justify-between bg-white dark:bg-gray-800 px-6 shadow-sm lg:hidden transition-colors duration-200">
+                    <button onClick={toggleSidebar} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
                         <Menu size={24} />
                     </button>
                     <div className="flex flex-col items-center">
@@ -345,71 +359,75 @@ export default function DashboardLayout() {
                 </header>
 
                 {/* Trial Expired Blocking Overlay */}
-                {currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && (() => {
-                    const end = new Date(currentTenant.trialEndsAt);
-                    const now = new Date();
-                    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
+                {
+                    currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && (() => {
+                        const end = new Date(currentTenant.trialEndsAt);
+                        const now = new Date();
+                        const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
-                    if (diff < 0 && user?.role !== 'SUPER_ADMIN') {
-                        return (
-                            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 text-center">
-                                <div className="max-w-md">
-                                    <div className="text-red-600 mb-4 flex justify-center">
-                                        <AlertCircle size={64} />
-                                    </div>
-                                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Periodo de Prueba Finalizado</h1>
-                                    <p className="text-gray-600 mb-6">
-                                        Tu prueba gratuita de 14 días ha expirado.
-                                        Para continuar disfrutando de todas las funcionalidades y recuperar el acceso a tus datos,
-                                        por favor elige un plan.
-                                    </p>
-                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow transition-colors">
-                                        Actualizar Plan Ahora
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    }
-                    return null;
-                })()}
-
-                {/* Main Content (Hidden if expired, unless SuperAdmin) */}
-                {(!(currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && new Date(currentTenant.trialEndsAt) < new Date()) || user?.role === 'SUPER_ADMIN') && (
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                        {/* Trial Banner */}
-                        {currentTenant && (currentTenant.plan === 'basic' || currentTenant.plan === 'trial') && currentTenant.trialEndsAt && user?.role !== 'SUPER_ADMIN' && (
-                            (() => {
-                                const end = new Date(currentTenant.trialEndsAt);
-                                const now = new Date();
-                                const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
-
-                                return (
-                                    <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white shadow-lg flex justify-between items-center">
-                                        <div>
-                                            <h3 className="font-bold text-lg flex items-center">
-                                                <Rocket className="mr-2 h-5 w-5" />
-                                                Prueba Gratuita Activa
-                                            </h3>
-                                            <p className="text-indigo-100 text-sm mt-1">
-                                                Te quedan <span className="font-bold text-white text-lg">{diff} días</span> de prueba.
-                                                {diff <= 3 && " ¡Actualiza pronto para no perder acceso!"}
-                                            </p>
+                        if (diff < 0 && user?.role !== 'SUPER_ADMIN') {
+                            return (
+                                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 text-center">
+                                    <div className="max-w-md">
+                                        <div className="text-red-600 mb-4 flex justify-center">
+                                            <AlertCircle size={64} />
                                         </div>
-                                        <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
-                                            Elegir Plan
+                                        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Periodo de Prueba Finalizado</h1>
+                                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                                            Tu prueba gratuita de 14 días ha expirado.
+                                            Para continuar disfrutando de todas las funcionalidades y recuperar el acceso a tus datos,
+                                            por favor elige un plan.
+                                        </p>
+                                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow transition-colors">
+                                            Actualizar Plan Ahora
                                         </button>
                                     </div>
-                                );
-                            })()
-                        )}
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()
+                }
 
-                        <Outlet />
-                    </main>
-                )}
+                {/* Main Content (Hidden if expired, unless SuperAdmin) */}
+                {
+                    (!(currentTenant && currentTenant.plan === 'trial' && currentTenant.trialEndsAt && new Date(currentTenant.trialEndsAt) < new Date()) || user?.role === 'SUPER_ADMIN') && (
+                        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-200">
+                            {/* Trial Banner */}
+                            {currentTenant && (currentTenant.plan === 'basic' || currentTenant.plan === 'trial') && currentTenant.trialEndsAt && user?.role !== 'SUPER_ADMIN' && (
+                                (() => {
+                                    const end = new Date(currentTenant.trialEndsAt);
+                                    const now = new Date();
+                                    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 3600 * 24));
+
+                                    return (
+                                        <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white shadow-lg flex justify-between items-center">
+                                            <div>
+                                                <h3 className="font-bold text-lg flex items-center">
+                                                    <Rocket className="mr-2 h-5 w-5" />
+                                                    Prueba Gratuita Activa
+                                                </h3>
+                                                <p className="text-indigo-100 text-sm mt-1">
+                                                    Te quedan <span className="font-bold text-white text-lg">{diff} días</span> de prueba.
+                                                    {diff <= 3 && " ¡Actualiza pronto para no perder acceso!"}
+                                                </p>
+                                            </div>
+                                            <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
+                                                Elegir Plan
+                                            </button>
+                                        </div>
+                                    );
+                                })()
+                            )}
+
+                            <Outlet />
+                        </main>
+                    )
+                }
             </div>
 
             {/* Tenant Selector Modal - shown when user has multiple tenants and none selected */}
             {showTenantSelector && <TenantSelector />}
-        </div >
+        </div>
     );
 }

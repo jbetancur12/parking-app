@@ -35,25 +35,25 @@ export default function UsersPage() {
 
     if (currentUser?.role !== 'SUPER_ADMIN' && currentUser?.role !== 'ADMIN') {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500">
-                <div className="bg-red-50 p-6 rounded-full mb-4">
+            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500 dark:text-gray-400">
+                <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-full mb-4">
                     <X className="w-12 h-12 text-red-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Acceso Restringido</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Acceso Restringido</h3>
                 <p>No tienes permisos para ver esta página.</p>
             </div>
         );
     }
 
-    if (loading) return <div className="p-8">Cargando...</div>;
+    if (loading) return <div className="p-8 text-gray-500 dark:text-gray-400">Cargando...</div>;
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Gestión de Usuarios</h1>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    className="flex items-center bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors"
                 >
                     <Plus className="mr-2" size={20} />
                     Nuevo Usuario

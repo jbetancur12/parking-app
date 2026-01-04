@@ -23,12 +23,12 @@ export default function ExpensesPage() {
     } = useExpensesPage();
 
     if (!activeShift) {
-        return <div className="p-8 text-center text-gray-500">No hay un turno activo. Inicie turno en Inicio para registrar egresos.</div>;
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No hay un turno activo. Inicie turno en Inicio para registrar egresos.</div>;
     }
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-display font-bold text-brand-blue mb-6 flex items-center">
+            <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white mb-6 flex items-center">
                 <TrendingDown className="mr-2" /> Egresos (Gastos)
             </h1>
 

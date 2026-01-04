@@ -17,7 +17,7 @@ export default function ShiftHistoryPage() {
     if (!hasPermission) {
         return (
             <div className="p-8">
-                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-4 rounded-lg border border-red-200 dark:border-red-800">
                     No tienes permisos para acceder a esta página.
                 </div>
             </div>
@@ -29,8 +29,8 @@ export default function ShiftHistoryPage() {
     return (
         <div>
             <div className="mb-8">
-                <h1 className="text-2xl font-display font-bold text-brand-blue">Historial de Turnos</h1>
-                <p className="text-gray-500 mt-1">Consulta y gestiona todos los turnos cerrados</p>
+                <h1 className="text-2xl font-display font-bold text-brand-blue dark:text-white">Historial de Turnos</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Consulta y gestiona todos los turnos cerrados</p>
             </div>
 
             <ShiftHistoryList shifts={shifts} onPrint={handlePrint} />

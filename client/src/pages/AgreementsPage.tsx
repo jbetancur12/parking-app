@@ -25,11 +25,11 @@ export default function AgreementsPage() {
 
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && user?.role !== 'LOCATION_MANAGER') {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500">
-                <div className="bg-red-50 p-6 rounded-full mb-4">
-                    <Power className="w-12 h-12 text-red-500" />
+            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500 dark:text-gray-400">
+                <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-full mb-4">
+                    <Power className="w-12 h-12 text-red-500 dark:text-red-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Acceso Restringido</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Acceso Restringido</h3>
                 <p>No tienes permisos para ver esta página.</p>
             </div>
         );
@@ -38,8 +38,8 @@ export default function AgreementsPage() {
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-                    <Briefcase className="mr-2 text-blue-600" /> Gestión de Convenios
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+                    <Briefcase className="mr-2 text-blue-600 dark:text-blue-400" /> Gestión de Convenios
                 </h1>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}

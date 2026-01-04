@@ -90,13 +90,13 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
     const totalInfo = calculateTotal();
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                <h2 className="text-xl font-bold mb-4 text-gray-800">Confirmar Salida</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors">
+                <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Confirmar Salida</h2>
                 <div className="space-y-3 mb-6">
-                    <p className="text-lg"><strong>Placa:</strong> {previewData.plate}</p>
-                    <p className="text-lg"><strong>Plan:</strong> {getPlanLabel()}</p>
-                    <p className="text-lg"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
+                    <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Placa:</strong> {previewData.plate}</p>
+                    <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Plan:</strong> {getPlanLabel()}</p>
+                    <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
 
                     {/* Loyalty Badge */}
                     {previewData.loyalty && (
@@ -137,15 +137,15 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                     )}
 
                     {/* Payment Method Selector */}
-                    <div className="border-t pt-3 mt-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                    <div className="border-t dark:border-gray-700 pt-3 mt-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método de Pago</label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
                                 onClick={() => setPaymentMethod('CASH')}
                                 className={`py-2 text-sm rounded-md border ${paymentMethod === 'CASH'
-                                    ? 'bg-green-50 border-green-500 text-green-700 font-semibold'
-                                    : 'bg-white border-gray-300 text-gray-700'
+                                    ? 'bg-green-50 dark:bg-green-900/40 border-green-500 text-green-700 dark:text-green-300 font-semibold shadow-sm'
+                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 💵 Efectivo
@@ -154,8 +154,8 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                 type="button"
                                 onClick={() => setPaymentMethod('TRANSFER')}
                                 className={`py-2 text-sm rounded-md border ${paymentMethod === 'TRANSFER'
-                                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-semibold'
-                                    : 'bg-white border-gray-300 text-gray-700'
+                                    ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-500 text-blue-700 dark:text-blue-300 font-semibold shadow-sm'
+                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 🏦 Transferencia
@@ -165,8 +165,8 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
 
                     {/* Agreements Selector */}
                     {agreements.length > 0 && (
-                        <div className="border-t pt-3 mt-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Convenio / Descuento Predefinido</label>
+                        <div className="border-t dark:border-gray-700 pt-3 mt-3">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Convenio / Descuento Predefinido</label>
                             <select
                                 value={selectedAgreementId}
                                 onChange={(e) => {
@@ -176,7 +176,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                                         setDiscountReason('');
                                     }
                                 }}
-                                className="w-full border rounded-md px-2 py-2"
+                                className="w-full border rounded-md px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
                             >
                                 <option value="">-- Seleccionar Convenio --</option>
                                 {agreements.map(a => (
@@ -188,8 +188,8 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                         </div>
                     )}
 
-                    <div className="border-t pt-2 mt-2">
-                        <div className="flex justify-between text-sm text-gray-500 mb-1">
+                    <div className="border-t dark:border-gray-700 pt-2 mt-2">
+                        <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-1">
                             <span>Subtotal:</span>
                             <span>{formatCurrency(previewData.cost)}</span>
                         </div>
@@ -200,30 +200,30 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                             </div>
                         )}
                         <div className="flex justify-between items-center">
-                            <span className="font-bold text-gray-700">Total a Pagar</span>
-                            <span className="text-3xl font-bold text-green-600">
+                            <span className="font-bold text-gray-700 dark:text-gray-200">Total a Pagar</span>
+                            <span className="text-3xl font-bold text-green-600 dark:text-green-400">
                                 {totalInfo.text}
                             </span>
                         </div>
 
                         {/* Change Calculator for Cash */}
                         {paymentMethod === 'CASH' && (
-                            <div className="mt-4 border-t pt-3 bg-gray-50 p-3 rounded-lg">
+                            <div className="mt-4 border-t dark:border-gray-700 pt-3 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-sm font-bold text-gray-700">Dinero Recibido:</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Dinero Recibido:</label>
                                     <CurrencyInput
                                         value={cashReceived}
                                         onValueChange={setCashReceived}
-                                        className="w-32 border border-gray-300 rounded-md px-2 py-1 text-right font-medium text-lg"
+                                        className="w-32 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-right font-medium text-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                         placeholder="$"
                                         autoFocus
                                     />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-gray-700">Devuelta:</span>
+                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Devuelta:</span>
                                     <span className={`text-xl font-bold ${Number(cashReceived) >= totalInfo.total
-                                        ? 'text-blue-600'
-                                        : 'text-gray-400'
+                                        ? 'text-blue-600 dark:text-blue-400'
+                                        : 'text-gray-400 dark:text-gray-500'
                                         }`}>
                                         {(() => {
                                             const total = totalInfo.total;
@@ -253,7 +253,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                 <div className="flex space-x-3">
                     <button
                         onClick={onCancel}
-                        className="flex-1 bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 font-medium"
+                        className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                         data-testid="btn-cancel-exit"
                     >
                         Cancelar

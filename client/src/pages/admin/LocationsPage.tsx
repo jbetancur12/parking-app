@@ -144,13 +144,13 @@ export default function LocationsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Gestión de Sedes</h1>
-                    <p className="text-sm text-gray-600 mt-1">Administrar locaciones de las empresas</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Sedes</h1>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Administrar locaciones de las empresas</p>
                 </div>
                 {canCreate && (
                     <button
                         onClick={() => setShowForm(!showForm)}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition-colors"
                     >
                         <Plus className="mr-2 h-5 w-5" />
                         Nueva Sede
@@ -160,13 +160,13 @@ export default function LocationsPage() {
 
             {/* Form (shown when creating/editing) */}
             {showForm && (
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                         {editingLocation ? 'Editar Sede' : 'Nueva Sede'}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Empresa *
                             </label>
                             <select
@@ -174,7 +174,7 @@ export default function LocationsPage() {
                                 onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
                                 required
                                 disabled={!!editingLocation}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400"
                             >
                                 <option value="">Seleccionar empresa...</option>
                                 {tenants.map(t => (
@@ -184,7 +184,7 @@ export default function LocationsPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Nombre de la Sede *
                             </label>
                             <input
@@ -192,33 +192,33 @@ export default function LocationsPage() {
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Ej: Sede Centro"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Dirección
                             </label>
                             <input
                                 type="text"
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Calle 123 #45-67"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Teléfono
                             </label>
                             <input
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="+57 123 456 7890"
                             />
                         </div>
@@ -226,14 +226,14 @@ export default function LocationsPage() {
                         <div className="flex gap-3 pt-4">
                             <button
                                 type="submit"
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 {editingLocation ? 'Actualizar' : 'Crear Sede'}
                             </button>
                             <button
                                 type="button"
                                 onClick={resetForm}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -243,14 +243,14 @@ export default function LocationsPage() {
             )}
 
             {/* Tenant Filter */}
-            <div className="bg-white rounded-lg shadow p-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Filtrar por Empresa
                 </label>
                 <select
                     value={selectedTenant}
                     onChange={(e) => setSelectedTenant(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="">Todas las empresas</option>
                     {tenants.map(t => (
@@ -260,58 +260,58 @@ export default function LocationsPage() {
             </div>
 
             {/* Locations Table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden transition-colors">
                 {loading ? (
-                    <div className="p-8 text-center text-gray-500">Cargando...</div>
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">Cargando...</div>
                 ) : locations.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">No hay sedes registradas</div>
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">No hay sedes registradas</div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Sede
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Empresa
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Dirección
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Teléfono
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Estado
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Acciones
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {locations.map((location) => (
-                                <tr key={location.id} className="hover:bg-gray-50">
+                                <tr key={location.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <MapPin className="mr-2 h-5 w-5 text-gray-400" />
-                                            <span className="text-sm font-medium text-gray-900">{location.name}</span>
+                                            <span className="text-sm font-medium text-gray-900 dark:text-white">{location.name}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center text-sm text-gray-900">
+                                        <div className="flex items-center text-sm text-gray-900 dark:text-gray-300">
                                             <Building2 className="mr-1 h-4 w-4 text-gray-400" />
                                             {location.tenant.name}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {location.address || '-'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {location.phone || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${location.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${location.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                                             }`}>
                                             {location.isActive ? 'Activa' : 'Inactiva'}
                                         </span>
@@ -320,14 +320,14 @@ export default function LocationsPage() {
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleEdit(location)}
-                                                className="text-blue-600 hover:text-blue-900"
+                                                className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </button>
                                             {location.isActive ? (
                                                 <button
                                                     onClick={() => handleDelete(location.id)}
-                                                    className="text-red-600 hover:text-red-900"
+                                                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                                                     title="Desactivar"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -335,7 +335,7 @@ export default function LocationsPage() {
                                             ) : (
                                                 <button
                                                     onClick={() => handleReactivate(location)}
-                                                    className="text-green-600 hover:text-green-900"
+                                                    className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                                                     title="Reactivar"
                                                 >
                                                     <RotateCcw className="h-4 w-4" />
