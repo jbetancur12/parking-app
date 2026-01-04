@@ -68,8 +68,15 @@ export const useLoginFlow = () => {
             } else {
                 navigate('/');
             }
-        } catch (err) {
-            setError('Credenciales inválidas');
+        } catch (err: any) {
+            console.error('Login error:', err);
+            // Use the specific message from the server if available (e.g. "Cuenta suspendida")
+            // Otherwise fallback to "Credenciales inválidas" only for 401
+            if (err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Credenciales inválidas');
+            }
         }
     };
 
