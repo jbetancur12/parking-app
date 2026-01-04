@@ -36,6 +36,7 @@ const TenantDetailPage = lazy(() => import('./pages/admin/TenantDetailPage'));
 const LocationsPage = lazy(() => import('./pages/admin/LocationsPage'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const AdminBillingPage = lazy(() => import('./pages/admin/AdminBillingPage'));
+const AdminPricingPage = lazy(() => import('./pages/admin/AdminPricingPage'));
 
 // Detect if running in Electron
 const isElectron = import.meta.env.VITE_APP_MODE === 'electron';
@@ -100,6 +101,7 @@ function App() {
                     <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
                     <Route path="admin/locations" element={<LocationsPage />} />
                     <Route path="admin/billing" element={<AdminBillingPage />} />
+                    <Route path="admin/pricing" element={<AdminPricingPage />} />
                   </Route>
                 </Routes>
               </Suspense>

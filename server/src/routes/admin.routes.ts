@@ -21,6 +21,7 @@ import {
     removeUserFromTenant,
 } from '../controllers/admin/user-tenant.controller';
 import adminBillingRoutes from './admin/billing.routes';
+import adminPricingRoutes from './admin/pricing.routes';
 
 const router = Router();
 
@@ -47,5 +48,8 @@ router.delete('/users/:userId/tenants/:tenantId', requireRole([UserRole.SUPER_AD
 
 // Billing routes (SuperAdmin only)
 router.use('/billing', adminBillingRoutes);
+
+// Pricing routes (SuperAdmin only)
+router.use('/pricing', adminPricingRoutes);
 
 export default router;

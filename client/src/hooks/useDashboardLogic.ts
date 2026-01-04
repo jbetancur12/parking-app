@@ -74,6 +74,7 @@ export const useDashboardLogic = () => {
             items: [
                 { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
                 { name: 'Facturación', href: '/admin/billing', icon: CreditCard },
+                { name: 'Planes', href: '/admin/pricing', icon: DollarSign },
                 { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard },
             ]
         }
