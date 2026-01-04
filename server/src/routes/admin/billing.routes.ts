@@ -9,12 +9,16 @@ import {
     getAllPayments,
     getPaymentStats
 } from '../../controllers/billing.controller';
+import { migrateExistingTenants } from '../../controllers/admin/migration.controller';
 import { requireRole } from '../../middleware/permission.middleware';
 import { UserRole } from '../../entities/User';
 
 const router = Router();
 
 // All routes require SUPER_ADMIN role
+
+// MIGRATION ENDPOINT - Remove after running once
+router.post('/migrate-tenants', requireRole([UserRole.SUPER_ADMIN]), migrateExistingTenants);
 
 // Subscriptions
 router.get('/subscriptions', requireRole([UserRole.SUPER_ADMIN]), getAllSubscriptions);
