@@ -44,6 +44,13 @@ export class Tenant {
 
     @ManyToMany(() => User, user => user.tenants)
     users = new Collection<User>(this);
+
+    @OneToMany('Subscription', 'tenant')
+    subscriptions = new Collection<any>(this);
+
+    get isActive(): boolean {
+        return this.status === TenantStatus.ACTIVE;
+    }
 }
 
 export enum TenantStatus {
