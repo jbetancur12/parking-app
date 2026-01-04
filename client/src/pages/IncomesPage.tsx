@@ -3,7 +3,7 @@ import { DollarSign } from 'lucide-react';
 import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintSaleReceipt } from '../components/PrintSaleReceipt';
 import { useIncomesPage } from '../hooks/useIncomesPage';
-import { formatCurrency } from '../utils/formatters';
+import { TransactionPrintManager } from '../components/common/TransactionPrintManager';
 
 // Components
 import { ManualIncomeForm } from '../components/incomes/ManualIncomeForm';
@@ -12,20 +12,6 @@ import { IncomeList } from '../components/incomes/IncomeList';
 
 export default function IncomesPage() {
     const receiptRef = useRef<HTMLDivElement>(null);
-
-    // We pass settings.show_print_dialog check inside the page wrapper or modify hook to accept settings
-    // But since settings is in the hook, we can just pass a basic printer and let the hook handle logic?
-    // Actually the hook 'useElectronPrint' needs ref which is in page.
-    // So we invoke useElectronPrint here.
-
-    // We need to access settings from the hook to pass to useElectronPrint? 
-    // Or we just pass a function to update print settings later.
-    // Simplest is to init the print hook here, but we need 'settings' for the 'silent' param.
-    // However, hooks can't change order.
-    // Let's assume silent defaults to false or we handle it in the callback.
-    // For now, let's just init it. ideally we'd pass settings to useElectronPrint but we don't have it yet.
-    // Refactor note: The original page fetched settings then used them in useElectronPrint.
-    // To solve this in refactor: We can pass 'silent' as a ref current value or just init with default.
 
     const handlePrintReceipt = useElectronPrint({
         contentRef: receiptRef,
@@ -126,38 +112,18 @@ export default function IncomesPage() {
                 />
             )}
 
-            {/* Hidden Print Receipt */}
-            <div style={{ display: 'none' }}>
-                {printData && <PrintSaleReceipt ref={receiptRef} transaction={printData} settings={settings} />}
-            </div>
-
-            {/* Print Confirmation Modal */}
-            {showPrintConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm border dark:border-gray-700 transition-colors">
-                        <h2 className="text-xl font-bold mb-4 text-green-600 dark:text-green-400">✅ Venta Registrada</h2>
-                        <div className="mb-6">
-                            <p className="text-gray-600 dark:text-gray-300">La transacción se ha guardado correctamente.</p>
-                            <p className="font-bold text-lg mt-2 text-gray-900 dark:text-white">{formatCurrency(printData?.amount || 0)}</p>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">¿Desea imprimir el recibo?</p>
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={() => setShowPrintConfirm(false)}
-                                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
-                            >
-                                No
-                            </button>
-                            <button
-                                onClick={handleConfirmPrint}
-                                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium"
-                            >
-                                🖨️ Sí, Imprimir
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Print Manager */}
+            <TransactionPrintManager
+                printData={printData}
+                showConfirm={showPrintConfirm}
+                onCancel={() => setShowPrintConfirm(false)}
+                onConfirm={handleConfirmPrint}
+                receiptRef={receiptRef}
+                ReceiptComponent={PrintSaleReceipt}
+                settings={settings}
+                title="✅ Venta Registrada"
+                successMessage="La transacción se ha guardado correctamente."
+            />
         </div>
     );
 }

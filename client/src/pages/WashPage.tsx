@@ -8,7 +8,7 @@ import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintSaleReceipt } from '../components/PrintSaleReceipt';
 import { WashEntryForm } from '../components/wash/WashEntryForm';
 import { WashHistoryList } from '../components/wash/WashHistoryList';
-import { formatCurrency } from '../utils/formatters';
+import { TransactionPrintManager } from '../components/common/TransactionPrintManager';
 
 export default function WashPage() {
     const { user } = useAuth();
@@ -47,13 +47,7 @@ export default function WashPage() {
         setShowPrintConfirm,
         handleConfirmPrint,
         handleReprint
-    } = useWashPage(); // No print hook passed to custom hook? 
-    // Wait, useWashPage needs modification if I want to pass the print handler! 
-    // Actually, useIncomesPage pattern: passed handlePrintReceipt to hook. 
-    // BUT I updated useWashPage to take NO arguments and just manage state.
-    // So WashPage manages the actual print trigger via callback from hook state?
-    // In useWashPage, handleConfirmPrint takes a callback: (triggerPrint) => ...
-    // So I can pass handlePrintReceipt to handleConfirmPrint here.
+    } = useWashPage();
 
     if (!activeShift) {
         return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No hay un turno activo. Inicie turno en Inicio para registrar servicios.</div>;
@@ -108,38 +102,18 @@ export default function WashPage() {
             {/* List */}
             <WashHistoryList entries={entries} onReprint={handleReprint} />
 
-            {/* Hidden Print Receipt */}
-            <div style={{ display: 'none' }}>
-                {printData && <PrintSaleReceipt ref={receiptRef} transaction={printData} settings={{ company_name: 'LAVADERO', ticket_width: '58mm' }} />}
-            </div>
-
-            {/* Print Confirmation Modal */}
-            {showPrintConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors">
-                        <h2 className="text-xl font-bold mb-4 text-green-600 dark:text-green-400">✅ Lavado Registrado</h2>
-                        <div className="mb-6">
-                            <p className="text-gray-600 dark:text-gray-300">El servicio se ha guardado correctamente.</p>
-                            <p className="font-bold text-lg mt-2 text-gray-900 dark:text-white">{formatCurrency(printData?.amount || 0)}</p>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">¿Desea imprimir el recibo?</p>
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={() => setShowPrintConfirm(false)}
-                                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
-                            >
-                                No
-                            </button>
-                            <button
-                                onClick={() => handleConfirmPrint(handlePrintReceipt)}
-                                className="flex-1 bg-brand-blue text-white py-2 rounded hover:bg-blue-700 font-medium"
-                            >
-                                🖨️ Sí, Imprimir
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Print Manager */}
+            <TransactionPrintManager
+                printData={printData}
+                showConfirm={showPrintConfirm}
+                onCancel={() => setShowPrintConfirm(false)}
+                onConfirm={() => handleConfirmPrint(handlePrintReceipt)}
+                receiptRef={receiptRef}
+                ReceiptComponent={PrintSaleReceipt}
+                settings={{ company_name: 'LAVADERO', ticket_width: '58mm' }}
+                title="✅ Lavado Registrado"
+                successMessage="El servicio se ha guardado correctamente."
+            />
         </div>
     );
 }
