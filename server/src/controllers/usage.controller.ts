@@ -10,7 +10,8 @@ const usageService = new UsageService();
  */
 export const getCurrentUsage = async (req: Request, res: Response) => {
     try {
-        const tenantId = (req as any).tenantId;
+        // Try to get tenantId from multiple sources
+        const tenantId = req.tenant?.id || (req.headers['x-tenant-id'] as string) || (req as any).tenantId;
 
         if (!tenantId) {
             return res.status(400).json({ message: 'Tenant ID required' });
