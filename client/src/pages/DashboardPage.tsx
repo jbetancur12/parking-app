@@ -16,6 +16,7 @@ import { FinancialStatsGrid } from '../components/dashboard/FinancialStatsGrid';
 import { DashboardCharts } from '../components/dashboard/DashboardCharts';
 import { CloseShiftModal } from '../components/dashboard/CloseShiftModal';
 import { ShiftSummaryModal } from '../components/dashboard/ShiftSummaryModal';
+import { SuperAdminDashboard } from '../components/dashboard/SuperAdminDashboard';
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -78,6 +79,16 @@ export default function DashboardPage() {
     );
 
     const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'LOCATION_MANAGER';
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
+    if (isSuperAdmin) {
+        return (
+            <div>
+                <h1 className="text-3xl font-display font-bold text-brand-blue mb-6">Panel Super Admin</h1>
+                <SuperAdminDashboard />
+            </div>
+        );
+    }
 
     return (
         <div>
