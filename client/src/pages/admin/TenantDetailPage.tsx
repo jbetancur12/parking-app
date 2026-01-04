@@ -3,6 +3,7 @@ import { useTenantDetail } from '../../hooks/useTenantDetail';
 import { TenantInfoTab } from '../../components/admin/tenant-detail/TenantInfoTab';
 import { TenantLocationsTab } from '../../components/admin/tenant-detail/TenantLocationsTab';
 import { TenantUsersTab } from '../../components/admin/tenant-detail/TenantUsersTab';
+import { TenantUsageCards } from '../../components/admin/TenantUsageCards';
 import { CreateUserModal } from '../../components/admin/tenant-detail/CreateUserModal';
 import { CreateLocationModal } from '../../components/admin/tenant-detail/CreateLocationModal';
 import { UpdatePlanModal } from '../../components/admin/tenant-detail/UpdatePlanModal';
@@ -76,6 +77,11 @@ export default function TenantDetailPage() {
                     <Edit className="mr-2 h-4 w-4" />
                     Editar Empresa
                 </button>
+            </div>
+
+            {/* Usage Metrics */}
+            <div className="mb-6">
+                <TenantUsageCards tenantId={id!} />
             </div>
 
             {/* Tabs */}
