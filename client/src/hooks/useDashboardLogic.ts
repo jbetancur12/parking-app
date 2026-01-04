@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import {
     LayoutDashboard, Car, Droplets, Users, TrendingDown, DollarSign,
     Receipt, History, FileText, Briefcase, Package, UserCog, Shield,
-    Settings, Building2
+    Settings, Building2, CreditCard
 } from 'lucide-react';
 
 export type NavItem = {
@@ -73,6 +73,7 @@ export const useDashboardLogic = () => {
             title: 'SaaS Management',
             items: [
                 { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
+                { name: 'Facturación', href: '/admin/billing', icon: CreditCard },
                 { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard },
             ]
         }
