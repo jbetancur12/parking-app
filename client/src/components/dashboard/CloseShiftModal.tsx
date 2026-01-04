@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CurrencyInput } from '../common/CurrencyInput';
+import { formatCurrency } from '../../utils/formatters';
 
 interface CloseShiftModalProps {
     isOpen: boolean;
@@ -30,7 +31,7 @@ export const CloseShiftModal: React.FC<CloseShiftModalProps> = ({
 
                 <div className="mb-4 p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-2">Base Inicial</p>
-                    <p className="text-2xl font-bold text-blue-600">${Number(baseAmount).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(Number(baseAmount))}</p>
                 </div>
 
                 <div className="space-y-4">
