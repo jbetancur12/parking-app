@@ -2,39 +2,282 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+
+const lastUpdated = "Enero 4, 2026";
 ---
 
 <Layout title="Política de Privacidad - Aparca">
     <Navbar />
     <main class="pt-32 pb-20 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 bg-white p-8 md:p-12 rounded-2xl shadow-sm">
-            <h1 class="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-8">Política de Privacidad</h1>
+            <h1 class="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">Política de Privacidad</h1>
+            <p class="text-sm text-gray-500 mb-8">Última actualización: {lastUpdated}</p>
             
-            <div class="prose prose-blue max-w-none text-gray-600">
-                <p class="mb-4">En Aparca, nos tomamos muy en serio la privacidad de sus datos.</p>
+            <div class="prose prose-blue max-w-none text-gray-700">
+                
+                <!-- 1. Introducción -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">1. Introducción</h2>
+                <p>En Aparca, respetamos su privacidad y nos comprometemos a proteger sus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos, almacenamos y protegemos su información.</p>
+                <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                    <p class="font-semibold text-blue-800">Al usar nuestro servicio, usted acepta las prácticas descritas en esta política.</p>
+                </div>
 
-                <h3>1. Información que Recopilamos</h3>
-                <p>Recopilamos información necesaria para la prestación del servicio, incluyendo datos de contacto, información de facturación y datos operativos del parqueadero (placas de vehículos, horarios, tarifas).</p>
+                <!-- 2. Información que Recopilamos -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">2. Información que Recopilamos</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">2.1 Información que Usted Proporciona</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="font-semibold mb-2">Información de Cuenta:</p>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>Nombre de usuario y correo electrónico</li>
+                        <li>Contraseña (encriptada)</li>
+                        <li>Nombre completo y teléfono</li>
+                        <li>Empresa/Organización</li>
+                    </ul>
+                </div>
 
-                <h3>2. Uso de la Información</h3>
-                <p>Utilizamos su información para:</p>
-                <ul class="list-disc pl-5 mb-4">
-                    <li>Proveer y mantener el servicio.</li>
-                    <li>Procesar transacciones y enviar notificaciones.</li>
-                    <li>Mejorar y personalizar la experiencia del usuario.</li>
-                    <li>Cumplir con obligaciones legales.</li>
+                <div class="bg-gray-50 p-4 rounded-lg mt-4">
+                    <p class="font-semibold mb-2">Datos Operacionales:</p>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>Placas de vehículos</li>
+                        <li>Nombres de clientes mensuales</li>
+                        <li>Transacciones financieras</li>
+                        <li>Registros de entrada/salida</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">2.2 Información Recopilada Automáticamente</h3>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Datos Técnicos:</strong> Dirección IP, tipo de navegador, sistema operativo</li>
+                    <li><strong>Cookies:</strong> Cookies de sesión y preferencias (modo oscuro, idioma)</li>
+                    <li><strong>Uso:</strong> Páginas visitadas, acciones realizadas</li>
                 </ul>
 
-                <h3>3. Compartir Información</h3>
-                <p>No vendemos ni alquilamos su información personal a terceros. Solo compartimos datos con proveedores de servicios necesarios para nuestra operación (ej. pasarelas de pago, servicios de alojamiento en la nube), bajo estrictos acuerdos de confidencialidad.</p>
+                <!-- 3. Cómo Usamos su Información -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">3. Cómo Usamos su Información</h2>
+                
+                <div class="grid md:grid-cols-2 gap-4 mt-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">Provisión del Servicio</p>
+                        <ul class="list-disc pl-6 space-y-1 text-green-700 text-sm">
+                            <li>Crear y gestionar su cuenta</li>
+                            <li>Procesar transacciones</li>
+                            <li>Generar reportes</li>
+                            <li>Proporcionar soporte técnico</li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800 mb-2">Mejora del Servicio</p>
+                        <ul class="list-disc pl-6 space-y-1 text-blue-700 text-sm">
+                            <li>Analizar patrones de uso</li>
+                            <li>Identificar y corregir errores</li>
+                            <li>Desarrollar nuevas funcionalidades</li>
+                            <li>Optimizar rendimiento</li>
+                        </ul>
+                    </div>
+                </div>
 
-                <h3>4. Seguridad de los Datos</h3>
-                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos contra acceso no autorizado, alteración o destrucción.</p>
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Base Legal para el Procesamiento</h3>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Contrato:</strong> Necesario para prestar el servicio</li>
+                    <li><strong>Consentimiento:</strong> Para marketing y cookies no esenciales</li>
+                    <li><strong>Interés legítimo:</strong> Mejora del servicio y seguridad</li>
+                    <li><strong>Obligación legal:</strong> Cumplimiento de leyes</li>
+                </ul>
 
-                <h3>5. Contacto</h3>
-                <p>Si tiene preguntas sobre nuestra política de privacidad, contáctenos en privacidad@aparca.app.</p>
+                <!-- 4. Compartir Información -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">4. Compartir Información</h2>
+                
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                    <p class="font-semibold text-red-800 text-lg">❌ Nunca vendemos sus datos</p>
+                    <p class="text-red-700 mt-2">No vendemos, alquilamos o comercializamos sus datos personales.</p>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Compartimos con:</h3>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Proveedores de Servicios:</strong> Hosting (AWS, Google Cloud), procesadores de pago (Stripe, PayPal), servicios de email</li>
+                    <li><strong>Requisitos Legales:</strong> Autoridades gubernamentales (con orden judicial)</li>
+                    <li><strong>Transferencias Comerciales:</strong> En caso de fusión o adquisición (con notificación previa)</li>
+                </ul>
+
+                <!-- 5. Seguridad de los Datos -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">5. Seguridad de los Datos</h2>
+                
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <p class="font-semibold text-green-800 mb-3">🔒 Medidas de Seguridad Implementadas:</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="font-semibold text-green-700 mb-2">Técnicas:</p>
+                            <ul class="list-disc pl-6 space-y-1 text-green-600 text-sm">
+                                <li>Encriptación SSL/TLS</li>
+                                <li>Encriptación de contraseñas (bcrypt)</li>
+                                <li>Autenticación JWT</li>
+                                <li>Firewalls y protección DDoS</li>
+                                <li>Backups diarios encriptados</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-green-700 mb-2">Organizativas:</p>
+                            <ul class="list-disc pl-6 space-y-1 text-green-600 text-sm">
+                                <li>Acceso restringido a datos</li>
+                                <li>Capacitación en seguridad</li>
+                                <li>Políticas de contraseñas fuertes</li>
+                                <li>Auditorías regulares</li>
+                                <li>Monitoreo 24/7</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Su Responsabilidad</h3>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>Mantener su contraseña segura</li>
+                    <li>No compartir credenciales</li>
+                    <li>Reportar accesos no autorizados</li>
+                    <li>Usar conexiones seguras</li>
+                </ul>
+
+                <!-- 6. Retención de Datos -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">6. Retención de Datos</h2>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tipo de Dato</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Período de Retención</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-4 py-3 text-sm">Datos de Cuenta</td>
+                                <td class="px-4 py-3 text-sm">Mientras la cuenta esté activa + 30 días</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-sm">Datos Transaccionales</td>
+                                <td class="px-4 py-3 text-sm">Mínimo 5 años (requisito legal)</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-sm">Datos de Soporte</td>
+                                <td class="px-4 py-3 text-sm">2 años después de última interacción</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-sm">Backups</td>
+                                <td class="px-4 py-3 text-sm">30 días (rotación automática)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 7. Sus Derechos -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">7. Sus Derechos</h2>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800 mb-2">Derechos GDPR (si aplica)</p>
+                        <ul class="list-disc pl-6 space-y-1 text-blue-700 text-sm">
+                            <li>Acceso a sus datos</li>
+                            <li>Rectificación de datos inexactos</li>
+                            <li>Eliminación ("Derecho al olvido")</li>
+                            <li>Restricción de procesamiento</li>
+                            <li>Portabilidad de datos</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Ley Colombiana (Ley 1581)</p>
+                        <ul class="list-disc pl-6 space-y-1 text-purple-700 text-sm">
+                            <li>Conocer qué datos tenemos</li>
+                            <li>Actualizar información</li>
+                            <li>Rectificar datos inexactos</li>
+                            <li>Suprimir datos (con excepciones)</li>
+                            <li>Revocar consentimiento</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Cómo Ejercer sus Derechos</h3>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <p class="mb-2"><strong>Contacto:</strong> privacidad@aparca.com</p>
+                    <p class="mb-2"><strong>Tiempo de Respuesta:</strong> 15 días hábiles (Colombia) / 30 días (GDPR)</p>
+                    <p class="text-sm text-gray-600">Podemos solicitar verificación de identidad para proteger su privacidad.</p>
+                </div>
+
+                <!-- 8. Cookies -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">8. Cookies y Tecnologías de Rastreo</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Tipos de Cookies</h3>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Cookies Esenciales (No requieren consentimiento):</strong> Autenticación, seguridad, funcionalidad básica</li>
+                    <li><strong>Cookies de Preferencias:</strong> Modo oscuro/claro, idioma, configuraciones</li>
+                    <li><strong>Cookies Analíticas (Requieren consentimiento):</strong> Google Analytics, análisis de uso</li>
+                </ul>
+
+                <p class="mt-4">Puede controlar cookies mediante la configuración de su navegador o nuestro panel de preferencias.</p>
+
+                <!-- 9. Privacidad de Menores -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">9. Privacidad de Menores</h2>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <p class="font-semibold text-yellow-800">⚠️ No recopilamos datos de menores de 18 años</p>
+                    <p class="text-yellow-700 mt-2">Si descubrimos que hemos recopilado datos de un menor sin consentimiento parental, los eliminaremos inmediatamente.</p>
+                </div>
+
+                <!-- 10. Violaciones de Datos -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">10. Notificación de Violaciones de Datos</h2>
+                <p>En caso de violación de seguridad:</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>A Autoridades:</strong> Dentro de 72 horas (GDPR)</li>
+                    <li><strong>A Usuarios Afectados:</strong> Sin demora indebida, con descripción de la brecha y medidas tomadas</li>
+                </ul>
+
+                <!-- 11. Cumplimiento Legal -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">11. Cumplimiento Legal</h2>
+                <p>Cumplimos con:</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Ley 1581 de 2012</strong> (Colombia - Protección de Datos Personales)</li>
+                    <li><strong>Decreto 1377 de 2013</strong> (Colombia - Reglamentación)</li>
+                    <li><strong>GDPR</strong> (Unión Europea - si aplica)</li>
+                    <li><strong>CCPA</strong> (California - si aplica)</li>
+                </ul>
+
+                <div class="bg-gray-100 p-4 rounded-lg mt-4">
+                    <p class="font-semibold mb-2">Autoridad de Control (Colombia):</p>
+                    <p>Superintendencia de Industria y Comercio (SIC)</p>
+                    <p class="text-sm text-gray-600">www.sic.gov.co</p>
+                </div>
+
+                <!-- 12. Contacto -->
+                <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">12. Contacto</h2>
+                <div class="bg-brand-blue text-white p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3">Oficial de Privacidad</h3>
+                    <p class="mb-2"><strong>Email:</strong> privacidad@aparca.com</p>
+                    <p class="mb-2"><strong>Dirección:</strong> Calle 123 #45-67, Bogotá, Colombia</p>
+                    <p><strong>Teléfono:</strong> +57 (1) 234 5678</p>
+                    <p class="mt-4 text-sm opacity-90">Responderemos en 15 días hábiles.</p>
+                </div>
+
+                <!-- Consentimiento -->
+                <div class="bg-green-50 border-l-4 border-green-400 p-6 mt-8">
+                    <h3 class="text-xl font-semibold text-green-800 mb-3">Consentimiento</h3>
+                    <p class="text-green-700">Al usar Aparca, usted consiente la recopilación, uso y procesamiento de datos según esta política. Puede retirar su consentimiento en cualquier momento, sujeto a obligaciones legales.</p>
+                </div>
+
+                <p class="text-sm text-gray-500 mt-8 text-center">
+                    Aparca SaaS - Política de Privacidad - Versión 1.0 - {lastUpdated}
+                </p>
             </div>
         </div>
     </main>
     <Footer />
 </Layout>
+
+<style>
+    .prose h2 {
+        scroll-margin-top: 8rem;
+    }
+    .prose h3 {
+        scroll-margin-top: 8rem;
+    }
+    .prose table {
+        font-size: 0.875rem;
+    }
+</style>
