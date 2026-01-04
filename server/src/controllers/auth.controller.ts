@@ -134,6 +134,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Check if user has at least one active tenant
+    // Check if user has at least one active tenant
     // @ts-ignore - isActive exists on Tenant at runtime
     const activeTenants = user.tenants.getItems().filter(t => t.isActive);
 
