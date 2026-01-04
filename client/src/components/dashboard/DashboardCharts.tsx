@@ -92,7 +92,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                                     cursor={{ fill: '#F3F4F6' }}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Bar dataKey="count" name="Vehículos" fill="#1A3A5A" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="car" name="Carro" stackId="a" fill="#1A3A5A" />
+                                <Bar dataKey="motorcycle" name="Moto" stackId="a" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
