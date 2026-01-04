@@ -82,6 +82,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ stats, consoli
                             <Clock size={20} className="mr-2 text-purple-500" />
                             Actividad por Hora (30 días)
                         </h3>
+                        {stats.peaks && (
+                            <div className="flex gap-4 text-xs">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold">
+                                    🚗 Pico: {stats.peaks.car.hour} ({stats.peaks.car.count})
+                                </span>
+                                <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded font-bold">
+                                    🏍️ Pico: {stats.peaks.motorcycle.hour} ({stats.peaks.motorcycle.count})
+                                </span>
+                            </div>
+                        )}
                     </div>
                     <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
