@@ -8,48 +8,6 @@ interface UseExitCalculationsProps {
     tariffs: Tariff[];
 }
 
-/**
- * Custom hook for managing exit calculations including discounts, agreements, and loyalty redemption.
- * 
- * **Complexity:** High - Handles complex pricing logic with multiple discount types
- * 
- * **Responsibilities:**
- * - Calculate final cost with discounts (manual, agreements, loyalty)
- * - Manage payment method selection
- * - Handle loyalty point redemption
- * - Calculate change for cash payments
- * - Priority system: Redemption > Agreements > Manual Discounts
- * 
- * **Discount Types:**
- * - FREE_HOURS: Discount based on hourly rate × hours
- * - PERCENTAGE: Percentage off total cost
- * - FLAT_DISCOUNT: Fixed amount off
- * - LOYALTY: Free hours or total redemption based on points
- * 
- * @param {Object} props - Hook configuration
- * @param {any} props.previewData - Exit preview data with cost and duration
- * @param {any[]} props.agreements - Available discount agreements
- * @param {Tariff[]} props.tariffs - Pricing tariffs for plan label calculation
- * 
- * @returns {Object} Calculation state and handlers
- * @returns {string} returns.paymentMethod - Selected payment method (CASH | TRANSFER)
- * @returns {string} returns.discount - Manual discount amount
- * @returns {Function} returns.calculateTotal - Calculates final total with all discounts
- * @returns {Function} returns.calculateChange - Calculates change for cash payments
- * @returns {Function} returns.handleRedeemToggle - Toggles loyalty redemption
- * @returns {Function} returns.handleAgreementChange - Handles agreement selection
- * 
- * @example
- * ```tsx
- * const {
- *   calculateTotal,
- *   paymentMethod,
- *   setPaymentMethod
- * } = useExitCalculations({ previewData, agreements, tariffs });
- * 
- * const { total, text } = calculateTotal();
- * ```
- */
 export const useExitCalculations = ({ previewData, agreements, tariffs }: UseExitCalculationsProps) => {
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
     const [discount, setDiscount] = useState('');

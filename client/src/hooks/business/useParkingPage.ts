@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import api from '../services/api';
-import { settingService } from '../services/setting.service';
-import { tariffService, type Tariff } from '../services/tariff.service';
-import { useOffline } from '../context/OfflineContext';
-import { useShift } from '../context/ShiftContext';
+import api from '../../services/api';
+import { settingService } from '../../services/setting.service';
+import { tariffService, type Tariff } from '../../services/tariff.service';
+import { useOffline } from '../../context/OfflineContext';
+import { useShift } from '../../context/ShiftContext';
 
 interface ParkingSession {
     id: number;
@@ -18,39 +18,36 @@ interface ParkingSession {
 /**
  * Custom hook for managing parking page operations including vehicle entry, exit, and printing.
  * 
- * **Complexity:** High - This is the most complex hook in the application
- * 
- * **Responsibilities:**
- * - Vehicle entry/exit workflows with validation
+ * This is the most complex hook in the application, handling:
+ * - Vehicle entry/exit workflows
  * - Offline mode support with queue management
  * - Print confirmation flows for tickets and receipts
  * - Exit preview with pricing calculations
- * - Integration with shift management and tariff system
+ * - Integration with shift management
  * 
  * @param {Function} handlePrintTicket - Callback to trigger ticket printing
  * @param {Function} [handlePrintReceipt] - Optional callback to trigger receipt printing
  * 
  * @returns {Object} Hook state and handlers
- * @returns {ParkingSession[]} returns.sessions - Active parking sessions from server
- * @returns {ParkingSession[]} returns.filteredSessions - Filtered sessions based on search term
+ * @returns {ParkingSession[]} returns.sessions - Active parking sessions
+ * @returns {ParkingSession[]} returns.filteredSessions - Filtered sessions based on search
  * @returns {boolean} returns.loading - Loading state for initial data fetch
- * @returns {any} returns.settings - Application settings (print config, etc.)
- * @returns {Tariff[]} returns.tariffs - Pricing tariffs for all vehicle types
+ * @returns {any} returns.settings - Application settings
+ * @returns {Tariff[]} returns.tariffs - Pricing tariffs
  * @returns {any[]} returns.agreements - Active discount agreements
- * @returns {Function} returns.handleOpenEntryModal - Opens entry modal (validates active shift)
- * @returns {Function} returns.handleEntrySubmit - Processes vehicle entry (handles online/offline)
- * @returns {Function} returns.handleExitClick - Initiates exit preview with cost calculation
+ * @returns {Function} returns.handleOpenEntryModal - Opens entry modal (checks for active shift)
+ * @returns {Function} returns.handleEntrySubmit - Processes vehicle entry (online/offline)
+ * @returns {Function} returns.handleExitClick - Initiates exit preview
  * @returns {Function} returns.confirmExit - Confirms and processes vehicle exit
- * @returns {Function} returns.handleReprintTicket - Reprints entry ticket for a session
- * @returns {Function} returns.handleReprintReceipt - Reprints exit receipt for a session
+ * @returns {Function} returns.handleReprintTicket - Reprints entry ticket
+ * @returns {Function} returns.handleReprintReceipt - Reprints exit receipt
  * 
  * @example
  * ```tsx
  * const {
  *   sessions,
  *   handleOpenEntryModal,
- *   handleExitClick,
- *   confirmExit
+ *   handleExitClick
  * } = useParkingPage(printTicket, printReceipt);
  * ```
  */
