@@ -51,6 +51,7 @@ export class WashController {
                     cost: finalPrice,
                     status: 'Completed',
                     paymentMethod: paymentMethod || 'CASH',
+                    receiptNumber, // Now we save it!
                     createdAt: new Date()
                 } as any);
 

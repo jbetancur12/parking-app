@@ -20,6 +20,10 @@ export class WashEntry {
     @Property({ nullable: true })
     operatorName?: string; // Legacy 'lavador'
 
+    @Property({ nullable: true })
+    receiptNumber?: string; // Stored for easier reprint lookup
+
+
     @Property({ type: 'decimal', precision: 10, scale: 2 })
     cost!: number; // Captured at time of service in case prices change
 
