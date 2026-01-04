@@ -20,4 +20,7 @@ export class MonthlyPayment {
 
     @Property({ onCreate: () => new Date() })
     paymentDate: Date = new Date();
+
+    @Property({ nullable: true })
+    receiptNumber?: string;
 }

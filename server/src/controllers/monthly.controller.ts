@@ -119,6 +119,9 @@ export class MonthlyClientController {
                         emTx.persist(transaction);
                     }
 
+                    // Update payment with receipt number if generated
+                    if (receiptNumber) payment.receiptNumber = receiptNumber;
+
                     emTx.persist(payment);
                     return { receiptNumber };
                 });
@@ -183,6 +186,8 @@ export class MonthlyClientController {
                     } as any);
                     emTx.persist(transaction);
                 }
+
+                if (receiptNumber) payment.receiptNumber = receiptNumber;
 
                 emTx.persist([client, payment]);
                 return { receiptNumber };
@@ -265,6 +270,8 @@ export class MonthlyClientController {
                     console.warn('Renewing monthly without active shift');
                     throw new Error('No active shift found. Please start a shift to renew.');
                 }
+
+                if (receiptNumber) payment.receiptNumber = receiptNumber;
 
                 emTx.persist(payment);
                 return { receiptNumber };
