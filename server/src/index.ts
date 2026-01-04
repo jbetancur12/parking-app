@@ -1,3 +1,4 @@
+import 'reflect-metadata'; // Required for class-validator decorators
 import dns from 'node:dns';
 // Force IPv4 for Supabase connection (fixes ENETUNREACH on Render/Node 20)
 dns.setDefaultResultOrder('ipv4first');

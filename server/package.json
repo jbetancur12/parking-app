@@ -25,6 +25,8 @@
     "@mikro-orm/reflection": "^6.6.2",
     "@mikro-orm/sqlite": "^6.6.2",
     "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
@@ -36,6 +38,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "node-cache": "^5.1.2",
+    "reflect-metadata": "^0.2.2",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
