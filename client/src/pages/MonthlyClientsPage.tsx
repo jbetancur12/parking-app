@@ -1,17 +1,14 @@
-import { useState, useRef } from 'react';
 import { Users, Plus, Download } from 'lucide-react';
-import { useMonthlyClients, type Client } from '../hooks/useMonthlyClients';
-import { useElectronPrint } from '../hooks/useElectronPrint';
+import { useMonthlyClients } from '../hooks/useMonthlyClients';
+import { useMonthlyClientActions } from '../hooks/useMonthlyClientActions';
+
 import { ClientFilterBar } from '../components/monthly/ClientFilterBar';
 import { MonthlyClientTable } from '../components/monthly/MonthlyClientTable';
-import { MonthlyClientForm } from '../components/monthly/MonthlyClientForm';
-import { RenewalModal } from '../components/monthly/RenewalModal';
-import { HistoryModal } from '../components/monthly/HistoryModal';
-import { ConfirmationModal } from '../components/ConfirmationModal';
+import { ClientActionModals } from '../components/monthly/ClientActionModals';
 import { PrintMonthlyReceipt } from '../components/PrintMonthlyReceipt';
-import { exportToExcel } from '../utils/excelExport';
 
 export default function MonthlyClientsPage() {
+    // 1. Data Layer
     const {
         clients,
         settings,
@@ -26,160 +23,32 @@ export default function MonthlyClientsPage() {
         getHistory
     } = useMonthlyClients();
 
-    // Modal Visibility State
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-
-    // Confirmation Modal State (Global/Shared)
-    const [confirmModal, setConfirmModal] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        onConfirm: () => void;
-        type?: 'primary' | 'danger' | 'warning';
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: () => { },
+    // 2. Action/UI Layer
+    const {
+        isCreateModalOpen, setIsCreateModalOpen,
+        isRenewModalOpen, setIsRenewModalOpen,
+        isHistoryModalOpen, setIsHistoryModalOpen,
+        selectedClient,
+        confirmModal,
+        closeConfirmModal,
+        printRef,
+        printData,
+        triggerPrint,
+        handleCreateSubmit,
+        handleRenewSubmit,
+        onRenewClick,
+        onHistoryClick,
+        onToggleStatusClick,
+        onAnonymizeClick,
+        handleExport
+    } = useMonthlyClientActions({
+        clients,
+        settings,
+        createClient,
+        renewClient,
+        toggleStatus,
+        anonymizeClient
     });
-
-    // Printing System
-    const componentRef = useRef<HTMLDivElement>(null);
-    const [printData, setPrintData] = useState<any>(null);
-
-    const handlePrint = useElectronPrint({
-        contentRef: componentRef,
-        onAfterPrint: () => setPrintData(null),
-        silent: settings?.show_print_dialog === 'false'
-    });
-
-    const triggerPrint = (data: any) => {
-        setPrintData(data);
-        setTimeout(() => {
-            handlePrint();
-        }, 100);
-    };
-
-    // --- Handlers ---
-
-    const handleCreateSubmit = async (data: any) => {
-        const response = await createClient(data);
-        setIsCreateModalOpen(false);
-
-        // Printing Logic for New Client
-        const { client, payment, receiptNumber } = response;
-        if (client && payment) {
-            setConfirmModal({
-                isOpen: true,
-                title: 'Imprimir Recibo',
-                message: '¿Desea imprimir el recibo de la nueva mensualidad?',
-                type: 'primary',
-                onConfirm: () => {
-                    triggerPrint({
-                        paymentId: payment.id,
-                        plate: client.plate,
-                        clientName: client.name,
-                        vehicleType: client.vehicleType,
-                        amount: payment.amount,
-                        periodStart: payment.periodStart,
-                        periodEnd: payment.periodEnd,
-                        paymentDate: payment.paymentDate,
-                        concept: 'NUEVA MENSUALIDAD',
-                        receiptNumber
-                    });
-                    closeConfirmModal();
-                }
-            });
-        }
-    };
-
-    const handleRenewSubmit = async (id: number, data: { amount: number, paymentMethod: string }) => {
-        const response = await renewClient(id, data);
-
-        // Printing Logic for Renewal
-        const { client, payment, receiptNumber } = response;
-        if (client && payment) {
-            // We might need to wait for themodal to close fully or just show confirm on top (?)
-            // Currently logic shows confirm after success toast in hook? No, hook returns data.
-            setConfirmModal({
-                isOpen: true,
-                title: 'Imprimir Recibo',
-                message: '¿Desea imprimir el recibo de renovación?',
-                type: 'primary',
-                onConfirm: () => {
-                    triggerPrint({
-                        paymentId: payment.id,
-                        plate: client.plate,
-                        clientName: client.name,
-                        vehicleType: client.vehicleType,
-                        amount: payment.amount,
-                        periodStart: payment.periodStart,
-                        periodEnd: payment.periodEnd,
-                        paymentDate: payment.paymentDate,
-                        concept: 'RENOVACIÓN',
-                        receiptNumber
-                    });
-                    closeConfirmModal();
-                }
-            });
-        }
-    };
-
-    const onRenewClick = (client: Client) => {
-        setSelectedClient(client);
-        setIsRenewModalOpen(true);
-    };
-
-    const onHistoryClick = (client: Client) => {
-        setSelectedClient(client);
-        setIsHistoryModalOpen(true);
-    };
-
-    const onToggleStatusClick = (clientId: number, isActive: boolean) => {
-        setConfirmModal({
-            isOpen: true,
-            title: isActive ? 'Desactivar Cliente' : 'Activar Cliente',
-            message: `¿Está seguro de ${isActive ? 'desactivar' : 'activar'} este cliente?`,
-            type: 'warning',
-            onConfirm: async () => {
-                await toggleStatus(clientId);
-                closeConfirmModal();
-            }
-        });
-    };
-
-    const onAnonymizeClick = (clientId: number) => {
-        setConfirmModal({
-            isOpen: true,
-            title: 'Derecho al Olvido (Eliminación Legal)',
-            message: '¿Está seguro de ANONIMIZAR este cliente? Esta acción es IRREVERSIBLE. Se eliminará el Nombre, Teléfono y Placa. El historial de pagos se mantendrá anónimo.',
-            type: 'danger',
-            onConfirm: async () => {
-                await anonymizeClient(clientId);
-                closeConfirmModal();
-            }
-        });
-    };
-
-    const handleExport = () => {
-        const exportData = clients.map(client => ({
-            'Placa': client.plate,
-            'Nombre': client.name,
-            'Teléfono': client.phone || '',
-            'Tipo Vehículo': client.vehicleType || '',
-            'Tarifa Mensual': client.monthlyRate,
-            'Fecha Inicio': new Date(client.startDate).toLocaleDateString(),
-            'Fecha Fin': new Date(client.endDate).toLocaleDateString(),
-            'Estado': client.isActive ? 'Activo' : 'Inactivo'
-        }));
-        const filename = `Clientes_Mensuales_${filterStatus}_${new Date().toISOString().split('T')[0]}`;
-        exportToExcel(exportData, filename, 'Clientes');
-    };
-
-    const closeConfirmModal = () => setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
     return (
         <div>
@@ -199,7 +68,7 @@ export default function MonthlyClientsPage() {
                     </button>
 
                     <button
-                        onClick={handleExport}
+                        onClick={() => handleExport(filterStatus)}
                         className="text-brand-blue dark:text-blue-300 border border-brand-blue dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-center gap-2 font-medium flex-1 md:flex-none"
                     >
                         <Download size={18} />
@@ -226,26 +95,21 @@ export default function MonthlyClientsPage() {
                 onAnonymize={onAnonymizeClick}
             />
 
-            {/* Modals */}
-            <MonthlyClientForm
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onSubmit={handleCreateSubmit}
-            />
-
-            <RenewalModal
-                isOpen={isRenewModalOpen}
-                onClose={() => setIsRenewModalOpen(false)}
-                client={selectedClient}
-                onRenew={handleRenewSubmit}
-            />
-
-            <HistoryModal
-                isOpen={isHistoryModalOpen}
-                onClose={() => setIsHistoryModalOpen(false)}
-                client={selectedClient}
-                fetchHistory={getHistory}
-                onReprint={(payment) => {
+            {/* Modals & Dialogs */}
+            <ClientActionModals
+                isCreateModalOpen={isCreateModalOpen}
+                setIsCreateModalOpen={setIsCreateModalOpen}
+                isRenewModalOpen={isRenewModalOpen}
+                setIsRenewModalOpen={setIsRenewModalOpen}
+                isHistoryModalOpen={isHistoryModalOpen}
+                setIsHistoryModalOpen={setIsHistoryModalOpen}
+                selectedClient={selectedClient}
+                onCreateSubmit={handleCreateSubmit}
+                onRenewSubmit={handleRenewSubmit}
+                getHistory={getHistory}
+                confirmModal={confirmModal}
+                closeConfirmModal={closeConfirmModal}
+                onHistoryReprint={(payment) => {
                     if (!selectedClient) return;
                     triggerPrint({
                         paymentId: payment.id,
@@ -257,25 +121,16 @@ export default function MonthlyClientsPage() {
                         periodEnd: payment.periodEnd,
                         paymentDate: payment.paymentDate,
                         concept: 'COPIA DE RECIBO',
-                        receiptNumber: payment.receiptNumber // Added receiptNumber
+                        receiptNumber: payment.receiptNumber
                     });
                 }}
-            />
-
-            <ConfirmationModal
-                isOpen={confirmModal.isOpen}
-                title={confirmModal.title}
-                message={confirmModal.message}
-                onConfirm={confirmModal.onConfirm}
-                onCancel={closeConfirmModal}
-                type={confirmModal.type}
             />
 
             {/* Hidden Print Component */}
             <div style={{ display: 'none' }}>
                 {printData && (
                     <PrintMonthlyReceipt
-                        ref={componentRef}
+                        ref={printRef}
                         data={printData}
                         settings={settings}
                     />
