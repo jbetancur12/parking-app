@@ -1,0 +1,233 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Manual de Usuario - Aparca">
+    <Navbar />
+    <main class="pt-32 pb-20 bg-gray-50 min-h-screen">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm mb-8">
+                <h1 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">📖 Manual de Usuario</h1>
+                <p class="text-xl text-gray-600">Guía completa para aprovechar al máximo Aparca</p>
+                <p class="text-sm text-gray-500 mt-4">Versión 1.0 | Última actualización: Enero 2026</p>
+            </div>
+
+            <!-- Table of Contents -->
+            <div class="bg-brand-blue text-white p-8 rounded-2xl shadow-sm mb-8">
+                <h2 class="text-2xl font-display font-bold mb-4">📋 Contenido</h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <a href="#primeros-pasos" class="block hover:underline mb-2">1. Primeros Pasos</a>
+                        <a href="#parqueaderos" class="block hover:underline mb-2">2. Gestión de Parqueaderos</a>
+                        <a href="#mensuales" class="block hover:underline mb-2">3. Clientes Mensuales</a>
+                        <a href="#servicios" class="block hover:underline mb-2">4. Servicios Adicionales</a>
+                    </div>
+                    <div>
+                        <a href="#reportes" class="block hover:underline mb-2">5. Reportes y Finanzas</a>
+                        <a href="#administracion" class="block hover:underline mb-2">6. Administración</a>
+                        <a href="#faq" class="block hover:underline mb-2">7. Preguntas Frecuentes</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm prose prose-blue max-w-none">
+                
+                <!-- Primeros Pasos -->
+                <h2 id="primeros-pasos" class="text-3xl font-display font-bold text-gray-900 mb-6">1. Primeros Pasos</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">1.1 Iniciar Sesión</h3>
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Abre tu navegador y ve a la URL de Aparca</li>
+                    <li>Ingresa tu <strong>email</strong> y <strong>contraseña</strong></li>
+                    <li>Haz clic en <strong>"Iniciar Sesión"</strong></li>
+                </ol>
+                
+                <div class="bg-gray-100 p-6 rounded-lg mb-6">
+                    <p class="text-sm text-gray-600 mb-2">📸 Captura de pantalla: Pantalla de Login</p>
+                    <div class="bg-gray-200 h-64 rounded flex items-center justify-center text-gray-500">
+                        [Placeholder: Screenshot de login]
+                    </div>
+                </div>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">1.2 Abrir Turno</h3>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <p class="text-yellow-800"><strong>⚠️ IMPORTANTE:</strong> Debes abrir un turno antes de registrar operaciones.</p>
+                </div>
+                
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>En el dashboard, haz clic en <strong>"Abrir Turno"</strong></li>
+                    <li>Ingresa el <strong>monto base</strong> (efectivo inicial en caja)</li>
+                    <li>Haz clic en <strong>"Confirmar"</strong></li>
+                </ol>
+
+                <!-- Parqueaderos -->
+                <h2 id="parqueaderos" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">2. Gestión de Parqueaderos</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">2.1 Registrar Entrada de Vehículo</h3>
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Ve a <strong>"Parqueadero"</strong> en el menú lateral</li>
+                    <li>Haz clic en <strong>"+ Nuevo Ingreso"</strong></li>
+                    <li>Completa el formulario:
+                        <ul class="list-disc pl-6 mt-2">
+                            <li><strong>Placa:</strong> ABC123</li>
+                            <li><strong>Tipo de Vehículo:</strong> Carro, Moto u Otro</li>
+                            <li><strong>Plan:</strong> Por Hora o Por Día</li>
+                        </ul>
+                    </li>
+                    <li>Haz clic en <strong>"Registrar Entrada"</strong></li>
+                    <li>Imprime el ticket si lo deseas</li>
+                </ol>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <p class="text-blue-800"><strong>💡 Atajos de Teclado:</strong></p>
+                    <ul class="list-disc pl-6 mt-2 text-blue-700">
+                        <li><code>Ctrl + N</code>: Nuevo ingreso</li>
+                        <li><code>Enter</code>: Confirmar</li>
+                        <li><code>Esc</code>: Cancelar</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">2.2 Registrar Salida de Vehículo</h3>
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Busca la placa en la lista</li>
+                    <li>Haz clic en <strong>"Salida"</strong></li>
+                    <li>Revisa el resumen de cobro</li>
+                    <li>Selecciona método de pago (Efectivo o Transferencia)</li>
+                    <li>Aplica descuentos si es necesario</li>
+                    <li>Si es efectivo, ingresa el dinero recibido</li>
+                    <li>Haz clic en <strong>"Confirmar Salida"</strong></li>
+                </ol>
+
+                <div class="bg-gray-100 p-6 rounded-lg mb-6">
+                    <p class="text-sm text-gray-600 mb-2">📸 Captura de pantalla: Salida de Vehículo</p>
+                    <div class="bg-gray-200 h-64 rounded flex items-center justify-center text-gray-500">
+                        [Placeholder: Screenshot de salida]
+                    </div>
+                </div>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">2.3 Modo Offline</h3>
+                <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                    <p class="text-green-800"><strong>✅ El sistema sigue funcionando sin internet</strong></p>
+                    <ul class="list-disc pl-6 mt-2 text-green-700">
+                        <li>Puedes registrar entradas y salidas</li>
+                        <li>Las operaciones se guardan en una cola</li>
+                        <li>Se sincronizan automáticamente al volver el internet</li>
+                    </ul>
+                </div>
+
+                <!-- Clientes Mensuales -->
+                <h2 id="mensuales" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">3. Clientes Mensuales</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">3.1 Crear Cliente Mensual</h3>
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Ve a <strong>"Clientes Mensuales"</strong></li>
+                    <li>Haz clic en <strong>"+ Nuevo Cliente"</strong></li>
+                    <li>Completa el formulario con placa, nombre, teléfono, etc.</li>
+                    <li>Haz clic en <strong>"Guardar"</strong></li>
+                    <li>El sistema genera el recibo automáticamente</li>
+                </ol>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">3.2 Renovar Mensualidad</h3>
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Busca al cliente en la lista</li>
+                    <li>Haz clic en <strong>"Renovar"</strong></li>
+                    <li>Confirma el monto</li>
+                    <li>Selecciona método de pago</li>
+                    <li>Imprime el recibo</li>
+                </ol>
+
+                <!-- Servicios Adicionales -->
+                <h2 id="servicios" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">4. Servicios Adicionales</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">4.1 Lavado de Vehículos</h3>
+                <p class="mb-4 text-gray-700">Registra servicios de lavado desde la sección <strong>"Lavado"</strong>. Puedes configurar diferentes tipos de servicio (Básico, Completo, Premium) con sus respectivos precios.</p>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">4.2 Punto de Venta (POS)</h3>
+                <p class="mb-4 text-gray-700">Vende productos adicionales desde <strong>"Ingresos" → "POS"</strong>. Selecciona productos, ajusta cantidades y procesa el pago.</p>
+
+                <!-- Reportes -->
+                <h2 id="reportes" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">5. Reportes y Finanzas</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">5.1 Cerrar Turno</h3>
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                    <p class="text-red-800"><strong>⚠️ IMPORTANTE:</strong> Cierra el turno al final de tu jornada.</p>
+                </div>
+                
+                <ol class="list-decimal pl-6 mb-6 text-gray-700">
+                    <li>Haz clic en <strong>"Cerrar Turno"</strong></li>
+                    <li>Ingresa el efectivo declarado</li>
+                    <li>Agrega notas si es necesario</li>
+                    <li>Revisa el resumen del turno</li>
+                    <li>Imprime el resumen</li>
+                </ol>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">5.2 Reportes Consolidados</h3>
+                <p class="mb-4 text-gray-700">Accede a <strong>"Reportes"</strong> para ver análisis detallados de ingresos, gastos y utilidades. Puedes filtrar por fecha y exportar a Excel.</p>
+
+                <!-- Administración -->
+                <h2 id="administracion" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">6. Administración</h2>
+                
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">6.1 Gestión de Usuarios</h3>
+                <p class="mb-4 text-gray-700">Los administradores pueden crear usuarios, asignar roles (Operador/Admin) y gestionar permisos por sede desde <strong>"Usuarios"</strong>.</p>
+
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">6.2 Configuración de Tarifas</h3>
+                <p class="mb-4 text-gray-700">Configura precios por tipo de vehículo y modelo de tarifa (Por Minuto, Por Hora, Por Bloques) desde <strong>"Configuración" → "Tarifas"</strong>.</p>
+
+                <!-- FAQ -->
+                <h2 id="faq" class="text-3xl font-display font-bold text-gray-900 mb-6 mt-12">7. Preguntas Frecuentes</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-2">¿Qué hago si olvidé mi contraseña?</h4>
+                        <p class="text-gray-700">Haz clic en "¿Olvidaste tu contraseña?" en la pantalla de login y sigue las instrucciones.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-2">¿Puedo usar Aparca en mi celular?</h4>
+                        <p class="text-gray-700">Sí, Aparca es responsive y funciona en cualquier dispositivo. También puedes instalarlo como app desde Chrome móvil.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-2">¿Qué pasa si se va la luz?</h4>
+                        <p class="text-gray-700">Si tienes un UPS, el sistema sigue funcionando. Las operaciones se guardan localmente y se sincronizan cuando vuelva el internet.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-2">¿Cómo cambio el modo oscuro?</h4>
+                        <p class="text-gray-700">Haz clic en el ícono de luna/sol en la esquina superior derecha.</p>
+                    </div>
+                </div>
+
+                <!-- Support -->
+                <div class="bg-brand-blue text-white p-8 rounded-lg mt-12">
+                    <h3 class="text-2xl font-display font-bold mb-4">📞 ¿Necesitas Ayuda?</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="mb-2"><strong>📧 Email:</strong> soporte@aparca.com</p>
+                            <p class="mb-2"><strong>💬 WhatsApp:</strong> +57 300 123 4567</p>
+                        </div>
+                        <div>
+                            <p class="mb-2"><strong>📞 Teléfono:</strong> +57 (1) 234 5678</p>
+                            <p class="mb-2"><strong>🌐 Portal:</strong> soporte.aparca.com</p>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-sm opacity-90">Horario: Lunes a Viernes, 8am - 6pm | Sábados, 9am - 1pm</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <Footer />
+</Layout>
+
+<style>
+    .prose h2 {
+        scroll-margin-top: 8rem;
+    }
+    .prose h3 {
+        scroll-margin-top: 8rem;
+    }
+</style>
