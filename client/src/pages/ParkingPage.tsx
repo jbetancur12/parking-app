@@ -11,6 +11,8 @@ import { EntryModal } from '../components/parking/EntryModal';
 import { ExitPreviewModal } from '../components/parking/ExitPreviewModal';
 import { PrintConfirmationModal } from '../components/parking/PrintConfirmationModal';
 import { ExitSuccessModal } from '../components/parking/ExitSuccessModal';
+import { ExitHistoryModal } from '../components/parking/ExitHistoryModal';
+import { History } from 'lucide-react';
 
 export default function ParkingPage() {
     // Print refs (Must be in valid DOM context)
@@ -60,10 +62,18 @@ export default function ParkingPage() {
         handleReprintTicket,
         handleConfirmPrintEntry,
         handleCancelPrintEntry,
-        getPlanLabel
+        getPlanLabel,
+        handleReprintReceipt
     } = useParkingPage(
-        handlePrintTicket
+        handlePrintTicket,
+        handlePrintReceipt // Pass receipt handler to hook if needed (or keep in page)
     );
+
+    // History Modal State
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = React.useState(false);
+
+    // Reprint Receipt Handler (from History)
+
 
     // Search Enter Logic
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,23 +100,36 @@ export default function ParkingPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <h1 className="text-2xl font-display font-bold text-brand-blue w-full md:w-auto text-center md:text-left">Gestión de Parqueadero</h1>
-                <div className="flex flex-col items-center md:items-end w-full md:w-auto">
+                <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
                     <button
                         onClick={handleOpenEntryModal}
                         disabled={!activeShift}
                         title={!activeShift ? "Debe iniciar turno para registrar vehículos" : "Registrar nueva entrada"}
-                        className={`flex w-full md:w-auto justify-center items-center font-bold px-4 py-3 md:py-2 rounded-lg shadow-md transform transition-all ${activeShift
-                            ? 'bg-brand-yellow text-brand-blue hover:bg-yellow-400 active:scale-95 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        className={`flex w-full md:w-auto justify-center items-center font-bold px-6 py-3 rounded-xl shadow-lg transform transition-all duration-200 ${activeShift
+                            ? 'bg-brand-yellow text-brand-blue hover:bg-yellow-400 hover:scale-105 active:scale-95 cursor-pointer border-2 border-transparent'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-gray-100'
                             }`}
                         data-testid="btn-open-entry-modal"
                     >
-                        <Plus className="mr-2" size={20} />
+                        <Plus className="mr-2" size={22} />
                         Nueva Entrada
                     </button>
+
+                    <button
+                        onClick={() => setIsHistoryModalOpen(true)}
+                        disabled={!activeShift}
+                        className={`flex w-full md:w-auto justify-center items-center font-bold px-6 py-3 rounded-xl shadow-md transform transition-all duration-200 ${activeShift
+                            ? 'bg-white text-brand-blue border-2 border-brand-blue hover:bg-blue-50 hover:scale-105 cursor-pointer'
+                            : 'bg-gray-100 text-gray-400 border-2 border-gray-100 cursor-not-allowed'
+                            }`}
+                    >
+                        <History className="mr-2" size={22} />
+                        Salidas / Recibos
+                    </button>
+
                     {!activeShift && (
-                        <span className="text-xs text-red-500 font-bold mt-1 flex items-center bg-red-50 px-2 py-1 rounded-full border border-red-100">
-                            <span className="mr-1">⚠️</span> Requiere Turno Activo
+                        <span className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full border border-red-100 shadow-sm whitespace-nowrap">
+                            ⚠️ Requiere Turno
                         </span>
                     )}
                 </div>
@@ -172,6 +195,12 @@ export default function ParkingPage() {
                     onPrint={() => setTimeout(() => handlePrintReceipt(), 100)}
                 />
             )}
+
+            <ExitHistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                onReprint={handleReprintReceipt}
+            />
 
             {/* Hidden Print Components */}
             <div style={{ display: 'none' }}>

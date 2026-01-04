@@ -490,6 +490,8 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
             sessionRef.agreement = appliedAgreement;
         }
 
+        if (receiptNumber) sessionRef.receiptNumber = receiptNumber;
+
         // Create Revenue Transaction
         const transaction = emTx.create(Transaction, {
             shift: shift,
@@ -596,4 +598,41 @@ export const publicStatus = async (req: Request, res: Response) => {
         durationMinutes,
         currentTime: new Date()
     });
+};
+
+export const getCompletedSessions = async (req: AuthRequest, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em || !req.user) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+    const locationIdRaw = req.headers['x-location-id'];
+    const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
+
+    if (!locationId) {
+        return res.status(400).json({ message: 'Location context is required' });
+    }
+
+    // Find active shift to scope history to "Current Shift"
+    const shift = await em.findOne(Shift, {
+        user: req.user.id,
+        isActive: true,
+        location: locationId
+    });
+
+    if (!shift) {
+        return res.status(400).json({ message: 'No active shift found' });
+    }
+
+    // Fetch completed sessions for this shift
+    const sessions = await em.find(ParkingSession, {
+        exitShift: shift,
+        status: ParkingStatus.COMPLETED
+    }, {
+        orderBy: { exitTime: 'DESC' },
+        limit: 50,
+        populate: ['agreement']
+    });
+
+    return res.json(sessions);
 };

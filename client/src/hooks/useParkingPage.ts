@@ -16,7 +16,8 @@ interface ParkingSession {
 }
 
 export const useParkingPage = (
-    handlePrintTicket: () => void
+    handlePrintTicket: () => void,
+    handlePrintReceipt?: () => void
 ) => {
     // Data State
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
@@ -297,6 +298,16 @@ export const useParkingPage = (
         setTimeout(() => handlePrintTicket(), 100);
     };
 
+    const handleReprintReceipt = (session: any) => {
+        setPrintData({
+            type: 'receipt',
+            session: { ...session }
+        });
+        if (handlePrintReceipt) {
+            setTimeout(() => handlePrintReceipt(), 100);
+        }
+    };
+
     // --- Helper for List View ---
 
     const formattedOfflineSessions: ParkingSession[] = queue
@@ -362,6 +373,7 @@ export const useParkingPage = (
         handleExitClick,
         confirmExit,
         handleReprintTicket,
+        handleReprintReceipt,
         handleConfirmPrintEntry,
         handleCancelPrintEntry,
         getPlanLabel

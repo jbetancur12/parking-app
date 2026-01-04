@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus } from '../controllers/parking.controller';
+import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus, getCompletedSessions } from '../controllers/parking.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { verifyTenantAccess } from '../middleware/permission.middleware';
 import { saasContext } from '../middleware/saasContext';
@@ -21,5 +21,6 @@ router.post('/entry', entryVehicle);
 router.get('/preview/:plate', previewExit);
 router.post('/exit', exitVehicle);
 router.get('/active', getActiveSessions);
+router.get('/completed', getCompletedSessions);
 
 export default router;

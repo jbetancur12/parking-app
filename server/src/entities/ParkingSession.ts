@@ -68,6 +68,9 @@ export class ParkingSession extends BaseTenantEntity {
     @Property({ nullable: true })
     discountReason?: string;
 
+    @Property({ nullable: true })
+    receiptNumber?: string;
+
     @ManyToOne(() => 'Agreement', { nullable: true })
     agreement?: any; // Avoiding circular dependency import for now or use require
 
