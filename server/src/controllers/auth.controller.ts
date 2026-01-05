@@ -81,7 +81,12 @@ export const registerTenant = async (req: Request, res: Response) => {
     if (!secret) throw new Error('JWT_SECRET not defined');
 
     const token = jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
+        {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            tenant: { id: tenant.id, plan: tenant.plan }
+        },
         secret,
         { expiresIn: '12h' }
     );
@@ -175,8 +180,25 @@ export const login = async (req: Request, res: Response) => {
         throw new Error('JWT_SECRET is not defined');
     }
 
+    // Determine primary tenant for token context
+    // @ts-ignore
+    const primaryTenant = activeTenants.length > 0 ? activeTenants[0] : null;
+
+    const tokenPayload: any = {
+        id: user.id,
+        username: user.username,
+        role: user.role
+    };
+
+    if (primaryTenant) {
+        tokenPayload.tenant = {
+            id: primaryTenant.id,
+            plan: primaryTenant.plan
+        };
+    }
+
     const token = jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
+        tokenPayload,
         secret,
         { expiresIn: '12h' }
     );
