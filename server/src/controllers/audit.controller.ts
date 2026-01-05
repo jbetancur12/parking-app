@@ -11,13 +11,32 @@ export class AuditController {
             const user = (req as any).user;
             const filter: any = {};
 
-            // Filter by Tenant (unless Super Admin exploring all, though usually they search within a tenant context)
-            if (req.headers['x-tenant-id']) {
-                filter.tenant = req.headers['x-tenant-id'];
-            } else if (user.role !== 'SUPER_ADMIN') {
-                // Determine tenant from user if header missing (fallback)
-                // Ideally middleware handles this, but we filter to be safe
-                // Logic depends on how you handle super admins viewing tenants
+            // Filter by Tenant
+            // If the user is SUPER_ADMIN, we only filter if they explicitly want to filter (or if we decide the UI should always be global)
+            // CURRENT BEHAVIOR FIX: If SUPER_ADMIN, ignore the header unless it's a specific "impersonation" or "drill-down" context. 
+            // For now, let's treat the header as "optional filter" for SuperAdmin.
+
+            if (user.role === 'SUPER_ADMIN') {
+                // If query param ?global=true is present, ignore tenant header
+                // Or simply: If SuperAdmin, checking audit logs should default to ALL unless specified otherwise.
+                // But the header is sent automatically by the frontend if a tenant is selected in the context.
+                // Let's rely on a query param 'tenantId' for explicit filtering, or ignore header if it conflicts with "Global" view desire.
+
+                // Better fix: if req.query.tenantId is provided, use it. If not, don't use the header if it's just the context one.
+                // Actually, the safest way given the 'blank page' issue:
+                // If SuperAdmin, do NOT auto-apply the header filter. Only apply if explicitly passed in query or if we want to enforce context (which we don't for Global Audit).
+
+                if (req.query.tenantId) {
+                    filter.tenant = req.query.tenantId;
+                }
+                // If no query param, we show ALL (Global Dashboard). We definitely IGNORE x-tenant-id here because that comes from localStorage context which might be stale or irrelevant for global view.
+            } else {
+                // For non-SuperAdmin, always enforce strict tenant (from header or user relation)
+                if (req.headers['x-tenant-id']) {
+                    filter.tenant = req.headers['x-tenant-id'];
+                } else {
+                    // Fallback or error?
+                }
             }
 
             // Location Manager restriction

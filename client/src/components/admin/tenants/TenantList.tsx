@@ -1,6 +1,9 @@
 import React from 'react';
-import { Edit, Power, PowerOff, MapPin, Users } from 'lucide-react';
+import { Edit, Power, PowerOff, MapPin, Users, LogIn } from 'lucide-react';
+import api from '../../../services/api';
+import { toast } from 'sonner';
 import type { Tenant } from '../../../hooks/useTenantsPage';
+import { ConfirmationModal } from '../../ConfirmationModal';
 
 interface TenantListProps {
     tenants: Tenant[];
@@ -15,6 +18,8 @@ export const TenantList: React.FC<TenantListProps> = ({
     toggleTenantStatus,
     navigate
 }) => {
+    const [impersonateId, setImpersonateId] = React.useState<string | null>(null);
+
     const getStatusBadge = (status: string) => {
         const colors = {
             active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -41,99 +46,153 @@ export const TenantList: React.FC<TenantListProps> = ({
         );
     };
 
+    const handleImpersonate = async () => {
+        if (!impersonateId) return;
+
+        try {
+            toast.info('Iniciando acceso...', { duration: 2000 });
+            const response = await api.post('/auth/impersonate', { tenantId: impersonateId });
+            const { token, user } = response.data;
+
+            // Save new session
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            // Set context
+            if (user.tenants && user.tenants.length > 0) {
+                localStorage.setItem('currentTenant', JSON.stringify(user.tenants[0]));
+            }
+            if (user.locations && user.locations.length > 0) {
+                localStorage.setItem('currentLocation', JSON.stringify(user.locations[0]));
+            }
+
+            toast.success('¡Acceso concedido! Redirigiendo...');
+
+            // Short delay to allow toast to be seen
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+
+        } catch (error: any) {
+            console.error('Impersonation error:', error);
+            toast.error(error.response?.data?.message || 'Error al acceder a la empresa');
+        } finally {
+            setImpersonateId(null);
+        }
+    };
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-brand-blue/5 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Empresa</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Plan</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Uso</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Creada</th>
-                            <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {loading ? (
+        <>
+            <ConfirmationModal
+                isOpen={!!impersonateId}
+                onConfirm={handleImpersonate}
+                title="Acceder como Administrador"
+                message="¿Estás seguro de que deseas iniciar sesión como el administrador de esta empresa? Tendrás control total sobre sus datos."
+                confirmText="Acceder"
+                cancelText="Cancelar"
+                type="warning"
+                onCancel={() => setImpersonateId(null)}
+            />
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-brand-blue/5 dark:bg-gray-700/50">
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                    Cargando empresas...
-                                </td>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Empresa</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Plan</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Estado</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Uso</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Creada</th>
+                                <th className="px-6 py-4 text-right text-xs font-bold text-brand-blue dark:text-blue-300 uppercase tracking-wider">Acciones</th>
                             </tr>
-                        ) : tenants.length === 0 ? (
-                            <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                    No se encontraron empresas
-                                </td>
-                            </tr>
-                        ) : (
-                            tenants.map((tenant) => (
-                                <tr key={tenant.id} className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10 bg-brand-blue/10 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-brand-blue dark:text-blue-300 font-bold">
-                                                {tenant.name.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-bold text-gray-900 dark:text-white">{tenant.name}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">@{tenant.slug}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {getPlanBadge(tenant.plan)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {getStatusBadge(tenant.status)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-gray-300 space-y-1">
-                                            <div className="flex items-center gap-1" title="Sedes">
-                                                <MapPin className="h-4 w-4 text-gray-400" />
-                                                <span>{tenant.locationsCount}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1" title="Usuarios">
-                                                <Users className="h-4 w-4 text-gray-400" />
-                                                <span>{tenant.usersCount}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {new Date(tenant.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
-                                                className="text-brand-blue dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-                                                title="Ver Detalle"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => toggleTenantStatus(tenant.id, tenant.status)}
-                                                className={`p-2 rounded-lg transition-colors ${tenant.status === 'active'
-                                                    ? 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50'
-                                                    : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50'
-                                                    }`}
-                                                title={tenant.status === 'active' ? 'Suspender' : 'Activar'}
-                                            >
-                                                {tenant.status === 'active' ? (
-                                                    <PowerOff className="h-4 w-4" />
-                                                ) : (
-                                                    <Power className="h-4 w-4" />
-                                                )}
-                                            </button>
-                                        </div>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        Cargando empresas...
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : tenants.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        No se encontraron empresas
+                                    </td>
+                                </tr>
+                            ) : (
+                                tenants.map((tenant) => (
+                                    <tr key={tenant.id} className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-brand-blue/10 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-brand-blue dark:text-blue-300 font-bold">
+                                                    {tenant.name.substring(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-bold text-gray-900 dark:text-white">{tenant.name}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">@{tenant.slug}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {getPlanBadge(tenant.plan)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {getStatusBadge(tenant.status)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-gray-300 space-y-1">
+                                                <div className="flex items-center gap-1" title="Sedes">
+                                                    <MapPin className="h-4 w-4 text-gray-400" />
+                                                    <span>{tenant.locationsCount}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1" title="Usuarios">
+                                                    <Users className="h-4 w-4 text-gray-400" />
+                                                    <span>{tenant.usersCount}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {new Date(tenant.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
+                                                    className="text-brand-blue dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                                                    title="Ver Detalle"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setImpersonateId(tenant.id)}
+                                                    className="text-purple-600 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 bg-purple-50 dark:bg-purple-900/30 p-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+                                                    title="Acceder como Admin"
+                                                >
+                                                    <LogIn className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleTenantStatus(tenant.id, tenant.status)}
+                                                    className={`p-2 rounded-lg transition-colors ${tenant.status === 'active'
+                                                        ? 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50'
+                                                        : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50'
+                                                        }`}
+                                                    title={tenant.status === 'active' ? 'Suspender' : 'Activar'}
+                                                >
+                                                    {tenant.status === 'active' ? (
+                                                        <PowerOff className="h-4 w-4" />
+                                                    ) : (
+                                                        <Power className="h-4 w-4" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </>
     );
 };

@@ -239,6 +239,130 @@ export const login = async (req: Request, res: Response) => {
     });
 };
 
+export const impersonateTenant = async (req: Request, res: Response) => {
+    try {
+        const { tenantId } = req.body;
+        const em = RequestContext.getEntityManager();
+        if (!em) return res.status(500).json({ message: 'No EntityManager available' });
+
+        // 1. Verify Requestor is Super Admin
+        const userRequesting = (req as any).user;
+        if (!userRequesting) {
+            return res.status(500).json({ message: 'User context missing despite middleware' });
+        }
+
+        console.log('Impersonation requested by:', userRequesting.username, 'Role:', userRequesting.role);
+
+        if (userRequesting.role !== 'SUPER_ADMIN' && userRequesting.role !== 'super_admin') {
+            return res.status(403).json({ message: 'Only Super Admin can impersonate' });
+        }
+
+        // 2. Find target tenant
+        const tenant = await em.findOne(Tenant, { id: tenantId }, { filters: false });
+        if (!tenant) return res.status(404).json({ message: 'Tenant not found' });
+
+        // 3. Find a user to impersonate
+        // If targetUserId is provided, use that. Otherwise find an ADMIN.
+        const { targetUserId } = req.body;
+        let targetUser;
+
+        if (targetUserId) {
+            targetUser = await em.findOne(User, {
+                id: targetUserId,
+                tenants: { id: tenantId } // Ensure user belongs to this tenant
+            }, {
+                populate: ['tenants', 'tenants.subscriptions', 'locations', 'lastActiveLocation'],
+                filters: false
+            });
+        } else {
+            // Fallback: Find any ADMIN
+            targetUser = await em.findOne(User, {
+                tenants: { id: tenantId },
+                role: UserRole.ADMIN
+            }, {
+                populate: ['tenants', 'tenants.subscriptions', 'locations', 'lastActiveLocation'],
+                filters: false
+            });
+        }
+
+        if (!targetUser) {
+            // Fallback: Try to find ANY admin for this tenant?
+            // Or maybe the role is different?
+            return res.status(404).json({ message: 'No admin user found for this tenant to impersonate' });
+        }
+
+        // 4. Generate Token for Target User
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET is not defined');
+
+        // Similar logic to login
+        const tokenPayload: any = {
+            id: targetUser.id,
+            username: targetUser.username,
+            role: targetUser.role
+        };
+
+        // Add tenant context to token if possible, mirroring login
+        if (targetUser.tenants.length > 0) {
+            tokenPayload.tenant = {
+                id: tenant.id, // Use the specific tenant we are impersonating
+                plan: tenant.plan
+            };
+        }
+
+        // Add impersonation flag
+        tokenPayload.impersonatedBy = userRequesting.id;
+
+        const token = jwt.sign(
+            tokenPayload,
+            secret,
+            { expiresIn: '1h' } // Short lived token for impersonation
+        );
+
+        // Determines available locations
+        let availableLocations = targetUser.locations.getItems();
+
+        // If target is Admin, give them all locations for this tenant
+        if (targetUser.role === UserRole.ADMIN) {
+            const allTenantLocations = await em.find(Location, {
+                tenant: tenant.id,
+                isActive: true
+            }, {
+                filters: false
+            });
+            if (allTenantLocations.length > 0) {
+                availableLocations = allTenantLocations;
+            }
+        }
+
+        return res.json({
+            token,
+            user: {
+                id: targetUser.id,
+                username: targetUser.username,
+                role: targetUser.role,
+                tenants: [{
+                    id: tenant.id,
+                    name: tenant.name,
+                    slug: tenant.slug,
+                    plan: tenant.plan,
+                    status: tenant.status,
+                    trialEndsAt: tenant.trialEndsAt
+                }],
+                locations: availableLocations.map(l => ({ id: l.id, name: l.name })),
+                lastActiveLocation: null
+            }
+        });
+    } catch (error: any) {
+        console.error('Impersonation Handler Error:', error);
+        return res.status(500).json({
+            message: 'Internal Server Error during Impersonation',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+};
+
 export const setupStatus = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
     const count = await em?.count(User);
