@@ -3,9 +3,11 @@ import { Payment, PaymentStatus, PaymentMethod } from '../entities/Payment';
 import { Invoice } from '../entities/Invoice';
 import { Tenant } from '../entities/Tenant';
 import { InvoiceService } from './invoice.service';
+import { SubscriptionService } from './subscription.service';
 
 export class PaymentService {
     private invoiceService = new InvoiceService();
+    private subscriptionService = new SubscriptionService();
 
     /**
      * Record a manual payment (admin)
@@ -21,7 +23,7 @@ export class PaymentService {
         if (!em) throw new Error('No EntityManager found');
 
         const invoice = await em.findOne(Invoice, { id: invoiceId }, {
-            populate: ['tenant']
+            populate: ['tenant', 'subscription']
         });
         if (!invoice) throw new Error('Invoice not found');
 
@@ -42,6 +44,16 @@ export class PaymentService {
         // Mark invoice as paid if payment covers total
         if (amount >= invoice.total) {
             await this.invoiceService.markAsPaid(invoiceId);
+
+            // Auto-renew subscription if this payment was for a subscription invoice
+            if (invoice.subscription) {
+                try {
+                    await this.subscriptionService.renewSubscription(invoice.subscription.id);
+                    console.log(`Auto-renewed subscription ${invoice.subscription.id} after payment of invoice ${invoice.id}`);
+                } catch (error) {
+                    console.error('Failed to auto-renew subscription during payment:', error);
+                }
+            }
         }
 
         return payment;
