@@ -102,10 +102,8 @@ export class SubscriptionService {
         subscription.currentPeriodStart = subscription.currentPeriodEnd;
         subscription.currentPeriodEnd = addMonths(subscription.currentPeriodEnd, 1);
 
-        // If was trialing, move to active
-        if (subscription.status === SubscriptionStatus.TRIALING) {
-            subscription.status = SubscriptionStatus.ACTIVE;
-        }
+        // Always activate subscription on renewal (covers PAST_DUE and TRIALLING)
+        subscription.status = SubscriptionStatus.ACTIVE;
 
         await em.flush();
         return subscription;
