@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { type FilterStatus } from '../../hooks/useMonthlyClients';
+import { type FilterStatus } from '../../hooks/business/useMonthlyClients';
 
 interface ClientFilterBarProps {
     searchTerm: string;

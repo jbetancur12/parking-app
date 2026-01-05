@@ -14,6 +14,7 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
     const [phone, setPhone] = useState('');
     const [monthlyRate, setMonthlyRate] = useState('50000');
     const [vehicleType, setVehicleType] = useState('CAR');
+    const [paymentMethod, setPaymentMethod] = useState('CASH');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -28,6 +29,7 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                 name,
                 phone,
                 vehicleType,
+                paymentMethod,
                 monthlyRate: Number(monthlyRate)
             });
             // Reset form on success (the parent might toggle isOpen, but we should clear state)
@@ -101,6 +103,18 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                                 <option value="CAR">Carro</option>
                                 <option value="MOTORCYCLE">Moto</option>
                                 <option value="OTHER">Otro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Medio de Pago</label>
+                            <select
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            >
+                                <option value="CASH">Efectivo</option>
+                                <option value="TRANSFER">Transferencia</option>
+                                <option value="CARD">Tarjeta</option>
                             </select>
                         </div>
                     </div>

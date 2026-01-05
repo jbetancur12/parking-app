@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
-import { type Client } from '../../hooks/useMonthlyClients';
+import { type Client } from '../../hooks/business/useMonthlyClients';
 import { formatCurrency } from '../../utils/formatters';
 import { CurrencyInput } from '../common/CurrencyInput';
 import { toast } from 'sonner';

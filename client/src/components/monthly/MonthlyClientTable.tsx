@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
-import { type Client } from '../../hooks/useMonthlyClients';
+import { type Client } from '../../hooks/business/useMonthlyClients';
 
 interface MonthlyClientTableProps {
     clients: Client[];

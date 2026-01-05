@@ -1,6 +1,6 @@
 import { Users, Plus, Download } from 'lucide-react';
-import { useMonthlyClients } from '../hooks/useMonthlyClients';
-import { useMonthlyClientActions } from '../hooks/useMonthlyClientActions';
+import { useMonthlyClients } from '../hooks/business/useMonthlyClients';
+import { useMonthlyClientActions } from '../hooks/business/useMonthlyClientActions';
 
 import { ClientFilterBar } from '../components/monthly/ClientFilterBar';
 import { MonthlyClientTable } from '../components/monthly/MonthlyClientTable';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { type Client } from '../../hooks/useMonthlyClients';
+import { type Client } from '../../hooks/business/useMonthlyClients';
 import { formatCurrency } from '../../utils/formatters';
 
 interface HistoryModalProps {

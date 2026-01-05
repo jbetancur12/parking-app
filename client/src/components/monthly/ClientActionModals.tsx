@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Client } from '../../hooks/useMonthlyClients';
+import type { Client } from '../../hooks/business/useMonthlyClients';
 import { MonthlyClientForm } from './MonthlyClientForm';
 import { RenewalModal } from './RenewalModal';
 import { HistoryModal } from './HistoryModal';
