@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
-import type { Client } from './useMonthlyClients';
-import { useElectronPrint } from './useElectronPrint';
-import { exportToExcel } from '../utils/excelExport';
+import type { Client } from '../useMonthlyClients';
+import { useElectronPrint } from '../useElectronPrint';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface UseMonthlyClientActionsProps {
     clients: Client[];

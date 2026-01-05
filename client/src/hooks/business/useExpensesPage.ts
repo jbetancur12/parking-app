@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { expenseService, type Expense } from '../services/expense.service';
-import api from '../services/api';
+import { expenseService, type Expense } from '../../services/expense.service';
+import api from '../../services/api';
 
 export const useExpensesPage = () => {
     // Data State

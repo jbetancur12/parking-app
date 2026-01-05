@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 // Detect if running in Electron
 const isElectron = import.meta.env.VITE_APP_MODE === 'electron';

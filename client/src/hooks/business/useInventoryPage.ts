@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { productService, type Product } from '../services/product.service';
-import { useAuth } from '../context/AuthContext';
+import { productService, type Product } from '../../services/product.service';
+import { useAuth } from '../../context/AuthContext';
 
 export const useInventoryPage = () => {
     const { user } = useAuth();

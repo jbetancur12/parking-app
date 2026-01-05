@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Tariff } from '../services/tariff.service';
+import type { Tariff } from '../../services/tariff.service';
 
 interface UseEntryFormProps {
     isOpen: boolean;

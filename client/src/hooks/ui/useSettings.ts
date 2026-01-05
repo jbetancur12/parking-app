@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { settingService } from '../services/setting.service';
-import { tariffService, type Tariff } from '../services/tariff.service';
-import api from '../services/api';
+import { settingService } from '../../services/setting.service';
+import { tariffService, type Tariff } from '../../services/tariff.service';
+import api from '../../services/api';
 
 export const useSettings = () => {
     // Loading State
