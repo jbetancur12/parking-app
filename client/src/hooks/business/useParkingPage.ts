@@ -290,11 +290,12 @@ export const useParkingPage = (
 
         try {
             const response = await api.post('/parking/exit', {
+                sessionId: previewData.id,
                 plate: previewData.plate,
                 paymentMethod,
-                discount,
+                discount: discount ? Number(discount) : 0,
                 discountReason,
-                agreementId,
+                agreementId: agreementId && agreementId !== '' ? Number(agreementId) : undefined,
                 redeem
             });
             const exitData = response.data;

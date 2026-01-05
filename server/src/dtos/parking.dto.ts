@@ -47,6 +47,10 @@ export class CreateParkingExitDto {
     @Min(1, { message: 'Session ID must be at least 1' })
     sessionId!: number;
 
+    @IsOptional()
+    @IsString()
+    plate?: string;
+
     @IsEnum(['CASH', 'TRANSFER', 'CARD'], {
         message: 'Payment method must be CASH, TRANSFER, or CARD',
     })
