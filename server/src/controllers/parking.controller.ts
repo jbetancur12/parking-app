@@ -286,6 +286,7 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
     }
 
     return res.json({
+        id: session.id,
         plate: session.plate,
         entryTime: session.entryTime,
         planType: session.planType,
