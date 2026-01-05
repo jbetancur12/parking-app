@@ -9,7 +9,7 @@ const usageService = new UsageService();
  */
 export const checkSessionLimit = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const tenantId = (req as any).tenantId;
+        const tenantId = (req as any).tenantId || (req as any).user?.tenant?.id;
 
         if (!tenantId) {
             return res.status(400).json({ message: 'Tenant ID required' });
@@ -56,7 +56,7 @@ export const checkSessionLimit = async (req: Request, res: Response, next: NextF
  */
 export const checkLocationLimit = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const tenantId = (req as any).tenantId;
+        const tenantId = (req as any).tenantId || (req as any).user?.tenant?.id;
 
         if (!tenantId) {
             return res.status(400).json({ message: 'Tenant ID required' });
@@ -96,7 +96,7 @@ export const checkLocationLimit = async (req: Request, res: Response, next: Next
  */
 export const checkUserLimit = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const tenantId = (req as any).tenantId;
+        const tenantId = (req as any).tenantId || (req as any).user?.tenant?.id;
 
         if (!tenantId) {
             return res.status(400).json({ message: 'Tenant ID required' });
