@@ -3,7 +3,7 @@ import { Plus, Search } from 'lucide-react';
 import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintTicket } from '../components/PrintTicket';
 import { PrintReceipt } from '../components/PrintReceipt';
-import { useParkingPage } from '../hooks/useParkingPage';
+import { useParkingPage } from '../hooks/business/useParkingPage';
 
 // Components
 import { ParkingSessionList } from '../components/parking/ParkingSessionList';

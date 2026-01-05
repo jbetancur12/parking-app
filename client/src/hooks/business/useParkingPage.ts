@@ -262,6 +262,8 @@ export const useParkingPage = (
         setIsSubmitting(true);
         const { paymentMethod, discount, discountReason, agreementId, redeem } = data;
 
+
+
         // Offline Handling
         if (!isOnline) {
             addOfflineItem({
