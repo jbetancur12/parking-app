@@ -18,9 +18,8 @@ export class OpenShiftDto {
     @Max(99999999, { message: 'Base amount is too large' })
     baseAmount!: number;
 
-    @IsNumber({}, { message: 'Location ID must be a number' })
-    @Min(1, { message: 'Location ID must be at least 1' })
-    locationId!: number;
+    @IsString({ message: 'Location ID must be a string' })
+    locationId!: string;
 }
 
 /**
