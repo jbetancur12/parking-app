@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import {
     LayoutDashboard, Car, Droplets, Users, TrendingDown, DollarSign,
     Receipt, History, FileText, Briefcase, Package, UserCog, Shield,
-    Settings, Building2, CreditCard
+    Settings, Building2, CreditCard, Bell
 } from 'lucide-react';
 
 export type NavItem = {
@@ -75,6 +75,7 @@ export const useDashboardLogic = () => {
                 { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
                 { name: 'Facturación', href: '/admin/billing', icon: CreditCard },
                 { name: 'Planes', href: '/admin/pricing', icon: DollarSign },
+                { name: 'Notificaciones', href: '/admin/notifications', icon: Bell },
                 { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard },
             ]
         }

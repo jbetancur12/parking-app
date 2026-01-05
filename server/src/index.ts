@@ -32,6 +32,7 @@ import productRoutes from './routes/product.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import billingRoutes from './routes/billing.routes';
 import usageRoutes from './routes/usage.routes';
+import notificationRoutes from './routes/admin/notification.routes';
 import { Tariff } from './entities/Tariff';
 import { SystemSetting } from './entities/SystemSetting';
 import { User, UserRole } from './entities/User';
@@ -95,6 +96,7 @@ const startServer = async () => {
         protectedApi.use('/subscription', subscriptionRoutes); // Subscription management
         protectedApi.use('/billing', billingRoutes); // Invoices and payments
         protectedApi.use('/usage', usageRoutes); // Usage limits and monitoring
+        protectedApi.use('/notifications', notificationRoutes);
 
         app.use('/api', protectedApi);
 

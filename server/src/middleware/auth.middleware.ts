@@ -49,3 +49,6 @@ export const requireRole = (roles: string[]) => {
         next();
     };
 };
+
+// Alias for consistency with other parts of the app if needed
+export const authorizeRole = requireRole;

@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import TenantSelector from '../components/TenantSelector';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
@@ -5,6 +6,7 @@ import { DashboardSidebar } from '../components/dashboard/layout/DashboardSideba
 import { DashboardHeader } from '../components/dashboard/layout/DashboardHeader';
 import { DashboardOfflineBanner } from '../components/dashboard/layout/DashboardOfflineBanner';
 import { Rocket, AlertCircle } from 'lucide-react';
+import { GlobalNotificationBanner } from '../components/common/GlobalNotificationBanner';
 
 export default function DashboardLayout() {
     const {
@@ -69,6 +71,7 @@ export default function DashboardLayout() {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <DashboardOfflineBanner isOnline={isOnline} />
+                <GlobalNotificationBanner />
 
                 <DashboardHeader
                     toggleSidebar={toggleSidebar}

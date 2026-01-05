@@ -37,6 +37,7 @@ const LocationsPage = lazy(() => import('./pages/admin/LocationsPage'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const AdminBillingPage = lazy(() => import('./pages/admin/AdminBillingPage'));
 const AdminPricingPage = lazy(() => import('./pages/admin/AdminPricingPage'));
+const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage').then(module => ({ default: module.AdminNotificationsPage }))); // Named export
 const UsageDashboardPage = lazy(() => import('./pages/UsageDashboardPage'));
 
 // Detect if running in Electron
@@ -104,6 +105,7 @@ function App() {
                     <Route path="admin/locations" element={<LocationsPage />} />
                     <Route path="admin/billing" element={<AdminBillingPage />} />
                     <Route path="admin/pricing" element={<AdminPricingPage />} />
+                    <Route path="admin/notifications" element={<AdminNotificationsPage />} />
                   </Route>
                 </Routes>
               </Suspense>
