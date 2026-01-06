@@ -73,6 +73,7 @@ export const useDashboardLogic = () => {
             title: 'SaaS Management',
             items: [
                 { name: 'Empresas', href: '/admin/tenants', icon: Building2 },
+                { name: 'Usuarios', href: '/admin/users', icon: Users },
                 { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard },
             ]
         }

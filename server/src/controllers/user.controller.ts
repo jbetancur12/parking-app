@@ -15,30 +15,51 @@ export class UserController {
 
             // Get current user's tenant context from request (set by saasContext middleware)
             const currentTenantId = (req as any).tenant?.id;
+            const search = req.query.search as string;
 
             let users;
+            const filters: any = {};
+
+            // Search filter
+            if (search) {
+                filters.username = { $like: `%${search}%` };
+            }
 
             // SUPER_ADMIN can see all users, others only see users from their tenant
             if (req.user?.role === UserRole.SUPER_ADMIN) {
-                users = await em.find(User, {}, {
+                // Exclude SUPER_ADMIN users from the list (they manage themselves separately)
+                filters.role = { $ne: UserRole.SUPER_ADMIN };
+
+                users = await em.find(User, filters, {
                     populate: ['tenants', 'locations'],
-                    orderBy: { createdAt: 'DESC' },
-                    fields: ['id', 'username', 'role', 'isActive', 'createdAt']
+                    orderBy: { createdAt: 'DESC' }
                 });
             } else if (currentTenantId) {
                 // Find users that belong to the current tenant via the Many-to-Many relationship
+                // Need to combine filters
                 users = await em.find(User, {
+                    ...filters,
                     tenants: { id: currentTenantId }
                 }, {
                     populate: ['tenants', 'locations'],
-                    orderBy: { createdAt: 'DESC' },
-                    fields: ['id', 'username', 'role', 'isActive', 'createdAt']
+                    orderBy: { createdAt: 'DESC' }
                 });
             } else {
                 return res.status(403).json({ message: 'No tenant context found' });
             }
 
-            res.json(users);
+            // Serialize with tenant info
+            const serialized = users.map(u => ({
+                id: u.id,
+                username: u.username,
+                role: u.role,
+                isActive: u.isActive,
+                createdAt: u.createdAt,
+                tenants: u.tenants.getItems().map(t => ({ id: t.id, name: t.name })),
+                locations: u.locations.getItems().map(l => ({ id: l.id, name: l.name }))
+            }));
+
+            res.json(serialized);
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Error fetching users' });
@@ -255,6 +276,14 @@ export class UserController {
 
             const { userId, currentPassword, newPassword } = req.body;
 
+            console.log('🔍 Change Password Request:', {
+                userId,
+                currentPassword: currentPassword ? '***' : undefined,
+                newPassword: newPassword ? '***' : undefined,
+                requestingUser: req.user.id,
+                requestingUserRole: req.user.role
+            });
+
             // Users can only change their own password unless they're SUPER_ADMIN
             const targetUserId = userId || req.user.id;
             if (targetUserId !== req.user.id && req.user.role !== UserRole.SUPER_ADMIN) {
@@ -266,8 +295,12 @@ export class UserController {
                 return res.status(404).json({ message: 'User not found' });
             }
 
-            // Verify current password if not SUPER_ADMIN changing someone else's password
+            // Verify current password ONLY if user is changing their own password
+            // SuperAdmin changing someone else's password does NOT need currentPassword
             if (targetUserId === req.user.id) {
+                if (!currentPassword) {
+                    return res.status(400).json({ message: 'Current password is required' });
+                }
                 const isValid = await bcrypt.compare(currentPassword, user.password);
                 if (!isValid) {
                     return res.status(400).json({ message: 'Current password is incorrect' });
