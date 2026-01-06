@@ -77,7 +77,7 @@ export const useDashboardLogic = () => {
                 { name: 'Facturación', href: '/admin/billing', icon: CreditCard },
                 { name: 'Planes', href: '/admin/pricing', icon: DollarSign },
                 { name: 'Notificaciones', href: '/admin/notifications', icon: Bell },
-                { name: 'Dashboard Global', href: '/admin/audit-logs', icon: LayoutDashboard },
+                { name: 'Dashboard Global', href: '/admin/dashboard', icon: LayoutDashboard },
             ]
         }
     ];
