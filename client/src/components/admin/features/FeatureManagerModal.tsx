@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Edit, Save } from 'lucide-react';
+import { Trash2, X, Edit, Save } from 'lucide-react';
 import {
     getFeatures,
     createFeature,
@@ -15,7 +15,6 @@ interface FeatureManagerModalProps {
 export default function FeatureManagerModal({ onClose }: FeatureManagerModalProps) {
     const [features, setFeatures] = useState<FeatureDefinition[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     const [newFeature, setNewFeature] = useState({ key: '', description: '', category: '' });
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -31,7 +30,7 @@ export default function FeatureManagerModal({ onClose }: FeatureManagerModalProp
             const data = await getFeatures();
             setFeatures(data);
         } catch (err) {
-            setError('Error cargando features');
+            console.error('Error loading features:', err);
         } finally {
             setLoading(false);
         }
