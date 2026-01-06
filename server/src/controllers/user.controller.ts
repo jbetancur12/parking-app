@@ -276,14 +276,6 @@ export class UserController {
 
             const { userId, currentPassword, newPassword } = req.body;
 
-            console.log('🔍 Change Password Request:', {
-                userId,
-                currentPassword: currentPassword ? '***' : undefined,
-                newPassword: newPassword ? '***' : undefined,
-                requestingUser: req.user.id,
-                requestingUserRole: req.user.role
-            });
-
             // Users can only change their own password unless they're SUPER_ADMIN
             const targetUserId = userId || req.user.id;
             if (targetUserId !== req.user.id && req.user.role !== UserRole.SUPER_ADMIN) {
