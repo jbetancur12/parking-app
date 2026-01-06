@@ -98,7 +98,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         <Barcode
                             value={session.plate}
                             format="CODE128"
-                            width={is80mm ? 1.5 : 0.9} // Reduced to 0.9 for 58mm to ensure fit
+                            width={is80mm ? 1.5 : 2.5} // Reduced to 0.9 for 58mm to ensure fit
                             height={40}
                             fontSize={12}
                             displayValue={true}

@@ -75,7 +75,20 @@ export default function ParkingPage() {
     // Reprint Receipt Handler (from History)
 
 
-    // Search Enter Logic
+    // Search Input Ref
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Aggressive Autofocus Logic
+    React.useEffect(() => {
+        if (!isEntryModalOpen && !previewData && !exitResult && !isHistoryModalOpen && !showPrintConfirm) {
+            // Small timeout to ensure modals are fully unmounted/hidden
+            const timer = setTimeout(() => {
+                searchInputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isEntryModalOpen, previewData, exitResult, isHistoryModalOpen, showPrintConfirm]);
+
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && searchTerm) {
             e.preventDefault();
@@ -137,16 +150,24 @@ export default function ParkingPage() {
 
             {/* Search Bar */}
             <div className="mb-6 relative">
-                <Search className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" size={20} />
-                <input
-                    type="text"
-                    placeholder="Buscar por placa o escanear ticket..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none uppercase transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
-                    onKeyDown={handleSearchKeyDown}
-                    autoFocus
-                />
+                <div className="relative">
+                    <Search className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" size={20} />
+                    <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Buscar por placa o escanear ticket..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none uppercase transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
+                        onKeyDown={handleSearchKeyDown}
+                        autoFocus
+                    />
+                </div>
+                {/* UX Hint */}
+                <div className="mt-1 text-xs text-gray-400 dark:text-gray-500 flex items-center justify-end px-1">
+                    <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-[10px] font-mono mr-1 border border-gray-200 dark:border-gray-600">ENTER</span>
+                    <span>para salida rápida</span>
+                </div>
             </div>
 
             {/* Session List */}
