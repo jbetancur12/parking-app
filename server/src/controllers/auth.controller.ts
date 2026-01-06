@@ -137,6 +137,10 @@ export const login = async (req: Request, res: Response) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Update last login timestamp for activity tracking
+    user.lastLoginAt = new Date();
+    await em.flush();
+
     // Check if user has at least one active tenant
     // Check if user has at least one active tenant
     // @ts-ignore - isActive exists on Tenant at runtime

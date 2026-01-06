@@ -43,6 +43,10 @@ export class User {
     @ManyToMany(() => Location, 'users', { owner: true })
     locations = new Collection<Location>(this);
 
+    // Track last login for activity metrics
+    @Property({ nullable: true })
+    lastLoginAt?: Date;
+
     // Optional: Keep track of the last selected location for convenience
     @ManyToOne(() => Location, { nullable: true })
     lastActiveLocation?: Location;

@@ -26,6 +26,13 @@ import {
     updateFeature,
     deleteFeature
 } from '../controllers/admin/feature.controller';
+import {
+    getDashboardMetrics,
+    getChurnMetrics,
+    getLTVMetrics,
+    getActiveUsage,
+    getTrends
+} from '../controllers/admin/dashboard.controller';
 import adminBillingRoutes from './admin/billing.routes';
 import adminPricingRoutes from './admin/pricing.routes';
 
@@ -63,5 +70,12 @@ router.get('/features', requireRole([UserRole.SUPER_ADMIN]), getFeatures);
 router.post('/features', requireRole([UserRole.SUPER_ADMIN]), createFeature);
 router.put('/features/:id', requireRole([UserRole.SUPER_ADMIN]), updateFeature);
 router.delete('/features/:id', requireRole([UserRole.SUPER_ADMIN]), deleteFeature);
+
+// Dashboard metrics routes (SuperAdmin only)
+router.get('/dashboard/metrics', requireRole([UserRole.SUPER_ADMIN]), getDashboardMetrics);
+router.get('/dashboard/churn', requireRole([UserRole.SUPER_ADMIN]), getChurnMetrics);
+router.get('/dashboard/ltv', requireRole([UserRole.SUPER_ADMIN]), getLTVMetrics);
+router.get('/dashboard/active-usage', requireRole([UserRole.SUPER_ADMIN]), getActiveUsage);
+router.get('/dashboard/trends', requireRole([UserRole.SUPER_ADMIN]), getTrends);
 
 export default router;
