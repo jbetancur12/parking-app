@@ -19,23 +19,26 @@ interface PrintReceiptProps {
 
 export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
     ({ session, settings }, ref) => {
-        // Ajustes dinámicos según el ancho del rollo
-        const width = settings?.ticket_width === '80mm' ? '576px' : '384px';
-        const fontSize = settings?.ticket_width === '80mm' ? '14px' : '12px';
+        // Ajustes para ancho IMPRIMIBLE (más seguro que el ancho total del papel)
+        // 80mm -> ~72mm imprimibles
+        // 58mm -> ~48mm imprimibles
+        const width = settings?.ticket_width === '80mm' ? '72mm' : '48mm';
+        // Aumentar tamaño de fuente para legibilidad
+        const fontSize = settings?.ticket_width === '80mm' ? '12pt' : '10pt';
 
         const logo = settings?.company_logo;
 
         return (
             <div
                 ref={ref}
-                className="p-2 mx-auto bg-white text-black font-mono leading-tight"
+                className="bg-white text-black font-mono leading-normal"
                 style={{ width, fontSize }}
             >
                 <style>
                     {`
                         @media print {
                             body { margin: 0; }
-                            @page { size: auto; margin: 0; }
+                            @page { size: auto; margin: 0mm; }
                         }
                     `}
                 </style>
