@@ -4,7 +4,7 @@ import api from '../services/api';
 export interface PricingPlan {
     id: string;
     name: string;
-    slug: string;
+    code: string;
     price: number;
     maxLocations: number;
     maxUsers: number;

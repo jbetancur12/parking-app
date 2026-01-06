@@ -27,6 +27,44 @@ export class PricingPlanService {
     }
 
     /**
+     * Create new pricing plan
+     */
+    async createPlan(data: Partial<PricingPlan>): Promise<PricingPlan> {
+        const em = RequestContext.getEntityManager();
+        if (!em) throw new Error('No EntityManager found');
+
+        if (!data.code || !data.name) throw new Error('Code and Name are required');
+
+        // Check if code exists
+        const existing = await em.findOne(PricingPlan, { code: data.code });
+        if (existing) throw new Error('Plan code already exists');
+
+        const plan = em.create(PricingPlan, {
+            ...data,
+            id: undefined, // Ensure specific ID is not set
+            code: data.code,
+            name: data.name,
+            price: data.price ?? 0,
+            billingPeriod: data.billingPeriod ?? 'monthly',
+            maxLocations: data.maxLocations ?? 1,
+            maxUsers: data.maxUsers ?? 1,
+            maxSessions: data.maxSessions ?? 1000,
+            features: data.features ?? [],
+            support: data.support ?? 'Email',
+            softLimitPercentage: data.softLimitPercentage ?? 0.8,
+            hardLimitPercentage: data.hardLimitPercentage ?? 1.2,
+            isActive: data.isActive ?? true,
+            isPublic: data.isPublic ?? false,
+            displayOrder: data.displayOrder ?? 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        await em.persistAndFlush(plan);
+        return plan;
+    }
+
+    /**
      * Update plan configuration
      */
     async updatePlan(code: string, data: {

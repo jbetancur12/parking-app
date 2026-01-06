@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useAdminPricing } from '../../hooks/useAdminPricing';
 import type { PricingPlan } from '../../services/pricingPlan.service';
-import { Edit, ToggleLeft, ToggleRight, Plus, Trash2 } from 'lucide-react';
+import { Edit, ToggleLeft, ToggleRight, Plus, Trash2, Copy } from 'lucide-react';
+import FeatureManagerModal from '../../components/admin/features/FeatureManagerModal';
+import { type FeatureDefinition } from '../../services/featureDefinition.service';
+import { useEffect } from 'react';
 
 // Simple currency formatter
 const formatCurrency = (amount: number) => {
@@ -14,9 +17,20 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function AdminPricingPage() {
-    const { plans, loading, error, updatePlan, toggleStatus } = useAdminPricing();
-    const [editingPlan, setEditingPlan] = useState<PricingPlan | null>(null);
+    const { plans, loading, error, createPlan, updatePlan, toggleStatus } = useAdminPricing();
+    const [editingPlan, setEditingPlan] = useState<Partial<PricingPlan> | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
     const [formData, setFormData] = useState<Partial<PricingPlan>>({});
+    const [showFeatureManager, setShowFeatureManager] = useState(false);
+    const [knownFeatures, setKnownFeatures] = useState<FeatureDefinition[]>([]);
+
+    useEffect(() => {
+        if (editingPlan || isCreating) {
+            import('../../services/featureDefinition.service').then(({ getFeatures }) => {
+                getFeatures().then(setKnownFeatures).catch(console.error);
+            });
+        }
+    }, [editingPlan, isCreating]);
 
     if (loading) {
         return (
@@ -39,28 +53,61 @@ export default function AdminPricingPage() {
         );
     }
 
+    const handleCreate = () => {
+        setIsCreating(true);
+        setEditingPlan({});
+        setFormData({
+            code: '',
+            name: '',
+            price: 0,
+            maxLocations: 1,
+            maxUsers: 1,
+            maxSessions: 1000,
+            features: [],
+            featureFlags: {},
+            support: 'Email',
+            softLimitPercentage: 0.8,
+            hardLimitPercentage: 1.2,
+            isPublic: false, // Default to hidden for custom plans
+            displayOrder: 0,
+            isActive: true
+        });
+    };
+
+    const handleClone = (plan: PricingPlan) => {
+        setIsCreating(true);
+        setEditingPlan(plan); // Keep ref to original if needed, or just allow edit
+        setFormData({
+            ...plan,
+            code: `${plan.code}_copy`,
+            name: `${plan.name} (Copia)`,
+            isPublic: false, // Clone as hidden by default
+        });
+    };
+
     const handleEdit = (plan: PricingPlan) => {
+        setIsCreating(false);
         setEditingPlan(plan);
         setFormData({
-            name: plan.name,
-            price: plan.price,
-            maxLocations: plan.maxLocations,
-            maxUsers: plan.maxUsers,
-            maxSessions: plan.maxSessions,
-            features: [...plan.features],
-            support: plan.support,
-            softLimitPercentage: plan.softLimitPercentage,
-            hardLimitPercentage: plan.hardLimitPercentage,
-            displayOrder: plan.displayOrder,
+            ...plan
         });
     };
 
     const handleSave = async () => {
-        if (!editingPlan) return;
-
         try {
-            await updatePlan(editingPlan.code, formData);
+            if (isCreating) {
+                if (!formData.code || !formData.name) {
+                    alert('Código y Nombre son requeridos');
+                    return;
+                }
+                await createPlan(formData);
+            } else {
+                if (editingPlan && editingPlan.code) {
+                    await updatePlan(editingPlan.code, formData);
+                }
+            }
             setEditingPlan(null);
+            setIsCreating(false);
             setFormData({});
         } catch (err: any) {
             alert(err.message);
@@ -96,16 +143,26 @@ export default function AdminPricingPage() {
         }));
     };
 
+
+
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
-                    Gestión de Planes
-                </h1>
-                <p className="text-gray-600">
-                    Configura precios, límites y features de los planes de suscripción
-                </p>
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
+                        Gestión de Planes
+                    </h1>
+                    <p className="text-gray-600">
+                        Configura precios, límites y features de los planes de suscripción
+                    </p>
+                </div>
+                <button
+                    onClick={handleCreate}
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm transition-colors py-2 px-4"
+                >
+                    <Plus size={20} />
+                    Crear Nuevo Plan
+                </button>
             </div>
 
             {/* Plans Table */}
@@ -168,6 +225,13 @@ export default function AdminPricingPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <button
+                                            onClick={() => handleClone(plan)}
+                                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                            title="Clonar como nuevo plan"
+                                        >
+                                            <Copy size={18} />
+                                        </button>
+                                        <button
                                             onClick={() => handleEdit(plan)}
                                             className="p-2 text-brand-blue hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Editar"
@@ -206,6 +270,44 @@ export default function AdminPricingPage() {
                         </div>
 
                         <div className="p-6 space-y-6">
+                            {/* Identifiers (Only editable when creating) */}
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Código del Plan (ID único)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.code || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
+                                        disabled={!isCreating}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent ${!isCreating ? 'bg-gray-100 text-gray-500 border-gray-200' : 'border-gray-300'}`}
+                                        placeholder="Ej: enterprise_coca_cola"
+                                    />
+                                    {isCreating && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Usado internamente. No se puede cambiar después.
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Visibilidad
+                                    </label>
+                                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                                        <button
+                                            onClick={() => setFormData(prev => ({ ...prev, isPublic: !prev.isPublic }))}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2 ${formData.isPublic ? 'bg-brand-blue' : 'bg-gray-200'}`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isPublic ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                        <span className="text-sm text-gray-700">
+                                            {formData.isPublic ? 'Público (Visible en Web)' : 'Oculto (Solo Asignación Manual)'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Basic Info */}
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
@@ -362,7 +464,130 @@ export default function AdminPricingPage() {
                                 </div>
                             </div>
 
-                            {/* Features */}
+
+
+
+
+                            {/* Feature Flags Editor */}
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900">Feature Flags (Toggles)</h3>
+                                    <button
+                                        onClick={() => setShowFeatureManager(true)}
+                                        className="text-xs text-purple-600 hover:text-purple-800 underline font-medium"
+                                    >
+                                        Administrar Banco de Features
+                                    </button>
+                                </div>
+
+                                {/* Add New Flag Section */}
+                                <div className="bg-purple-50 p-4 rounded-lg mb-4 border border-purple-100">
+                                    <label className="block text-xs font-semibold text-purple-800 mb-2 uppercase tracking-wide">
+                                        Agregar Nuevo Flag
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <div className="flex-1 relative">
+                                            <input
+                                                list="known-flags"
+                                                type="text"
+                                                id="new-flag-input"
+                                                className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                placeholder="Ej: can_export_reports"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        const val = e.currentTarget.value.trim();
+                                                        if (val) {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                featureFlags: { ...(prev.featureFlags || {}), [val]: true }
+                                                            }));
+                                                            e.currentTarget.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <datalist id="known-flags">
+                                                {knownFeatures.map(f => (
+                                                    <option key={f.key} value={f.key}>{f.description}</option>
+                                                ))}
+                                                {/* Fallback for flags used in other plans but not in bank */}
+                                                {plans.flatMap(p => Object.keys(p.featureFlags || {}))
+                                                    .filter(k => !knownFeatures.find(kf => kf.key === k))
+                                                    .filter((v, i, a) => a.indexOf(v) === i)
+                                                    .map(flag => (
+                                                        <option key={flag} value={flag} />
+                                                    ))}
+                                            </datalist>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                const input = document.getElementById('new-flag-input') as HTMLInputElement;
+                                                const val = input.value.trim();
+                                                if (val) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        featureFlags: { ...(prev.featureFlags || {}), [val]: true }
+                                                    }));
+                                                    input.value = '';
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} />
+                                            Agregar
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-purple-600 mt-2">
+                                        💡 Escribe o selecciona un flag de la lista. Se guardará en el "Banco" automáticamente al usarlo.
+                                    </p>
+                                </div>
+
+                                {/* Active Flags List */}
+                                <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                                        Flags Activos en este Plan
+                                    </label>
+                                    {Object.entries(formData.featureFlags || {}).map(([key, value], index) => (
+                                        <div key={index} className="flex items-center gap-3 bg-white p-2 rounded border border-gray-200 shadow-sm">
+                                            <div className="flex-1 font-mono text-sm text-gray-700 font-medium">
+                                                {key}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setFormData(prev => ({
+                                                        ...prev,
+                                                        featureFlags: { ...prev.featureFlags, [key]: !value }
+                                                    }))}
+                                                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase transition-colors ${value
+                                                        ? 'bg-green-100 text-green-700 border border-green-200'
+                                                        : 'bg-gray-100 text-gray-500 border border-gray-200'
+                                                        }`}
+                                                >
+                                                    {value ? 'ON' : 'OFF'}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const newFlags = { ...(formData.featureFlags || {}) };
+                                                        delete newFlags[key];
+                                                        setFormData(prev => ({ ...prev, featureFlags: newFlags }));
+                                                    }}
+                                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-md"
+                                                    title="Eliminar del plan"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {Object.keys(formData.featureFlags || {}).length === 0 && (
+                                        <div className="text-center py-4">
+                                            <p className="text-sm text-gray-400 italic">No hay flags activos para este plan.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Features (Existing) */}
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="text-lg font-semibold text-gray-900">Features</h3>
@@ -432,6 +657,16 @@ export default function AdminPricingPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {showFeatureManager && (
+                <FeatureManagerModal onClose={() => {
+                    setShowFeatureManager(false);
+                    // Refresh known features on close
+                    import('../../services/featureDefinition.service').then(({ getFeatures }) => {
+                        getFeatures().then(setKnownFeatures).catch(console.error);
+                    });
+                }} />
             )}
         </div>
     );

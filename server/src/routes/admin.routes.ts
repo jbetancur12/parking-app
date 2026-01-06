@@ -20,6 +20,12 @@ import {
     getUserTenants,
     removeUserFromTenant,
 } from '../controllers/admin/user-tenant.controller';
+import {
+    getFeatures,
+    createFeature,
+    updateFeature,
+    deleteFeature
+} from '../controllers/admin/feature.controller';
 import adminBillingRoutes from './admin/billing.routes';
 import adminPricingRoutes from './admin/pricing.routes';
 
@@ -51,5 +57,11 @@ router.use('/billing', adminBillingRoutes);
 
 // Pricing routes (SuperAdmin only)
 router.use('/pricing', adminPricingRoutes);
+
+// Feature Definition routes (SuperAdmin only)
+router.get('/features', requireRole([UserRole.SUPER_ADMIN]), getFeatures);
+router.post('/features', requireRole([UserRole.SUPER_ADMIN]), createFeature);
+router.put('/features/:id', requireRole([UserRole.SUPER_ADMIN]), updateFeature);
+router.delete('/features/:id', requireRole([UserRole.SUPER_ADMIN]), deleteFeature);
 
 export default router;

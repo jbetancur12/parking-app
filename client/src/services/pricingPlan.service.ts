@@ -12,9 +12,11 @@ export interface PricingPlan {
     maxUsers: number;
     maxSessions: number;
     features: string[];
+    featureFlags?: Record<string, boolean>; // Dynamic toggles
     support: string;
     softLimitPercentage: number;
     hardLimitPercentage: number;
+    isPublic: boolean;
     isActive: boolean;
     displayOrder: number;
     createdAt: string;
@@ -36,6 +38,11 @@ export const pricingPlanService = {
     async updatePlan(code: string, data: Partial<PricingPlan>): Promise<PricingPlan> {
         const response = await api.put(`${API_URL}/admin/pricing/plans/${code}`, data);
         return response.data.plan;
+    },
+
+    async createPlan(data: Partial<PricingPlan>): Promise<PricingPlan> {
+        const response = await api.post(`${API_URL}/admin/pricing/plans`, data);
+        return response.data;
     },
 
     async toggleStatus(code: string, isActive: boolean): Promise<PricingPlan> {

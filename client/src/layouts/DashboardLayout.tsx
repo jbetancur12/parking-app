@@ -1,4 +1,3 @@
-import { useRef, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import TenantSelector from '../components/TenantSelector';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';

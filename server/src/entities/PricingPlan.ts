@@ -30,6 +30,9 @@ export class PricingPlan {
     @Property({ type: 'json' })
     features!: string[]; // Array of feature descriptions
 
+    @Property({ type: 'json', nullable: true })
+    featureFlags?: Record<string, boolean>; // System toggles e.g. { "canExport": true }
+
     @Property()
     support!: string; // 'Email', 'Priority', '24/7'
 
@@ -38,6 +41,9 @@ export class PricingPlan {
 
     @Property({ type: 'decimal', precision: 5, scale: 2, default: 1.2 })
     hardLimitPercentage = 1.2; // 120% - Block threshold
+
+    @Property({ default: true })
+    isPublic = true; // If false, only visible to Admins for assignment (Custom plans)
 
     @Property({ default: true })
     isActive = true;

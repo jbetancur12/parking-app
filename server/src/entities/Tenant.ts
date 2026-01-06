@@ -1,7 +1,8 @@
-import { Entity, PrimaryKey, Property, Enum, OneToMany, ManyToMany, Collection, Cascade } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, OneToMany, ManyToMany, Collection, Cascade, ManyToOne } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { Location } from './Location';
 import { User } from './User';
+import { PricingPlan } from './PricingPlan';
 
 @Entity()
 export class Tenant {
@@ -20,8 +21,11 @@ export class Tenant {
     @Enum(() => TenantStatus)
     status = TenantStatus.ACTIVE;
 
-    @Enum(() => TenantPlan)
-    plan = TenantPlan.BASIC;
+    @Property()
+    plan: string = TenantPlan.BASIC;
+
+    @ManyToOne(() => PricingPlan, { nullable: true })
+    pricingPlan?: PricingPlan;
 
     @Property()
     maxLocations: number = 1;

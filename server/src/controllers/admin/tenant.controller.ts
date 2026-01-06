@@ -186,11 +186,26 @@ export const updateTenant = async (req: Request, res: Response) => {
         // Update plan and sync with subscription
         if (plan && plan !== tenant.plan) {
             const oldPlan = tenant.plan;
-            tenant.plan = plan;
-            const planConfig = SAAS_PLANS[plan as TenantPlan];
-            if (planConfig) {
-                tenant.maxLocations = planConfig.maxLocations;
-                tenant.maxUsers = planConfig.maxUsers;
+
+            // Try to find the plan in the database first (Dynamic Plans)
+            const { PricingPlan } = await import('../../entities/PricingPlan');
+            const pricingPlanEntity = await em.findOne(PricingPlan, { code: plan });
+
+            if (pricingPlanEntity) {
+                // Use DB plan as source of truth
+                tenant.pricingPlan = pricingPlanEntity;
+                tenant.plan = pricingPlanEntity.code; // Keep legacy field in sync
+                tenant.maxLocations = pricingPlanEntity.maxLocations;
+                tenant.maxUsers = pricingPlanEntity.maxUsers;
+            } else {
+                // Fallback to legacy static config
+                tenant.plan = plan;
+                const planConfig = SAAS_PLANS[plan as TenantPlan];
+                if (planConfig) {
+                    tenant.maxLocations = planConfig.maxLocations;
+                    tenant.maxUsers = planConfig.maxUsers;
+                }
+                tenant.pricingPlan = undefined; // Clear relation if switching to legacy/unknown
             }
 
             // Update subscription to match new plan

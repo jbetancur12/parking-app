@@ -46,10 +46,22 @@ export function useAdminPricing() {
         }
     };
 
+    const createPlan = async (data: Partial<PricingPlan>) => {
+        try {
+            const newPlan = await pricingPlanService.createPlan(data);
+            setPlans(prev => [...prev, newPlan]);
+            return newPlan;
+        } catch (err: any) {
+            console.error('Failed to create plan:', err);
+            throw new Error(err.response?.data?.message || 'Failed to create plan');
+        }
+    };
+
     return {
         plans,
         loading,
         error,
+        createPlan,
         updatePlan,
         toggleStatus,
         reload: loadPlans,

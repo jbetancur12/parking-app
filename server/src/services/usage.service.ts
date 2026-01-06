@@ -62,17 +62,23 @@ export class UsageService {
         if (!em) throw new Error('No EntityManager found');
 
         const tenant = await em.findOne(Tenant, { id: tenantId }, {
-            populate: ['locations', 'users']
+            populate: ['locations', 'users', 'pricingPlan']
         });
         if (!tenant) throw new Error('Tenant not found');
 
         // Get plan from database with tolerances
-        const { PricingPlanService } = await import('./pricingPlan.service');
-        const pricingService = new PricingPlanService();
-        const plan = await pricingService.getPlanByCode(tenant.plan);
+        // Priority 1: Direct DB Relationship (Custom/Assigned Plan)
+        let plan: any = tenant.pricingPlan;
+
+        // Priority 2: Fallback to Plan Code Lookup (Legacy/Migration)
+        if (!plan) {
+            const { PricingPlanService } = await import('./pricingPlan.service');
+            const pricingService = new PricingPlanService();
+            plan = await pricingService.getPlanByCode(tenant.plan);
+        }
 
         if (!plan) {
-            // Fallback to config if plan not found in DB
+            // Priority 3: Final Fallback to static config (emergency only)
             const planFeatures = getPlanFeatures(tenant.plan);
             return this.checkLimitsWithConfig(action, tenant, planFeatures);
         }

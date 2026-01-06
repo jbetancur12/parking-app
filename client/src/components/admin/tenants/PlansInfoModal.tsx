@@ -34,10 +34,10 @@ export const PlansInfoModal: React.FC<PlansInfoModalProps> = ({ show, onClose })
                     <div className="grid md:grid-cols-3 gap-6">
                         {plans.map((plan) => (
                             <div
-                                key={plan.slug}
-                                className={`border rounded-xl p-6 transition-colors ${plan.slug === 'pro'
-                                        ? 'border-brand-blue dark:border-blue-500 ring-1 ring-brand-blue dark:ring-blue-500 bg-blue-50/30 dark:bg-blue-900/10'
-                                        : 'border-gray-200 dark:border-gray-600'
+                                key={plan.code}
+                                className={`border rounded-xl p-6 transition-colors ${plan.code === 'pro'
+                                    ? 'border-brand-blue dark:border-blue-500 ring-1 ring-brand-blue dark:ring-blue-500 bg-blue-50/30 dark:bg-blue-900/10'
+                                    : 'border-gray-200 dark:border-gray-600'
                                     }`}
                             >
                                 <h3 className="text-xl font-bold text-brand-blue dark:text-blue-300 mb-2 uppercase">{plan.name}</h3>

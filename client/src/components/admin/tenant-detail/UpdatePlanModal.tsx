@@ -45,14 +45,14 @@ export const UpdatePlanModal: React.FC<UpdatePlanModalProps> = ({
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
                     {plans.map((plan) => (
                         <div
-                            key={plan.slug}
-                            className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === plan.slug
+                            key={plan.code}
+                            className={`relative cursor-pointer border-2 rounded-xl p-6 transition-all ${selectedPlan === plan.code
                                 ? 'border-brand-blue dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-brand-blue dark:ring-blue-400 ring-opacity-20 transform scale-105 shadow-lg'
                                 : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-md'
                                 }`}
-                            onClick={() => setSelectedPlan(plan.slug)}
+                            onClick={() => setSelectedPlan(plan.code)}
                         >
-                            {selectedPlan === plan.slug && (
+                            {selectedPlan === plan.code && (
                                 <div className="absolute top-3 right-3 text-brand-blue dark:text-blue-400">
                                     <CheckCircle className="h-6 w-6 fill-current" />
                                 </div>

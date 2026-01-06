@@ -37,6 +37,29 @@ export const getPlanByCode = async (req: Request, res: Response) => {
 };
 
 /**
+ * Create new plan
+ */
+export const createPlan = async (req: Request, res: Response) => {
+    try {
+        const data = req.body;
+
+        if (!data.code || !data.name) {
+            return res.status(400).json({ message: 'Code and Name are required' });
+        }
+
+        const plan = await pricingPlanService.createPlan(data);
+
+        return res.status(201).json(plan);
+    } catch (error: any) {
+        console.error('Create plan error:', error);
+        if (error.message === 'Plan code already exists') {
+            return res.status(409).json({ message: error.message });
+        }
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+/**
  * Update plan configuration
  */
 export const updatePlan = async (req: Request, res: Response) => {

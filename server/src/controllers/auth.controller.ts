@@ -122,9 +122,8 @@ export const login = async (req: Request, res: Response) => {
 
     // Disable tenant filter for login as it is a global lookup (by username)
     // and User entity might be affected by relations or if we add loose filters.
-    // @ts-ignore - tenants.subscription populate works at runtime
     const user = await em.findOne(User, { username }, {
-        populate: ['tenants', 'tenants.subscriptions', 'locations', 'lastActiveLocation'],
+        populate: ['tenants', 'tenants.subscriptions', 'tenants.pricingPlan', 'locations', 'lastActiveLocation'],
         filters: false // Disable all filters for this query to find the user globally
     });
 
@@ -231,7 +230,12 @@ export const login = async (req: Request, res: Response) => {
                 slug: t.slug,
                 plan: t.plan,
                 status: t.status,
-                trialEndsAt: t.trialEndsAt
+                trialEndsAt: t.trialEndsAt,
+                pricingPlan: t.pricingPlan ? {
+                    code: t.pricingPlan.code,
+                    name: t.pricingPlan.name,
+                    featureFlags: t.pricingPlan.featureFlags
+                } : undefined
             })), // Return available tenants
             locations: availableLocations.map(l => ({ id: l.id, name: l.name })), // Return available locations
             lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
@@ -258,7 +262,10 @@ export const impersonateTenant = async (req: Request, res: Response) => {
         }
 
         // 2. Find target tenant
-        const tenant = await em.findOne(Tenant, { id: tenantId }, { filters: false });
+        const tenant = await em.findOne(Tenant, { id: tenantId }, {
+            populate: ['pricingPlan'],
+            filters: false
+        });
         if (!tenant) return res.status(404).json({ message: 'Tenant not found' });
 
         // 3. Find a user to impersonate
@@ -347,7 +354,12 @@ export const impersonateTenant = async (req: Request, res: Response) => {
                     slug: tenant.slug,
                     plan: tenant.plan,
                     status: tenant.status,
-                    trialEndsAt: tenant.trialEndsAt
+                    trialEndsAt: tenant.trialEndsAt,
+                    pricingPlan: tenant.pricingPlan ? {
+                        code: tenant.pricingPlan.code,
+                        name: tenant.pricingPlan.name,
+                        featureFlags: tenant.pricingPlan.featureFlags
+                    } : undefined
                 }],
                 locations: availableLocations.map(l => ({ id: l.id, name: l.name })),
                 lastActiveLocation: null

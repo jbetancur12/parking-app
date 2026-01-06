@@ -5,6 +5,11 @@ interface Tenant {
     id: string;
     name: string;
     slug: string;
+    pricingPlan?: {
+        code: string;
+        name: string;
+        featureFlags?: Record<string, boolean>;
+    };
 }
 
 interface Location {
