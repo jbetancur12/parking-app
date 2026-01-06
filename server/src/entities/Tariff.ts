@@ -11,7 +11,9 @@ export enum TariffType {
     HOUR = 'HOUR',
     DAY = 'DAY',
     NIGHT = 'NIGHT',
-    MONTH = 'MONTH'
+    MONTH = 'MONTH',
+    WEEK = 'WEEK',
+    TWO_WEEKS = 'TWO_WEEKS'
 }
 
 export enum PricingModel {

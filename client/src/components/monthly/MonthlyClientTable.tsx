@@ -2,6 +2,14 @@ import React, { memo } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { type Client } from '../../hooks/business/useMonthlyClients';
 
+const getPeriodLabel = (p?: string) => {
+    switch (p) {
+        case 'WEEK': return 'Semanal';
+        case 'TWO_WEEKS': return 'Quincenal';
+        case 'MONTH': case 'MONTHLY': default: return 'Mensual';
+    }
+};
+
 interface MonthlyClientTableProps {
     clients: Client[];
     onHistory: (client: Client) => void;
@@ -56,7 +64,7 @@ export const MonthlyClientTable: React.FC<MonthlyClientTableProps> = memo(({
                                                 </span>
                                             )}
                                             <div className="text-xs text-gray-400 mt-1">
-                                                Vence: {new Date(client.endDate).toLocaleDateString()}
+                                                Vence: {new Date(client.endDate).toLocaleDateString()} ({getPeriodLabel(client.billingPeriod)})
                                             </div>
                                         </div>
                                     </td>
@@ -142,7 +150,7 @@ export const MonthlyClientTable: React.FC<MonthlyClientTableProps> = memo(({
                             </div>
 
                             <div className="text-sm text-gray-600 dark:text-gray-300 flex justify-between">
-                                <span>Vence: {new Date(client.endDate).toLocaleDateString()}</span>
+                                <span>Vence: {new Date(client.endDate).toLocaleDateString()} ({getPeriodLabel(client.billingPeriod)})</span>
                                 <span>{client.phone || 'Sin télefono'}</span>
                             </div>
 

@@ -4,24 +4,51 @@ import { type Client } from '../../hooks/business/useMonthlyClients';
 import { formatCurrency } from '../../utils/formatters';
 import { CurrencyInput } from '../common/CurrencyInput';
 import { toast } from 'sonner';
+import { tariffService, type Tariff } from '../../services/tariff.service';
 
 interface RenewalModalProps {
     isOpen: boolean;
     onClose: () => void;
     client: Client | null;
-    onRenew: (id: number, data: { amount: number, paymentMethod: string }) => Promise<void>;
+    onRenew: (id: number, data: { amount: number, paymentMethod: string, billingPeriod?: string }) => Promise<void>;
 }
 
 export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, client, onRenew }) => {
     const [renewAmount, setRenewAmount] = useState('');
     const [renewPaymentMethod, setRenewPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+    const [billingPeriod, setBillingPeriod] = useState('MONTH');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [tariffs, setTariffs] = useState<Tariff[]>([]);
+
+    useEffect(() => {
+        if (isOpen) {
+            tariffService.getAll().then(setTariffs).catch(console.error);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (client) {
             setRenewAmount(client.monthlyRate.toString());
+            setBillingPeriod(client.billingPeriod || 'MONTH');
         }
     }, [client]);
+
+    // Auto-update rate when period changes
+    useEffect(() => {
+        if (!client || !billingPeriod || tariffs.length === 0) return;
+
+        // Prevent auto-update if it matches current client setting initially (handled by above effect on mount)
+        // But if user changes dropdown, we should update.
+        // Simple logic: If existing client has this period, default to their rate? No, Tariffs might have changed.
+        // Better: Always fetch from tariff table if period changes.
+
+        const vType = client.vehicleType || 'CAR';
+        const tariff = tariffs.find(t => t.vehicleType === vType && t.tariffType === billingPeriod);
+
+        if (tariff) {
+            setRenewAmount(tariff.cost.toString());
+        }
+    }, [billingPeriod, tariffs, client?.vehicleType]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,7 +58,8 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
         try {
             await onRenew(client.id, {
                 amount: Number(renewAmount),
-                paymentMethod: renewPaymentMethod
+                paymentMethod: renewPaymentMethod,
+                billingPeriod
             });
             onClose();
             toast.success(`Renovado exitosamente (${renewPaymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'})`);
@@ -55,6 +83,20 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"><X size={20} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Periodo de Renovación</label>
+                        <select
+                            value={billingPeriod}
+                            onChange={(e) => setBillingPeriod(e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none"
+                        >
+                            <option value="MONTH">Mensual (1 Mes)</option>
+                            <option value="TWO_WEEKS">Quincenal (15 Días)</option>
+                            <option value="WEEK">Semanal (7 Días)</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto a Pagar</label>
                         <CurrencyInput
@@ -63,7 +105,9 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
                             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-lg font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-gray-700 transition-colors"
                             required
                         />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tarifa actual del cliente: {formatCurrency(Number(client.monthlyRate))}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Actual: {formatCurrency(Number(client.monthlyRate))} ({client.billingPeriod === 'TWO_WEEKS' ? 'Quincenal' : client.billingPeriod === 'WEEK' ? 'Semanal' : 'Mensual'})
+                        </p>
                     </div>
 
                     <div>

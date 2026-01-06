@@ -1,10 +1,24 @@
 import { Request, Response } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
-import { MonthlyClient } from '../entities/MonthlyClient';
+import { MonthlyClient, BillingPeriod } from '../entities/MonthlyClient';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { MonthlyPayment } from '../entities/MonthlyPayment';
 import { ReceiptService } from '../services/ReceiptService';
+import { addDays, addMonths } from 'date-fns';
+
+// Helper to calculate end date based on period
+const getEndDate = (startDate: Date, period: BillingPeriod): Date => {
+    switch (period) {
+        case BillingPeriod.WEEK:
+            return addDays(startDate, 7);
+        case BillingPeriod.TWO_WEEKS:
+            return addDays(startDate, 15);
+        case BillingPeriod.MONTH:
+        default:
+            return addMonths(startDate, 1);
+    }
+};
 
 export class MonthlyClientController {
 
@@ -53,7 +67,9 @@ export class MonthlyClientController {
             }
 
             const user = (req as any).user;
-            const { plate, name, phone, vehicleType, monthlyRate } = req.body;
+            const { plate, name, phone, vehicleType, monthlyRate, billingPeriod } = req.body;
+
+            const selectedPeriod = billingPeriod || BillingPeriod.MONTH;
 
             // 1. Check if ANY client exists with this plate (active or inactive) in this location
             const existingClient = await em.findOne(MonthlyClient, { plate, location: locationId });
@@ -71,10 +87,11 @@ export class MonthlyClientController {
                 existingClient.phone = phone;
                 existingClient.vehicleType = vehicleType;
                 existingClient.monthlyRate = monthlyRate || 0;
+                existingClient.billingPeriod = selectedPeriod;
 
                 // Set new period starting today
                 const startDate = new Date();
-                const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+                const endDate = getEndDate(startDate, selectedPeriod);
 
                 existingClient.startDate = startDate;
                 existingClient.endDate = endDate;
@@ -110,7 +127,7 @@ export class MonthlyClientController {
                             tenant: activeShift.tenant,
                             location: activeShift.location,
                             type: TransactionType.MONTHLY_PAYMENT,
-                            description: `Reactivación Mensualidad: ${name} (${plate})`,
+                            description: `Reactivación (${selectedPeriod}): ${name} (${plate})`,
                             amount: monthlyRate || 0,
                             paymentMethod: PaymentMethod.CASH,
                             timestamp: new Date(),
@@ -131,7 +148,7 @@ export class MonthlyClientController {
 
             // 2. New Client Creation
             const startDate = new Date();
-            const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+            const endDate = getEndDate(startDate, selectedPeriod);
 
             const client = em.create(MonthlyClient, {
                 plate,
@@ -139,6 +156,7 @@ export class MonthlyClientController {
                 phone,
                 vehicleType,
                 monthlyRate: monthlyRate || 0,
+                billingPeriod: selectedPeriod,
                 startDate,
                 endDate,
                 isActive: true,
@@ -178,7 +196,7 @@ export class MonthlyClientController {
                         tenant: activeShift.tenant,
                         location: activeShift.location,
                         type: TransactionType.MONTHLY_PAYMENT,
-                        description: `Nueva Mensualidad: ${name} (${plate})`,
+                        description: `Nueva (${selectedPeriod}): ${name} (${plate})`,
                         amount: monthlyRate || 0,
                         paymentMethod: PaymentMethod.CASH,
                         timestamp: new Date(),
@@ -211,7 +229,7 @@ export class MonthlyClientController {
             const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
             const { id } = req.params;
-            const { amount, paymentMethod } = req.body;
+            const { amount, paymentMethod, billingPeriod } = req.body;
 
             // Find client strictly within location
             const client = await em.findOne(MonthlyClient, { id: Number(id), location: locationId });
@@ -220,15 +238,19 @@ export class MonthlyClientController {
                 return res.status(404).json({ message: 'Client not found or not in this location' });
             }
 
-            // Logic: Add 1 month to the current end date (or today if expired)
+            // Logic: Calculate new end date based on period
             const now = new Date();
             const baseDate = client.endDate > now ? client.endDate : now;
 
-            const newEndDate = new Date(baseDate);
-            newEndDate.setMonth(newEndDate.getMonth() + 1);
+            const selectedPeriod = billingPeriod || client.billingPeriod || BillingPeriod.MONTH;
+            const newEndDate = getEndDate(baseDate, selectedPeriod);
 
             client.endDate = newEndDate;
             client.isActive = true;
+            // Update rate and period if changed
+            if (billingPeriod) client.billingPeriod = billingPeriod;
+            if (amount) client.monthlyRate = amount;
+
 
             // Create payment record
             const payment = em.create(MonthlyPayment, {
@@ -259,7 +281,7 @@ export class MonthlyClientController {
                         tenant: activeShift.tenant,
                         location: activeShift.location,
                         type: TransactionType.MONTHLY_PAYMENT,
-                        description: `Renovación: ${client.name} (${client.plate})`,
+                        description: `Renovación (${selectedPeriod}): ${client.name} (${client.plate})`,
                         amount: amount || client.monthlyRate,
                         paymentMethod: paymentMethod || PaymentMethod.CASH,
                         timestamp: new Date(),

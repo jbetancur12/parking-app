@@ -188,6 +188,37 @@ const TariffBlock: React.FC<any> = ({
                 )}
                 {/* Re-implementing the exact form fields from SettingsPage for this block */}
                 {renderTariffFields(vehicleType, pricingModel, getTariff, handleTariffChange, calculateSmartSuggestion)}
+
+                {/* Long Term Rates */}
+                <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-700">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Planes Recurrentes</p>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <label className="text-gray-600 dark:text-gray-300 text-sm">Mensualidad</label>
+                            <CurrencyInput
+                                value={getTariff(vehicleType, 'MONTH')?.cost || 0}
+                                onValueChange={(val) => handleTariffChange(vehicleType, 'MONTH', 'cost', Number(val))}
+                                className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <label className="text-gray-600 dark:text-gray-300 text-sm">Quincena (15 días)</label>
+                            <CurrencyInput
+                                value={getTariff(vehicleType, 'TWO_WEEKS')?.cost || 0}
+                                onValueChange={(val) => handleTariffChange(vehicleType, 'TWO_WEEKS', 'cost', Number(val))}
+                                className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <label className="text-gray-600 dark:text-gray-300 text-sm">Semana (7 días)</label>
+                            <CurrencyInput
+                                value={getTariff(vehicleType, 'WEEK')?.cost || 0}
+                                onValueChange={(val) => handleTariffChange(vehicleType, 'WEEK', 'cost', Number(val))}
+                                className="w-28 pl-6 pr-3 py-1.5 text-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

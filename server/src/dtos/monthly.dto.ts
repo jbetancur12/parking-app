@@ -52,6 +52,12 @@ export class CreateMonthlyClientDto {
     @IsOptional()
     @IsDateString({}, { message: 'Start date must be a valid ISO date string' })
     startDate?: string;
+
+    @IsOptional()
+    @IsEnum(['MONTH', 'WEEK', 'TWO_WEEKS'], {
+        message: 'Billing period must be MONTH, WEEK, or TWO_WEEKS'
+    })
+    billingPeriod?: string;
 }
 
 /**
@@ -67,6 +73,12 @@ export class RenewMonthlyClientDto {
         message: 'Payment method must be CASH, TRANSFER, or CARD',
     })
     paymentMethod!: string;
+
+    @IsOptional()
+    @IsEnum(['MONTH', 'WEEK', 'TWO_WEEKS'], {
+        message: 'Billing period must be MONTH, WEEK, or TWO_WEEKS'
+    })
+    billingPeriod?: string;
 }
 
 /**

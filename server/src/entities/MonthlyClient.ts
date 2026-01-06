@@ -1,5 +1,11 @@
-import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Enum, ManyToOne } from '@mikro-orm/core';
 import { BaseTenantEntity } from './BaseTenantEntity';
+
+export enum BillingPeriod {
+    MONTH = 'MONTH',
+    TWO_WEEKS = 'TWO_WEEKS',
+    WEEK = 'WEEK'
+}
 
 @Entity()
 export class MonthlyClient extends BaseTenantEntity {
@@ -23,6 +29,9 @@ export class MonthlyClient extends BaseTenantEntity {
 
     @Property()
     endDate!: Date;
+
+    @Enum(() => BillingPeriod)
+    billingPeriod: BillingPeriod = BillingPeriod.MONTH;
 
     @Property({ type: 'decimal', precision: 10, scale: 2 })
     monthlyRate!: number;

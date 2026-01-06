@@ -63,11 +63,23 @@ export const useSettings = () => {
 
     // Update Local Tariff State
     const updateTariffState = (vehicleType: string, tariffType: string, field: string, value: number | string) => {
-        setTariffs(prev => prev.map(t =>
-            (t.vehicleType === vehicleType && t.tariffType === tariffType)
-                ? { ...t, [field]: value }
-                : t
-        ));
+        setTariffs(prev => {
+            const index = prev.findIndex(t => t.vehicleType === vehicleType && t.tariffType === tariffType);
+            if (index >= 0) {
+                return prev.map((t, i) => i === index ? { ...t, [field]: value } : t);
+            } else {
+                // Create new item if not exists
+                // Note: ID will be undefined, backend handles creation
+                const newItem: any = {
+                    vehicleType,
+                    tariffType,
+                    [field]: value,
+                    cost: field === 'cost' ? value : 0, // Ensure cost exists if setting cost
+                    pricingModel: 'MINUTE' // Default
+                };
+                return [...prev, newItem];
+            }
+        });
     };
 
     // Update Local Settings State

@@ -5,7 +5,7 @@ export type PricingModel = 'MINUTE' | 'BLOCKS' | 'TRADITIONAL';
 export interface Tariff {
     id: number;
     vehicleType: 'CAR' | 'MOTORCYCLE' | 'OTHER';
-    tariffType: 'MINUTE' | 'HOUR' | 'DAY' | 'NIGHT' | 'MONTH';
+    tariffType: 'MINUTE' | 'HOUR' | 'DAY' | 'NIGHT' | 'MONTH' | 'WEEK' | 'TWO_WEEKS';
     cost: number;
     pricingModel?: PricingModel;
     basePrice?: number;

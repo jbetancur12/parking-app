@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CurrencyInput } from '../common/CurrencyInput';
+import { tariffService, type Tariff } from '../../services/tariff.service';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface MonthlyClientFormProps {
@@ -12,9 +13,22 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
     const [plate, setPlate] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [monthlyRate, setMonthlyRate] = useState('50000');
+    const [monthlyRate, setMonthlyRate] = useState('0');
     const [vehicleType, setVehicleType] = useState('CAR');
     const [paymentMethod, setPaymentMethod] = useState('CASH');
+    const [billingPeriod, setBillingPeriod] = useState('MONTH');
+    const [tariffs, setTariffs] = useState<Tariff[]>([]);
+
+    useEffect(() => {
+        if (isOpen) {
+            tariffService.getAll().then(setTariffs).catch(console.error);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        const t = tariffs.find(t => t.vehicleType === vehicleType && t.tariffType === billingPeriod);
+        if (t) setMonthlyRate(t.cost.toString());
+    }, [vehicleType, billingPeriod, tariffs]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -30,12 +44,14 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                 phone,
                 vehicleType,
                 paymentMethod,
-                monthlyRate: Number(monthlyRate)
+                monthlyRate: Number(monthlyRate),
+                billingPeriod
             });
             // Reset form on success (the parent might toggle isOpen, but we should clear state)
             setPlate('');
             setName('');
             setPhone('');
+            setBillingPeriod('MONTH');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al crear cliente');
         } finally {
@@ -92,15 +108,19 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tarifa Mensual</label>
-                            <CurrencyInput
-                                value={monthlyRate}
-                                onValueChange={setMonthlyRate}
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Periodo</label>
+                            <select
+                                value={billingPeriod}
+                                onChange={(e) => setBillingPeriod(e.target.value)}
                                 className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
+                            >
+                                <option value="MONTH">Mensual</option>
+                                <option value="TWO_WEEKS">Quincenal (15 días)</option>
+                                <option value="WEEK">Semanal (7 días)</option>
+                            </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo Vehículo</label>
                             <select
                                 value={vehicleType}
                                 onChange={(e) => setVehicleType(e.target.value)}
@@ -110,6 +130,14 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                                 <option value="MOTORCYCLE">Moto</option>
                                 <option value="OTHER">Otro</option>
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tarifa ({billingPeriod === 'MONTH' ? 'Mensual' : billingPeriod === 'TWO_WEEKS' ? 'Quincenal' : 'Semanal'})</label>
+                            <CurrencyInput
+                                value={monthlyRate}
+                                onValueChange={setMonthlyRate}
+                                className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Medio de Pago</label>

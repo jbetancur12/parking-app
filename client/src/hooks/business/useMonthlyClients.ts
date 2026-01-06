@@ -10,6 +10,7 @@ export interface Client {
     name: string;
     phone?: string;
     vehicleType?: string;
+    billingPeriod?: string;
     startDate: string;
     endDate: string;
     monthlyRate: number;
@@ -75,7 +76,7 @@ export const useMonthlyClients = () => {
         return response.data;
     };
 
-    const renewClient = async (id: number, data: { amount: number, paymentMethod: string }) => {
+    const renewClient = async (id: number, data: { amount: number, paymentMethod: string, billingPeriod?: string }) => {
         const response = await api.post(`/monthly/${id}/renew`, data);
         await fetchClients();
         return response.data;
