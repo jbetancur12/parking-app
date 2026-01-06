@@ -51,10 +51,10 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
     const totalInfo = calculateTotal();
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors">
-                <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Confirmar Salida</h2>
-                <div className="space-y-3 mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors max-h-[90vh] flex flex-col">
+                <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white shrink-0">Confirmar Salida</h2>
+                <div className="space-y-3 mb-6 overflow-y-auto px-1">
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Placa:</strong> {previewData.plate}</p>
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Plan:</strong> {getPlanLabel()}</p>
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
@@ -187,7 +187,7 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                         </div>
                     )}
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 shrink-0">
                     <button
                         onClick={onCancel}
                         className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
