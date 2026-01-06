@@ -1,8 +1,10 @@
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Briefcase, Plus, Power } from 'lucide-react';
+import { Briefcase, Plus, Power, BarChart } from 'lucide-react';
 import { useAgreementsPage } from '../hooks/useAgreementsPage';
 import { AgreementList } from '../components/agreements/AgreementList';
 import { AgreementForm } from '../components/agreements/AgreementForm';
+import { AgreementReportModal } from '../components/agreements/AgreementReportModal';
 
 export default function AgreementsPage() {
     const { user } = useAuth();
@@ -23,6 +25,8 @@ export default function AgreementsPage() {
         handleToggleStatus
     } = useAgreementsPage();
 
+    const [isReportModalOpen, setIsReportModalOpen] = React.useState(false);
+
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && user?.role !== 'LOCATION_MANAGER') {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center text-gray-500 dark:text-gray-400">
@@ -41,13 +45,22 @@ export default function AgreementsPage() {
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
                     <Briefcase className="mr-2 text-blue-600 dark:text-blue-400" /> Gestión de Convenios
                 </h1>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nuevo Convenio
-                </button>
+                <div className="flex space-x-3">
+                    <button
+                        onClick={() => setIsReportModalOpen(true)}
+                        className="flex items-center bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <BarChart className="mr-2 h-4 w-4" />
+                        Ver Reporte
+                    </button>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Nuevo Convenio
+                    </button>
+                </div>
             </div>
 
             <AgreementList agreements={agreements} onToggleStatus={handleToggleStatus} />
@@ -66,6 +79,10 @@ export default function AgreementsPage() {
                     description={description}
                     setDescription={setDescription}
                 />
+            )}
+
+            {isReportModalOpen && (
+                <AgreementReportModal onClose={() => setIsReportModalOpen(false)} />
             )}
         </div>
     );

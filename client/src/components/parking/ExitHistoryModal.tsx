@@ -107,7 +107,11 @@ export const ExitHistoryModal: React.FC<ExitHistoryModalProps> = ({ isOpen, onCl
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <button
-                                                        onClick={() => onReprint({ ...session, duration })}
+                                                        onClick={() => onReprint({
+                                                            ...session,
+                                                            duration,
+                                                            agreementName: session.agreement?.name
+                                                        })}
                                                         className="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-md transition-colors"
                                                         title="Reimprimir Recibo"
                                                     >
