@@ -31,7 +31,7 @@ export const PrintReceipt = React.forwardRef<HTMLDivElement, PrintReceiptProps>(
         return (
             <div
                 ref={ref}
-                className="bg-white text-black font-mono leading-normal"
+                className="bg-white text-black font-mono leading-normal outline outline-1 outline-dashed outline-red-500"
                 style={{ width, fontSize }}
             >
                 <style>
