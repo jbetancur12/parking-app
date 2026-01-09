@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Tenant, TenantStatus, TenantPlan } from '../../entities/Tenant';
 import { SAAS_PLANS } from '../../config/saas.config';
 import { AuditService } from '../../services/AuditService';
+import { SettingsInitService } from '../../services/SettingsInitService';
 
 // Create new tenant
 export const createTenant = async (req: Request, res: Response) => {
@@ -44,6 +45,15 @@ export const createTenant = async (req: Request, res: Response) => {
         } as any);
 
         await em.persistAndFlush(tenant);
+
+        // Create default settings for the new tenant (tenant-level only, no location yet)
+        try {
+            await SettingsInitService.createDefaultSettings(em, tenant.id);
+            console.log(`✅ Default settings created for tenant ${tenant.name}`);
+        } catch (error) {
+            console.error('Failed to create default settings:', error);
+            // Don't fail tenant creation if settings creation fails
+        }
 
         // Create subscription for the new tenant
         try {

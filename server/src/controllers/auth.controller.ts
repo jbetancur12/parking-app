@@ -6,6 +6,7 @@ import { Location } from '../entities/Location';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { addDays } from 'date-fns';
+import { SettingsInitService } from '../services/SettingsInitService';
 
 
 
@@ -64,6 +65,14 @@ export const registerTenant = async (req: Request, res: Response) => {
     });
 
     await em.persistAndFlush([tenant, location, user]);
+
+    // Create default settings for the new tenant and location
+    try {
+        await SettingsInitService.createDefaultSettings(em, tenant.id, location.id);
+    } catch (error) {
+        console.error('Failed to create default settings:', error);
+        // Don't fail registration if settings creation fails
+    }
 
     // Create trial subscription for new tenant
     try {
@@ -439,6 +448,17 @@ export const setupAdmin = async (req: Request, res: Response) => {
         if (location) admin.locations.add(location); // Assign to location
 
         await em?.persistAndFlush(admin);
+
+        // Create default settings for the new tenant and location
+        try {
+            if (em && tenant && location) {
+                await SettingsInitService.createDefaultSettings(em, tenant.id, location.id);
+            }
+        } catch (error) {
+            console.error('Failed to create default settings:', error);
+            // Don't fail setup if settings creation fails
+        }
+
         return res.json({ message: 'Admin and Default Environment created successfully' });
     } else {
         return res.status(500).json({ message: 'Error creating configuration' });

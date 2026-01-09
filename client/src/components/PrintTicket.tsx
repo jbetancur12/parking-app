@@ -19,6 +19,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
         // For 58mm, using '100%' is often safer than fixed '58mm' which can trigger horizontal scroll/cut-off
         // depending on the driver's unprintable margins.
         const is80mm = settings?.ticket_width === '80mm';
+        console.log(settings);
         //const width = is80mm ? '76mm' : '52mm';
         const showQr = settings?.enable_qr !== 'false';
         const logo = settings?.company_logo;
@@ -36,11 +37,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                     {`
                         @media print {
                             body { margin: 0; }
-                            @page { size: ${is80mm ? '80mm' : '58mm'} auto; margin: 0; }
-                            .print-debug {
-                                border: 1px dashed red;
-                                box-sizing: border-box;
-                                }
+                            @page { size: ${is80mm ? '80mm' : '58mm'} auto; margin: 0; }                    
                         }
                     `}
                 </style>

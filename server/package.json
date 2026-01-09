@@ -14,7 +14,8 @@
     "seed:saas": "npx ts-node src/scripts/seed_saas.ts",
     "db:reset": "npx ts-node src/scripts/reset_superadmin.ts",
     "db:reset:prod": "node dist/scripts/reset_superadmin.js",
-    "cleanup": "npx ts-node src/scripts/cleanup_logs.ts"
+    "cleanup": "npx ts-node src/scripts/cleanup_logs.ts",
+    "backfill:settings": "npx ts-node src/scripts/backfill_settings.ts"
   },
   "keywords": [],
   "author": "",

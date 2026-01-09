@@ -90,6 +90,7 @@ export const useParkingPage = (
                     tariffService.getAll(),
                     api.get('/agreements/active')
                 ]);
+                console.log(settingsData);
                 setSettings(settingsData);
                 setTariffs(tariffsData);
                 setAgreements(agreementsRes.data);

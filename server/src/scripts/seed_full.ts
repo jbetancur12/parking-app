@@ -82,10 +82,23 @@ const seed = async () => {
 
         console.log('⚙️ Creating System Settings...');
         const systemSettingsData = [
+            // Capacity & General
             { key: 'capacity_car', value: '50' },
             { key: 'capacity_motorcycle', value: '30' },
             { key: 'check_capacity', value: 'false' }, // Disabled by default
             { key: 'ticket_header', value: 'PARQUEADERO EJEMPLO' },
+
+            // Preferences
+            { key: 'app_timezone', value: 'America/Bogota' },
+            { key: 'ticket_width', value: '58mm' },
+            { key: 'enable_qr', value: 'false' },
+            { key: 'show_print_dialog', value: 'false' },
+
+            // Loyalty Program
+            { key: 'loyalty_enabled', value: 'false' },
+            { key: 'loyalty_target', value: '10' },
+            { key: 'loyalty_reward_type', value: 'FULL' },
+            { key: 'loyalty_reward_hours', value: '0' },
         ];
 
         const systemSettingEntities = systemSettingsData.map(data => em.create(SystemSetting, data));
