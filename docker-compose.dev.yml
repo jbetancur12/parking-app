@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # --- INFRASTRUCTURE ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: parking_db_dev
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-parking_db}
+    ports:
+      - "5433:5432" # Expose DB to host for GUI tools (5433 to avoid conflict)
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  # --- APPLICATIONS ---
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: parking_server_dev
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./server:/app
+      - /app/node_modules # Avoid overwriting container node_modules
+    environment:
+      - PORT=3000
+      - DB_TYPE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-parking_db}
+      - JWT_SECRET=${JWT_SECRET:-supersecret_dev}
+      - NODE_ENV=development
+    networks:
+      - app_network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: parking_client_dev
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules # Avoid overwriting container node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    networks:
+      - app_network
+
+volumes:
+  postgres_data_dev:
+
+
+networks:
+  app_network:
+    driver: bridge

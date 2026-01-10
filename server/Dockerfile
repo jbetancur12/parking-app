@@ -1,26 +1,21 @@
-# Use Node.js LTS (Long Term Support)
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first (better caching)
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies (including devDependencies for build)
-RUN npm install
+# Install dependencies
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the TypeScript project
+# Build TypeScript
 RUN npm run build
 
-# Prune dev dependencies to keep image small (optional but good practice)
-# RUN npm prune --production # Commented out because sometimes some dev deps are needed or it's safer to keep for now
+# Expose API port
+EXPOSE 3000
 
-# Expose the port the app runs on
-EXPOSE 3001
-
-# Start the application (with optional DB reset)
-CMD ["sh", "-c", "if [ \"$RUN_DB_RESET\" = \"true\" ]; then echo '🔄 Running DB Reset...'; npm run db:reset:prod; fi && npm run start:prod"]
+# Start command
+CMD ["npm", "run", "start:prod"]

@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # --- INFRASTRUCTURE ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: parking_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-parking_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- APPLICATIONS ---
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: parking_server
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PORT=3000
+      - DB_TYPE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-parking_db}
+      - JWT_SECRET=${JWT_SECRET:-supersecret_change_me}
+      - NODE_ENV=production
+      # Add other environment variables as needed
+    networks:
+      - app_network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: parking_client
+    restart: always
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+  # --- PROXY ---
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: parking_proxy
+    restart: always
+    ports:
+      - '80:80' # Public HTTP
+      - '443:443' # Public HTTPS
+      - '81:81' # Admin UI
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  npm_data:
+  npm_letsencrypt:
+
+
+networks:
+  app_network:
+    driver: bridge
