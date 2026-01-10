@@ -12,7 +12,7 @@ export const useSettings = () => {
     const [settings, setSettingsState] = useState<any>({});
 
     // Tab State
-    const [activeTab, setActiveTab] = useState<'operational' | 'business' | 'system'>('operational');
+    const [activeTab, setActiveTab] = useState<'operational' | 'business' | 'system' | 'plan'>('operational');
 
     // Tariffs State
     const [tariffs, setTariffs] = useState<Tariff[]>([]);

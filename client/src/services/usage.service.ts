@@ -27,6 +27,7 @@ export interface UsageLimits {
         percentage: number;
         warningLevel?: 'soft' | 'critical' | 'blocked';
     };
+    planName?: string;
 }
 
 export const usageService = {
