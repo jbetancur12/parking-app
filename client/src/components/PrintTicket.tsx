@@ -77,9 +77,9 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                             {settings?.company_name || 'CUADRA'}
                         </div>
 
-                        {settings?.company_nit && <div className="text-[8pt]">NIT: {settings.company_nit}</div>}
-                        {settings?.company_address && <div className="text-[8pt]">{settings.company_address}</div>}
-                        {settings?.company_phone && <div className="text-[8pt]">Tel: {settings.company_phone}</div>}
+                        {settings?.company_nit && <div className="text-[10pt]">NIT: {settings.company_nit}</div>}
+                        {settings?.company_address && <div className="text-[10pt]">{settings.company_address}</div>}
+                        {settings?.company_phone && <div className="text-[10pt]">Tel: {settings.company_phone}</div>}
 
                         <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
                     </div>
@@ -117,8 +117,8 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         <Barcode
                             value={session.plate}
                             format="CODE128"
-                            width={1.1}
-                            height={35}
+                            width={2}
+                            height={50}
                             fontSize={10}
                             displayValue
                             margin={0}
@@ -126,7 +126,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                     </div>
 
                     {/* FOOTER */}
-                    <div className="text-center text-[8pt] mt-2">
+                    <div className="text-center text-[10pt] mt-2">
                         <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
 
                         {regulations.length > 0 ? (
@@ -139,7 +139,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         )}
 
                         <p className="font-bold mt-2">¡Gracias por su visita!</p>
-                        <p className="text-[7pt] mt-1">Software: CUADRA</p>
+                        <p className="text-[8pt] mt-1">Software: CUADRA</p>
                     </div>
                 </div>
             </>
