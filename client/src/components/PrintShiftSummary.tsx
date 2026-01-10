@@ -22,135 +22,166 @@ interface PrintShiftSummaryProps {
     settings?: any;
 }
 
-export const PrintShiftSummary = React.forwardRef<HTMLDivElement, PrintShiftSummaryProps>(
-    ({ summary, shift, user, settings }, ref) => {
-        const width = settings?.ticket_width === '80mm' ? '80mm' : '58mm';
-        const logo = settings?.company_logo;
+export const PrintShiftSummary = React.forwardRef<
+    HTMLDivElement,
+    PrintShiftSummaryProps
+>(({ summary, shift, user, settings }, ref) => {
+    const logo = settings?.company_logo;
 
-        // Filter valid regulations
-        const regulations = [];
-        for (let i = 1; i <= 6; i++) {
-            const line = settings?.[`regulation_text_${i}`];
-            if (line) regulations.push(line);
-        }
+    return (
+        <>
+            <style>
+                {`
+          @media print {
+            @page { margin: 0; }
 
-        return (
-            <div ref={ref} className="p-2 mx-auto bg-white text-black font-mono text-[10pt] leading-tight" style={{ width: width, maxWidth: width }}>
-                <style>
-                    {`
-                        @media print {
-                            body { margin: 0; }
-                            @page { size: ${width} auto; margin: 0; }
-                        }
-                    `}
-                </style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: white !important;
+              color: black !important;
+              height: auto !important;
+            }
 
-                {/* Header */}
+            * {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
+        `}
+            </style>
+
+            <div
+                ref={ref}
+                style={{
+                    width: '100%',
+                    padding: '4px',
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
+                    breakInside: 'avoid',
+                    pageBreakInside: 'avoid',
+                }}
+                className="font-mono text-black text-[12pt] leading-tight"
+            >
+                {/* HEADER */}
                 <div className="text-center mb-2">
                     {logo && (
-                        <div className="flex justify-center mb-2">
-                            <img src={logo} alt="Logo" style={{ maxHeight: '60px', maxWidth: '100%' }} />
-                        </div>
-                    )}
-                    <h1 className="text-xl font-bold uppercase">{settings?.company_name || 'CUADRA'}</h1>
-                    {settings?.company_nit && <p className="text-xs">NIT: {settings.company_nit}</p>}
-                    {settings?.company_address && <p className="text-xs">{settings.company_address}</p>}
-                    {settings?.company_phone && <p className="text-xs">Tel: {settings.company_phone}</p>}
-
-                    <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
-                    <h2 className="text-sm font-bold uppercase">CIERRE DE TURNO</h2>
-                </div>
-
-                <div className="mb-2 text-[9pt] uppercase">
-                    <div className="flex justify-between mb-1">
-                        <span className="font-bold">USUARIO:</span>
-                        <span>{user.username}</span>
-                    </div>
-                    <div className="flex justify-between mb-1">
-                        <span className="font-bold">INICIO:</span>
-                        <span>{new Date(shift.startTime).toLocaleString('es-CO')}</span>
-                    </div>
-                    <div className="flex justify-between mb-1">
-                        <span className="font-bold">CIERRE:</span>
-                        <span>{new Date(shift.endTime).toLocaleString('es-CO')}</span>
-                    </div>
-                </div>
-
-                <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
-
-                <div className="mb-2 text-[9pt]">
-                    <div className="flex justify-between mb-2">
-                        <span>Base Inicial:</span>
-                        <span className="font-bold">${summary.baseAmount.toLocaleString()}</span>
-                    </div>
-
-                    <div className="flex justify-between mb-2">
-                        <span>(+) Ingresos Totales:</span>
-                        <span className="font-bold">${summary.totalIncome.toLocaleString()}</span>
-                    </div>
-
-                    {/* Income Breakdown */}
-                    {(summary.cashIncome !== undefined || summary.transferIncome !== undefined) && (
-                        <div className="ml-2 mb-2 text-[8pt] text-gray-600">
-                            {summary.cashIncome !== undefined && (
-                                <div className="flex justify-between">
-                                    <span>- Efectivo:</span>
-                                    <span>${summary.cashIncome.toLocaleString()}</span>
-                                </div>
-                            )}
-                            {summary.transferIncome !== undefined && (
-                                <div className="flex justify-between">
-                                    <span>- Transferencia:</span>
-                                    <span>${summary.transferIncome.toLocaleString()}</span>
-                                </div>
-                            )}
-                        </div>
+                        <img
+                            src={logo}
+                            alt="Logo"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '60px',
+                                margin: '0 auto 4px',
+                            }}
+                        />
                     )}
 
-                    <div className="flex justify-between mb-2">
-                        <span>(-) Egresos:</span>
-                        <span className="font-bold">${summary.totalExpenses.toLocaleString()}</span>
+                    <div className="font-bold text-base uppercase">
+                        {settings?.company_name || 'CUADRA'}
                     </div>
+
+                    {settings?.company_nit && <div>NIT: {settings.company_nit}</div>}
+                    {settings?.company_address && <div>{settings.company_address}</div>}
+                    {settings?.company_phone && <div>Tel: {settings.company_phone}</div>}
+
+                    <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
+                    <div className="font-bold uppercase">CIERRE DE TURNO</div>
                 </div>
 
-                <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
+                {/* INFO */}
+                <div className="uppercase mb-2">
+                    <p>
+                        <b>USUARIO:</b> {user.username}
+                    </p>
+                    <p>
+                        <b>INICIO:</b>{' '}
+                        {new Date(shift.startTime).toLocaleString('es-CO')}
+                    </p>
+                    <p>
+                        <b>CIERRE:</b>{' '}
+                        {new Date(shift.endTime).toLocaleString('es-CO')}
+                    </p>
+                </div>
 
-                <div className="mb-2 text-[10pt]">
-                    <div className="flex justify-between mb-2 font-bold">
-                        <span>ESPERADO:</span>
-                        <span>${summary.expectedCash.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between mb-2 font-bold">
-                        <span>DECLARADO:</span>
-                        <span>${summary.declaredAmount.toLocaleString()}</span>
-                    </div>
-                    <div className={`flex justify-between text-lg font-bold ${summary.difference >= 0 ? 'text-black' : 'text-black'}`}>
-                        <span>DIFERENCIA:</span>
-                        <span>${summary.difference.toLocaleString()}</span>
-                    </div>
-                    <p className="text-center text-[8pt] uppercase mt-1">
+                <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
+
+                {/* MOVIMIENTOS */}
+                <div className="mb-2">
+                    <p>
+                        Base Inicial: <b>${summary.baseAmount.toLocaleString()}</b>
+                    </p>
+
+                    <p>
+                        (+) Ingresos Totales:{' '}
+                        <b>${summary.totalIncome.toLocaleString()}</b>
+                    </p>
+
+                    {summary.cashIncome !== undefined && (
+                        <p className="ml-2 text-[12pt] text-black-700">
+                            - Efectivo: ${summary.cashIncome.toLocaleString()}
+                        </p>
+                    )}
+
+                    {summary.transferIncome !== undefined && (
+                        <p className="ml-2 text-[12pt] text-black-700">
+                            - Transferencia: ${summary.transferIncome.toLocaleString()}
+                        </p>
+                    )}
+
+                    <p>
+                        (-) Egresos:{' '}
+                        <b>${summary.totalExpenses.toLocaleString()}</b>
+                    </p>
+                </div>
+
+                <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
+
+                {/* TOTALES */}
+                <div className="mb-2">
+                    <p>
+                        <b>ESPERADO:</b> ${summary.expectedCash.toLocaleString()}
+                    </p>
+                    <p>
+                        <b>DECLARADO:</b> ${summary.declaredAmount.toLocaleString()}
+                    </p>
+                    <p className="font-bold text-lg">
+                        DIFERENCIA: ${summary.difference.toLocaleString()}
+                    </p>
+                    <p className="text-center text-[10pt] uppercase">
                         {summary.difference >= 0 ? '(SOBRANTE)' : '(FALTANTE)'}
                     </p>
                 </div>
 
-                <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
+                <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
 
-                <div className="text-center text-[9pt] mb-2 uppercase">
-                    <p>TRANSACCIONES TOTALES: <strong>{summary.transactionCount}</strong></p>
+                {/* FOOTER */}
+                <div className="text-center text-[10pt] uppercase mb-2">
+                    <p>
+                        TRANSACCIONES TOTALES:{' '}
+                        <b>{summary.transactionCount}</b>
+                    </p>
                 </div>
 
-                <div className="text-center text-[7pt] mt-4 uppercase">
-                    <div className="border-t-2 border-dashed border-gray-800 my-2"></div>
+                <div className="text-center text-[8pt] mt-3 uppercase">
+                    <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
                     <p className="font-bold">Firma Cajero</p>
-                    <br />
-                    <div className="border-b border-black w-2/3 mx-auto my-2"></div>
-
-                    <p className="mt-2 text-gray-500">Impreso: {new Date().toLocaleString('es-CO')}</p>
+                    <div
+                        style={{
+                            borderBottom: '1px solid #000',
+                            width: '70%',
+                            margin: '10px auto',
+                        }}
+                    />
+                    <p className="text-black-500">
+                        Impreso: {new Date().toLocaleString('es-CO')}
+                    </p>
                     <p>Software: CUADRA</p>
                 </div>
             </div>
-        );
-    }
-);
+        </>
+    );
+});
 
 PrintShiftSummary.displayName = 'PrintShiftSummary';
