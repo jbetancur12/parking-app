@@ -103,7 +103,7 @@ export class UsageService {
         }
 
         // Calculate thresholds
-        const softLimit = limit === -1 ? Infinity : Math.floor(limit * plan.softLimitPercentage);
+        const softLimit = limit === -1 ? Infinity : Math.floor(limit * (plan.softLimitPercentage || 0.9));
         const hardLimit = limit === -1 ? Infinity : Math.floor(limit * plan.hardLimitPercentage);
 
         // Determine status
@@ -161,7 +161,7 @@ export class UsageService {
                 break;
         }
 
-        const softLimit = limit === -1 ? Infinity : Math.floor(limit * 0.8);
+        const softLimit = limit === -1 ? Infinity : Math.floor(limit * 0.9);
         const hardLimit = limit === -1 ? Infinity : Math.floor(limit * 1.2);
 
         const blocked = limit !== -1 && currentCount >= hardLimit;
