@@ -41,6 +41,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
+      - FRONTEND_URL=${FRONTEND_URL:-https://app.tu-dominio.com}
       - NODE_ENV=production
       # Add other environment variables as needed
     networks:
@@ -50,6 +51,8 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.tu-dominio.com/api}
     container_name: parking_client
     restart: always
     depends_on:
