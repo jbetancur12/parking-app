@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { usageService, type UsageLimits } from '../services/usage.service';
 
 export function useUsageLimits() {
@@ -6,11 +7,7 @@ export function useUsageLimits() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadUsage();
-    }, []);
-
-    const loadUsage = async () => {
+    const loadUsage = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -22,7 +19,16 @@ export function useUsageLimits() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadUsage();
+
+        const handleUsageUpdate = () => loadUsage();
+        window.addEventListener('usage:updated', handleUsageUpdate);
+
+        return () => window.removeEventListener('usage:updated', handleUsageUpdate);
+    }, [loadUsage]);
 
     const hasWarnings = usage && (
         usage.sessions.warningLevel ||
@@ -40,7 +46,7 @@ export function useUsageLimits() {
         usage,
         loading,
         error,
-        hasWarnings,
+        hasWarnings: hasWarnings as any,
         isBlocked,
         reload: loadUsage,
     };

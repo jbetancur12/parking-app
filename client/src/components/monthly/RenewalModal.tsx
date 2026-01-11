@@ -17,6 +17,8 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
     const [renewAmount, setRenewAmount] = useState('');
     const [renewPaymentMethod, setRenewPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
     const [billingPeriod, setBillingPeriod] = useState('MONTH');
+    const [startDateMode, setStartDateMode] = useState<'CONTINUE' | 'TODAY'>('CONTINUE');
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tariffs, setTariffs] = useState<Tariff[]>([]);
 
@@ -30,8 +32,9 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
         if (client) {
             setRenewAmount(client.monthlyRate.toString());
             setBillingPeriod(client.billingPeriod || 'MONTH');
+            setStartDateMode('CONTINUE'); // Reset to default
         }
-    }, [client]);
+    }, [client, isOpen]); // Reset on Open too
 
     // Auto-update rate when period changes
     useEffect(() => {
@@ -56,11 +59,20 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
 
         setIsSubmitting(true);
         try {
+            // Determine Start Date
+            let startDate: string | undefined = undefined;
+            if (startDateMode === 'CONTINUE') {
+                startDate = client.endDate; // Backend handles null/string conversion if needed, but passing explicit ensures intent
+            } else {
+                startDate = new Date().toISOString(); // Start Today
+            }
+
             await onRenew(client.id, {
                 amount: Number(renewAmount),
                 paymentMethod: renewPaymentMethod,
-                billingPeriod
-            });
+                billingPeriod,
+                startDate // Pass to parent handler
+            } as any); // Type assertion until interface updated globally
             onClose();
             toast.success(`Renovado exitosamente (${renewPaymentMethod === 'CASH' ? 'Efectivo' : 'Transferencia'})`);
         } catch (err: any) {
@@ -83,6 +95,48 @@ export const RenewalModal: React.FC<RenewalModalProps> = ({ isOpen, onClose, cli
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"><X size={20} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
+
+                    {/* Start Date Strategy Selection */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Inicio de Renovación</label>
+                        <div className="space-y-2">
+                            {/* Option 1: Continue (Default/Ideal) */}
+                            <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${startDateMode === 'CONTINUE' ? 'bg-green-50 border-green-500 ring-1 ring-green-500 dark:bg-green-900/30 dark:border-green-400' : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
+                                <input
+                                    type="radio"
+                                    name="startDateMode"
+                                    className="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                                    checked={startDateMode === 'CONTINUE'}
+                                    onChange={() => setStartDateMode('CONTINUE')}
+                                />
+                                <div>
+                                    <span className="block text-sm font-bold text-gray-900 dark:text-white">Continuar ({new Date(client.endDate).toLocaleDateString()})</span>
+                                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                        Mantiene la continuidad. {new Date(client.endDate) < new Date() ? 'Cobrará los días vencidos (hueco).' : 'Extiende desde el final actual.'}
+                                    </span>
+                                </div>
+                            </label>
+
+                            {/* Option 2: Restart Today (Grace Period) */}
+                            {new Date(client.endDate) < new Date() && (
+                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${startDateMode === 'TODAY' ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500 dark:bg-blue-900/30 dark:border-blue-400' : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
+                                    <input
+                                        type="radio"
+                                        name="startDateMode"
+                                        className="mt-1 mr-3 text-blue-600 focus:ring-blue-500"
+                                        checked={startDateMode === 'TODAY'}
+                                        onChange={() => setStartDateMode('TODAY')}
+                                    />
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900 dark:text-white">Empezar Hoy ({new Date().toLocaleDateString()})</span>
+                                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                            Regala los días vencidos. El nuevo periodo cuenta desde hoy.
+                                        </span>
+                                    </div>
+                                </label>
+                            )}
+                        </div>
+                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Periodo de Renovación</label>

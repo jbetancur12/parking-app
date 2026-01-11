@@ -79,6 +79,10 @@ export class RenewMonthlyClientDto {
         message: 'Billing period must be MONTH, WEEK, or TWO_WEEKS'
     })
     billingPeriod?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: 'Start date must be a valid ISO date string' })
+    startDate?: string;
 }
 
 /**

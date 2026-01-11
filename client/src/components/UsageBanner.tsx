@@ -13,9 +13,9 @@ export function UsageBanner({ usage, onDismiss }: UsageBannerProps) {
     // Determine the most critical warning
     const warnings = [
         { type: 'sessions', data: usage.sessions, label: 'sesiones' },
-        { type: 'users', data: usage.users, label: 'usuarios' },
-        { type: 'locations', data: usage.locations, label: 'sedes' },
-    ].filter(w => w.data.warningLevel && w.type === 'sessions');
+        // { type: 'users', data: usage.users, label: 'usuarios' },
+        // { type: 'locations', data: usage.locations, label: 'sedes' },
+    ].filter(w => w.data.warningLevel && w.type === 'sessions' && w.data.percentage >= 90);
 
     if (warnings.length === 0) return null;
 

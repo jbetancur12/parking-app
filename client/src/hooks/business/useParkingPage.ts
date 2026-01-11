@@ -206,6 +206,9 @@ export const useParkingPage = (
             setPendingPrintSession(newSession);
             setShowPrintConfirm(true);
             toast.success('Vehículo ingresado');
+
+            // Notify global usage banner to refresh
+            window.dispatchEvent(new Event('usage:updated'));
         } catch (err: any) {
             if (err.response?.status === 409) {
                 // Monthly Client Warning

@@ -230,7 +230,7 @@ export class MonthlyClientController {
             const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
             const { id } = req.params;
-            const { amount, paymentMethod, billingPeriod } = req.body;
+            const { amount, paymentMethod, billingPeriod, startDate } = req.body;
 
             // Find client strictly within location
             const client = await em.findOne(MonthlyClient, { id: Number(id), location: locationId });
@@ -240,8 +240,17 @@ export class MonthlyClientController {
             }
 
             // Logic: Calculate new end date based on period
-            const now = new Date();
-            const baseDate = client.endDate > now ? client.endDate : now;
+            // If startDate is provided (Manual override), use it.
+            // Otherwise, default to:
+            // - If active: Extend from current endDate
+            // - If expired: Start from Today
+            let baseDate: Date;
+            if (startDate) {
+                baseDate = new Date(startDate);
+            } else {
+                const now = new Date();
+                baseDate = client.endDate > now ? client.endDate : now;
+            }
 
             const selectedPeriod = billingPeriod || client.billingPeriod || BillingPeriod.MONTH;
             const newEndDate = getEndDate(baseDate, selectedPeriod);
