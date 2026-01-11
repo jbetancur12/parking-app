@@ -13,6 +13,7 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
     const [plate, setPlate] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default today
     const [monthlyRate, setMonthlyRate] = useState('0');
     const [vehicleType, setVehicleType] = useState('CAR');
     const [paymentMethod, setPaymentMethod] = useState('CASH');
@@ -45,12 +46,14 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                 vehicleType,
                 paymentMethod,
                 monthlyRate: Number(monthlyRate),
+                startDate, // Pass startDate
                 billingPeriod
             });
             // Reset form on success (the parent might toggle isOpen, but we should clear state)
             setPlate('');
             setName('');
             setPhone('');
+            setStartDate(new Date().toISOString().split('T')[0]);
             setBillingPeriod('MONTH');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al crear cliente');
@@ -106,6 +109,17 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                             placeholder="+57 300 123 4567"
                         />
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha Inicio</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            required
+                        />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Periodo</label>
@@ -160,7 +174,7 @@ export const MonthlyClientForm: React.FC<MonthlyClientFormProps> = ({ isOpen, on
                         {isSubmitting ? 'Registrando...' : 'Crear Cliente'}
                     </button>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

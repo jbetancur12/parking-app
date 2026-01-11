@@ -1,6 +1,6 @@
 
 import {
-    Settings, Save, Car, Building2, AlertCircle
+    Settings, Save, Car, Building2, AlertCircle, TrendingUp
 } from 'lucide-react';
 import type { Tariff } from '../services/tariff.service';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,8 @@ import { useSettings } from '../hooks/useSettings';
 import { OperationalTab } from '../components/settings/OperationalTab';
 import { BusinessTab } from '../components/settings/BusinessTab';
 import { SystemTab } from '../components/settings/SystemTab';
+import { PlanUsageTab } from '../components/settings/PlanUsageTab';
+
 
 export default function SettingsPage() {
     const { user: currentUser } = useAuth();
@@ -154,6 +156,16 @@ export default function SettingsPage() {
                     <Settings className="mr-2" size={18} />
                     Sistema
                 </button>
+                <button
+                    onClick={() => setActiveTab('plan')}
+                    className={`flex items-center py-4 px-6 font-medium text-sm md:text-base border-b-2 transition-colors whitespace-nowrap ${activeTab === 'plan'
+                        ? 'border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-blue-900/20 rounded-t-lg'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        }`}
+                >
+                    <TrendingUp className="mr-2" size={18} />
+                    Plan y Uso
+                </button>
             </div>
 
             {/* Content Area */}
@@ -185,6 +197,10 @@ export default function SettingsPage() {
                     licenseDetails={licenseDetails}
                     isElectron={isElectron}
                 />
+            )}
+
+            {activeTab === 'plan' && (
+                <PlanUsageTab />
             )}
         </div>
     );

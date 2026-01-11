@@ -15,7 +15,7 @@ export function UsageBanner({ usage, onDismiss }: UsageBannerProps) {
         { type: 'sessions', data: usage.sessions, label: 'sesiones' },
         { type: 'users', data: usage.users, label: 'usuarios' },
         { type: 'locations', data: usage.locations, label: 'sedes' },
-    ].filter(w => w.data.warningLevel);
+    ].filter(w => w.data.warningLevel && w.type === 'sessions');
 
     if (warnings.length === 0) return null;
 
@@ -69,8 +69,8 @@ export function UsageBanner({ usage, onDismiss }: UsageBannerProps) {
                                 <div className="w-full bg-white rounded-full h-2 overflow-hidden">
                                     <div
                                         className={`h-full transition-all ${isBlocked ? 'bg-red-600' :
-                                                isCritical ? 'bg-orange-500' :
-                                                    'bg-yellow-500'
+                                            isCritical ? 'bg-orange-500' :
+                                                'bg-yellow-500'
                                             }`}
                                         style={{ width: `${Math.min(mainWarning.data.percentage, 100)}%` }}
                                     />
@@ -82,8 +82,8 @@ export function UsageBanner({ usage, onDismiss }: UsageBannerProps) {
                             <button
                                 onClick={() => navigate('/billing')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${isBlocked || isCritical
-                                        ? 'bg-brand-yellow text-gray-900 hover:bg-yellow-400'
-                                        : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300'
+                                    ? 'bg-brand-yellow text-gray-900 hover:bg-yellow-400'
+                                    : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300'
                                     }`}
                             >
                                 <TrendingUp size={16} />

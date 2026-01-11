@@ -13,6 +13,7 @@ import { MonthlyClient } from '../entities/MonthlyClient';
 import { cacheService } from '../services/CacheService';
 import { Location } from '../entities/Location';
 import { ReceiptService } from '../services/ReceiptService';
+import { UsageService } from '../services/usage.service';
 
 export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // 1. Determine active pricing model from global setting (stored on any tariff)
@@ -219,6 +220,17 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
     });
 
     await em.persistAndFlush(session);
+
+
+    // Track usage (Fire and forget or await? Await to ensure consistency for now)
+    try {
+        const usageService = new UsageService();
+        await usageService.trackSession(shift.tenant.id);
+    } catch (error) {
+        console.error('Error tracking session usage:', error);
+        // Don't fail the request if tracking fails
+    }
+
     return res.status(201).json(session);
 };
 

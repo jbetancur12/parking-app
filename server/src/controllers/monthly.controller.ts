@@ -67,7 +67,7 @@ export class MonthlyClientController {
             }
 
             const user = (req as any).user;
-            const { plate, name, phone, vehicleType, monthlyRate, billingPeriod } = req.body;
+            const { plate, name, phone, vehicleType, monthlyRate, billingPeriod, startDate: reqStartDate } = req.body;
 
             const selectedPeriod = billingPeriod || BillingPeriod.MONTH;
 
@@ -89,8 +89,9 @@ export class MonthlyClientController {
                 existingClient.monthlyRate = monthlyRate || 0;
                 existingClient.billingPeriod = selectedPeriod;
 
-                // Set new period starting today
-                const startDate = new Date();
+
+                // Set new period
+                const startDate = reqStartDate ? new Date(reqStartDate) : new Date();
                 const endDate = getEndDate(startDate, selectedPeriod);
 
                 existingClient.startDate = startDate;
@@ -147,7 +148,7 @@ export class MonthlyClientController {
             }
 
             // 2. New Client Creation
-            const startDate = new Date();
+            const startDate = reqStartDate ? new Date(reqStartDate) : new Date();
             const endDate = getEndDate(startDate, selectedPeriod);
 
             const client = em.create(MonthlyClient, {
