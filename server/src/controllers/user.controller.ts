@@ -5,6 +5,8 @@ import { Tenant } from '../entities/Tenant';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { AuditService } from '../services/AuditService';
 import bcrypt from 'bcryptjs';
+import { addDays } from 'date-fns';
+import crypto from 'crypto';
 
 export class UserController {
     // Get all users (filtered by tenant for non-SUPER_ADMIN)
@@ -118,8 +120,18 @@ export class UserController {
             if (!em) return res.status(500).json({ message: 'No EntityManager found' });
 
             const { username, password, role, tenantId: bodyTenantId } = req.body;
-            // Get tenant from context (header) or body
-            const currentTenantId = (req as any).tenant?.id || bodyTenantId;
+
+            // Get tenant from context (header) OR body
+            // IF Super Admin, utilize bodyTenantId if present (to allow cross-tenant creation)
+            // IF Regular Admin, enforce context (req.tenant.id) to prevent privilege escalation or errors
+            let currentTenantId = (req as any).tenant?.id;
+
+            if (req.user?.role === UserRole.SUPER_ADMIN && bodyTenantId) {
+                currentTenantId = bodyTenantId;
+            } else {
+                // Fallback or enforce context
+                currentTenantId = currentTenantId || bodyTenantId;
+            }
 
             if (!username || !password || !role) {
                 return res.status(400).json({ message: 'Username, password, and role are required' });
@@ -129,6 +141,8 @@ export class UserController {
             if (role !== UserRole.SUPER_ADMIN && !currentTenantId) {
                 return res.status(400).json({ message: 'Tenant context or tenantId is required to create a non-SuperAdmin user' });
             }
+
+            const { isInvitation } = req.body;
 
             // Check if user already exists
             const existing = await em.findOne(User, { username }, { populate: ['tenants'] });
@@ -171,16 +185,35 @@ export class UserController {
                 return res.status(403).json({ message: 'Forbidden: Only Super Admins can create Super Admins' });
             }
 
-            // Hash password
-            const hashedPassword = await bcrypt.hash(password, 10);
+            let hashedPassword = '';
+            let resetToken = undefined;
+            let resetExpires = undefined;
+            let isActive = true;
+
+            if (isInvitation) {
+                // Invitation Flow
+                resetToken = crypto.randomBytes(32).toString('hex');
+                resetExpires = addDays(new Date(), 7); // 7 Days to accept invitation
+                isActive = false; // User is inactive until they accept invitation
+                hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10); // Random password
+            } else {
+                // Legacy / Manual Password Flow
+                if (!password) {
+                    return res.status(400).json({ message: 'Password is required for manual creation' });
+                }
+                hashedPassword = await bcrypt.hash(password, 10);
+            }
 
             const user = em.create(User, {
                 username,
                 password: hashedPassword,
                 role,
-                isActive: true,
+                isActive,
+                resetPasswordToken: resetToken,
+                resetPasswordExpires: resetExpires,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                tokenVersion: 0
             });
 
             // Assign to tenant if not Super Admin (or if Super Admin wants to be in a tenant)
@@ -211,8 +244,30 @@ export class UserController {
                 assignedLocations: locationsToAssign.length
             }, req);
 
+            // Send Welcome Email AFTER persistence
+            let emailWarning = null;
+            if (isInvitation && resetToken) {
+                try {
+                    const { EmailService } = await import('../services/email.service');
+                    const emailService = new EmailService();
+                    // Use username as email
+                    await emailService.sendWelcomeEmail(username, username.split('@')[0], resetToken);
+                } catch (emailError: any) {
+                    console.error('Failed to send welcome email:', emailError);
+                    emailWarning = `User created but email failed: ${emailError.message || 'Unknown error'}`;
+                }
+            }
+
             // Return user without password
             const { password: _, ...userWithoutPassword } = user;
+
+            if (emailWarning) {
+                return res.status(201).json({
+                    ...userWithoutPassword,
+                    warning: emailWarning
+                });
+            }
+
             res.status(201).json(userWithoutPassword);
 
         } catch (error) {
@@ -301,6 +356,10 @@ export class UserController {
 
             // Hash and update password
             user.password = await bcrypt.hash(newPassword, 10);
+
+            // Security: Invalidate all existing sessions
+            user.tokenVersion = (user.tokenVersion || 0) + 1;
+
             await em.flush();
 
             await AuditService.log(em, 'PASSWORD_CHANGE', 'User', user.id.toString(), req.user, {

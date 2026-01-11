@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { addDays } from 'date-fns';
 import { SettingsInitService } from '../services/SettingsInitService';
+import crypto from 'crypto';
 
 
 
@@ -61,7 +62,8 @@ export const registerTenant = async (req: Request, res: Response) => {
         tenants: [tenant],
         locations: [location],
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        tokenVersion: 0
     });
 
     await em.persistAndFlush([tenant, location, user]);
@@ -199,7 +201,8 @@ export const login = async (req: Request, res: Response) => {
     const tokenPayload: any = {
         id: user.id,
         username: user.username,
-        role: user.role
+        role: user.role,
+        tokenVersion: user.tokenVersion // Security: Global Logout Support
     };
 
     if (primaryTenant) {
@@ -319,7 +322,8 @@ export const impersonateTenant = async (req: Request, res: Response) => {
         const tokenPayload: any = {
             id: targetUser.id,
             username: targetUser.username,
-            role: targetUser.role
+            role: targetUser.role,
+            tokenVersion: targetUser.tokenVersion // Security: Global Logout Support
         };
 
         // Add tenant context to token if possible, mirroring login
@@ -440,7 +444,8 @@ export const setupAdmin = async (req: Request, res: Response) => {
         role: UserRole.ADMIN, // Default to ADMIN for Desktop/Single-Tenant
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        tokenVersion: 0
     });
 
     if (admin) {
@@ -462,5 +467,95 @@ export const setupAdmin = async (req: Request, res: Response) => {
         return res.json({ message: 'Admin and Default Environment created successfully' });
     } else {
         return res.status(500).json({ message: 'Error creating configuration' });
+    }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const em = RequestContext.getEntityManager();
+        if (!em) return res.status(500).json({ message: 'No EntityManager' });
+
+        // Disable filters to find user globally by email
+        const user = await em.findOne(User, { username: email }, { filters: false });
+        if (!user) {
+            // Security: Don't reveal if user exists
+            return res.json({ message: 'If the email exists, a reset link has been sent.' });
+        }
+
+        // Generate Token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = addDays(new Date(), 1); // 24 hours (or 1 hour)
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = tokenExpiry;
+        await em.flush();
+
+        // Send Email
+        const { EmailService } = await import('../services/email.service');
+        const emailService = new EmailService();
+        await emailService.sendPasswordResetEmail(user.username, resetToken);
+
+        res.json({ message: 'If the email exists, a reset link has been sent.' });
+    } catch (error) {
+        console.error('Forgot Password Error:', error);
+        res.status(500).json({ message: 'Error processing request' });
+    }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { token, password } = req.body;
+        const em = RequestContext.getEntityManager();
+        if (!em) return res.status(500).json({ message: 'No EntityManager' });
+
+        // DEBUGGING: Check what we received
+        console.log('Reset Password Request - Token:', token);
+
+        // 1. Try to find user JUST by token - DISABLE FILTERS
+        const userByToken = await em.findOne(User, { resetPasswordToken: token }, { filters: false });
+        if (!userByToken) {
+            console.error('Debug: No user found with this token.');
+            return res.status(400).json({ message: 'Invalid or expired token (Token not found)' });
+        }
+
+        console.log('Debug: User found:', userByToken.username);
+        console.log('Debug: Expiry stored:', userByToken.resetPasswordExpires);
+        console.log('Debug: Current server time:', new Date());
+
+        // 2. Now check expiration manually to be verbose
+        if (!userByToken.resetPasswordExpires || userByToken.resetPasswordExpires < new Date()) {
+            console.error('Debug: Token expired.');
+            return res.status(400).json({ message: 'Invalid or expired token (Expired)' });
+        }
+
+        const user = userByToken;
+
+        /* Original logic replaced by verbose check above
+        const user = await em.findOne(User, {
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: new Date() } // Expires > Now
+        });
+        
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+        */
+
+        // Update Password
+        user.password = await bcrypt.hash(password, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        if (!user.isActive) user.isActive = true;
+
+        // Security: Invalidate all existing sessions
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+
+        await em.flush();
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Reset Password Error:', error);
+        res.status(500).json({ message: 'Error resetting password' });
     }
 };

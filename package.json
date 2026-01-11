@@ -7,7 +7,7 @@
         "server"
     ],
     "scripts": {
-        "dev": "turbo run dev",
+        "dev": "cross-env NODE_ENV=development turbo run dev",
         "build": "turbo run build",
         "lint": "turbo run lint",
         "check-types": "turbo run ts-check",

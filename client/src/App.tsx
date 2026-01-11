@@ -10,9 +10,11 @@ import DashboardLayout from './layouts/DashboardLayout';
 
 // Lazy Load Pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const LocationSelectionPage = lazy(() => import('./pages/LocationSelectionPage'));
 const SetupPage = lazy(() => import('./pages/SetupPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ParkingPage = lazy(() => import('./pages/ParkingPage'));
 const MonthlyClientsPage = lazy(() => import('./pages/MonthlyClientsPage'));
@@ -74,6 +76,8 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ResetPasswordPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route path="/setup" element={<SetupPage />} />
                   <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
                   <Route path="/activate" element={<LicenseActivationPage />} />
@@ -95,6 +99,7 @@ function App() {
                     <Route path="incomes" element={<IncomesPage />} />
                     <Route path="wash" element={<WashPage />} />
                     <Route path="users" element={<UsersPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
                     <Route path="agreements" element={<AgreementsPage />} />
                     <Route path="shifts" element={<ShiftHistoryPage />} />
                     <Route path="transactions" element={<TransactionsPage />} />

@@ -18,7 +18,10 @@ export interface AuthRequest extends Request {
     };
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+import { RequestContext } from '@mikro-orm/core';
+import { User } from '../entities/User';
+
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -26,13 +29,45 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         return res.status(401).json({ message: 'Authentication required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET as string, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid or expired token' });
+    try {
+        const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+
+        // Security Check: Token Version
+        // We need to fetch the user to verify if the token is still valid (has not been revoked via password change)
+        const em = RequestContext.getEntityManager();
+        if (em) {
+            // We use a lightweight query just for version check if possible, or just findOne
+            // Disable filters to ensure we find the user regardless of tenant context (auth is global)
+            const user = await em.findOne(User, { id: decoded.id }, {
+                filters: false,
+                fields: ['tokenVersion', 'username', 'role', 'isActive'] // Optimize: Select only needed fields
+            });
+
+            if (!user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            if (!user.isActive) {
+                return res.status(401).json({ message: 'User is inactive' });
+            }
+
+            const tokenVersion = decoded.tokenVersion || 0;
+            const currentVersion = user.tokenVersion || 0;
+
+            if (currentVersion > tokenVersion) {
+                return res.status(401).json({ message: 'Session expired. Please log in again.' });
+            }
         }
-        req.user = user as any;
+
+        req.user = decoded; // Keep using decoded for speed in other middlewares, or use fetched user? 
+        // Using decoded is faster if we trust it, but we verified it against DB version. 
+        // We might want to refresh req.user with DB data if roles changed? 
+        // For now, let's stick to decoded + version check to keep it close to original logic but safer.
+
         next();
-    });
+    } catch (err) {
+        return res.status(403).json({ message: 'Invalid or expired token' });
+    }
 };
 
 

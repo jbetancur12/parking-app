@@ -28,24 +28,29 @@ export default function LoginPage() {
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Usuario</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico</label>
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <User size={20} />
                             </span>
                             <input
-                                type="text"
+                                type="email"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="block w-full rounded-lg border border-gray-300 pl-10 py-3 text-gray-900 placeholder-gray-400 focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                                placeholder="Nombre de usuario"
+                                placeholder="tu-correo@empresa.com"
                                 required
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Contraseña</label>
+                        <div className="flex justify-between items-center mb-1">
+                            <label className="block text-sm font-semibold text-gray-700">Contraseña</label>
+                            <Link to="/forgot-password" className="text-xs text-brand-blue hover:text-blue-700 font-medium">
+                                ¿Olvidaste tu contraseña?
+                            </Link>
+                        </div>
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <Lock size={20} />

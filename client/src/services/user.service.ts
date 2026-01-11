@@ -22,8 +22,8 @@ export const userService = {
         return response.data;
     },
 
-    async changePassword(userId: number, newPassword: string): Promise<void> {
-        await api.post('/users/change-password', { userId, newPassword });
+    async changePassword(userId: number, newPassword: string, currentPassword?: string): Promise<void> {
+        await api.post('/users/change-password', { userId, newPassword, currentPassword });
     },
 
     async toggleStatus(userId: number, isActive: boolean): Promise<User> {

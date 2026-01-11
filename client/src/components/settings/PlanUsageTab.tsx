@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TrendingUp, Check, AlertTriangle } from 'lucide-react';
 import { useUsageLimits } from '../../hooks/useUsageLimits';
 import { Skeleton } from '../Skeleton';

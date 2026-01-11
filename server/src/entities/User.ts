@@ -48,6 +48,18 @@ export class User {
     lastLoginAt?: Date;
 
     // Optional: Keep track of the last selected location for convenience
+    // Optional: Keep track of the last selected location for convenience
     @ManyToOne(() => Location, { nullable: true })
     lastActiveLocation?: Location;
+
+    // Password Reset / Activation
+    @Property({ nullable: true })
+    resetPasswordToken?: string;
+
+    @Property({ nullable: true })
+    resetPasswordExpires?: Date;
+
+    // Security: Token Version for Global Logout
+    @Property({ default: 0 })
+    tokenVersion: number = 0;
 }

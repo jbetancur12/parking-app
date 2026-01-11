@@ -165,14 +165,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 )}
 
                 <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
+                    <div
+                        className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => navigate('/profile')}
+                        title="Ver Perfil"
+                    >
                         <p className="text-xs font-bold text-white truncate">{user?.username}</p>
                         <p className="text-[10px] text-blue-300 truncate">
                             {user?.role === 'SUPER_ADMIN' ? 'Super Admin' :
                                 user?.role === 'ADMIN' ? 'Admin' :
                                     user?.role === 'LOCATION_MANAGER' ? 'Admin Sede' : 'Operador'}
                         </p>
-
                     </div>
                     <button
                         onClick={toggleTheme}

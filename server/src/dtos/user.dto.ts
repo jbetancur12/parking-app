@@ -15,21 +15,24 @@ import {
  * DTO for creating a user
  */
 export class CreateUserDto {
-    @IsString({ message: 'Username must be a string' })
-    @MinLength(3, { message: 'Username must be at least 3 characters long' })
-    @MaxLength(50, { message: 'Username must not exceed 50 characters' })
-    @Matches(/^[a-zA-Z0-9_.-]+$/, {
-        message: 'Username can only contain letters, numbers, underscores, dots and hyphens',
-    })
+    @IsEmail({}, { message: 'Username must be a valid email address' })
     username!: string;
 
+    @IsOptional()
     @IsString({ message: 'Password must be a string' })
+    // Password length check moved to controller for invitation flow or relaxed here?
+    // If we keep MinLength(6), invitation flow with randomized password must ensure it's > 6 chars.
+    // Controller does: crypto.randomBytes(16).toString('hex') -> 32 chars. Safe.
+    // But manual flow needs password. 
+    // Wait, if isInvitation is true, password in body is optional in controller?
+    // Frontend sends placeholder "tmp-invite-...".
+    // So MinLength is fine.
     @MinLength(6, { message: 'Password must be at least 6 characters long' })
     @MaxLength(100, { message: 'Password must not exceed 100 characters' })
     password!: string;
 
-    @IsEnum(['SUPER_ADMIN', 'ADMIN', 'OPERATOR'], {
-        message: 'Role must be SUPER_ADMIN, ADMIN, or OPERATOR',
+    @IsEnum(['SUPER_ADMIN', 'ADMIN', 'LOCATION_MANAGER', 'OPERATOR', 'CASHIER'], {
+        message: 'Invalid Role',
     })
     role!: string;
 
@@ -38,9 +41,13 @@ export class CreateUserDto {
     isActive?: boolean;
 
     @IsOptional()
+    @IsBoolean({ message: 'isInvitation must be a boolean' })
+    isInvitation?: boolean;
+
+    @IsOptional()
     @IsEmail({}, { message: 'Email must be a valid email address' })
     @MaxLength(255, { message: 'Email must not exceed 255 characters' })
-    email?: string;
+    email?: string; // Legacy/Additional email field? If username is email, this might be redundant but let's keep it optional.
 
     @IsOptional()
     @IsString({ message: 'Full name must be a string' })
@@ -57,12 +64,8 @@ export class CreateUserDto {
  */
 export class UpdateUserDto {
     @IsOptional()
-    @IsString({ message: 'Username must be a string' })
-    @MinLength(3, { message: 'Username must be at least 3 characters long' })
-    @MaxLength(50, { message: 'Username must not exceed 50 characters' })
-    @Matches(/^[a-zA-Z0-9_.-]+$/, {
-        message: 'Username can only contain letters, numbers, underscores, dots and hyphens',
-    })
+    @IsOptional()
+    @IsEmail({}, { message: 'Username must be a valid email address' })
     username?: string;
 
     @IsOptional()

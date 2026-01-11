@@ -60,43 +60,53 @@ export const UserForm: React.FC<UserFormProps> = ({
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Usuario
+                            {editingUser ? 'Correo Electrónico (Usuario)' : 'Correo Electrónico'}
                         </label>
                         <input
-                            type="text"
+                            type="email"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
                             required
+                            placeholder="nombre@empresa.com"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Contraseña {editingUser && '(Opcional)'}
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                            required={!editingUser}
-                            placeholder={editingUser ? 'Dejar en blanco para mantener actual' : ''}
-                        />
-                    </div>
+                    {!editingUser && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md mx-[-8px]">
+                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                                <strong>Nota:</strong> Se enviará un correo de bienvenida a esta dirección para que el usuario active su cuenta y establezca su contraseña.
+                            </p>
+                        </div>
+                    )}
 
-                    {(password || !editingUser) && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Confirmar Contraseña
-                            </label>
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                                required={!editingUser || !!password}
-                            />
+                    {editingUser && (
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Cambiar Contraseña (Opcional)</p>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                        placeholder="Nueva contraseña"
+                                    />
+                                </div>
+                                {password && (
+                                    <div>
+                                        <input
+                                            type="password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                                            placeholder="Confirmar nueva contraseña"
+                                            required={!!password}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -139,7 +149,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                             disabled={isSubmitting}
                             className={`flex-1 bg-brand-blue text-white py-2 rounded-md hover:bg-blue-800 transition-colors font-medium ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            {isSubmitting ? 'Guardando...' : (editingUser ? 'Actualizar' : 'Crear')}
+                            {isSubmitting ? 'Procesando...' : (editingUser ? 'Actualizar' : 'Invitar y Crear')}
                         </button>
                         <button
                             type="button"

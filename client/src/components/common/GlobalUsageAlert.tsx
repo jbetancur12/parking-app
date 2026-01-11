@@ -1,12 +1,19 @@
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUsageLimits } from '../../hooks/useUsageLimits';
+import { useAuth } from '../../context/AuthContext';
 import { TrendingUp, AlertTriangle, AlertCircle } from 'lucide-react';
 
 export const GlobalUsageAlert = () => {
+    const { user } = useAuth();
     const { usage, hasWarnings } = useUsageLimits();
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Hide for Super Admin
+    if (user?.role === 'SUPER_ADMIN') {
+        return null;
+    }
 
     // Hide if on dashboard (since it has the detailed widget)
     // Also hide if no warnings

@@ -139,23 +139,59 @@ export const useTenantDetail = () => {
                 await api.put(`/users/${editingUser.id}`, updateData);
                 toast.success('Usuario actualizado');
             } else {
-                // Create Logic
-                if (!newUser.password) {
-                    toast.error('La contraseña es requerida');
-                    return;
-                }
-
-                // 1. Create user
+                // Create Logic (Invitation Flow)
+                // 1. Create user with isInvitation flag
                 const { confirmPassword, ...userData } = newUser;
-                const createResponse = await api.post('/users', { ...userData, tenantId: id });
+
+                // Generate a placeholder password since backend requires it but won't use it for hashing if isInvitation is true (it randomizes it)
+                const placeholderPassword = 'tmp-invite-' + Date.now();
+
+                const createResponse = await api.post('/users', {
+                    ...userData,
+                    password: placeholderPassword,
+                    tenantId: id,
+                    isInvitation: true
+                });
                 const createdUserId = createResponse.data.id;
 
-                // 2. Assign to tenant
+                // 2. Assign to tenant (Already handled by create user with tenantId logic? 
+                // Let's check user.controller. It handles 'currentTenantId' from context or body.
+                // We are passing tenantId: id in body.
+                // However, user.controller check lines 136-150: if existing user, it adds to tenant.
+                // If new user, line 214: adds to tenant if currentTenantId is present.
+                // So explicit assignment endpoint call might be redundant if we pass tenantId correctly. 
+                // But let's keep it safe or just rely oncreate if we are sure.
+                // Actually the previous code did explicit assignment. Let's keep it if we want to be 100% sure, 
+                // BUT the API call `api.post('/users', { ...tenantId: id })` should do it if controller logic holds.
+                // Let's look at controller logic again.
+                // Controller: const currentTenantId = (req as any).tenant?.id || bodyTenantId;
+                // If we are ADMIN hitting this, req.tenant?.id is set.
+                // If we are SUPER_ADMIN hitting this, req.tenant is null likely? No, SAAS middleware sets it.
+                // But wait, this is `useTenantDetail` usually used by SUPER_ADMIN?
+                // If SUPER_ADMIN, they can navigate to any tenant. Context might not be set to THAT tenant in headers.
+                // So passing tenantId in body is CRITICAL.
+                // Let's keep the explicit assignment only if the create didn't do it?
+                // But the 'create' endpoint at the end does: if (currentTenantId) { user.tenants.add(tenant) }
+                // So passing tenantId is enough.
+                // Using explicit assignment *as well* doesn't hurt, but creates 2 requests.
+                // I'll keep the logic simple: Trust the create endpoint if it works, but since I can't verify backend right now easily without risking breakage, I will stick to "create then assign" pattern if that was the working state, 
+                // OR better: Create handles it if I send tenantId. 
+                // Let's stick to sending tenantId in create.
+                // Remove explicit assignment if possible to clean up, but wait... 
+                // The previous code did: await api.post(`/admin/users/${createdUserId}/tenants`...
+                // I'll keep the explicit assignment call for safety as I am not changing that logic, only the password part.
+
+                // Actually, if I am cleaning up, let's just make sure Create works.
+                // I will Comment out the explicit assignment if I am confident, but to be SAFE and minimize regressions:
+                // I will keep sending tenantId in create, and if that works, the second call will just be a no-op or valid "add again".
+                // Wait, User Controller "create" already checks if user assigned. 
+                // Let's just focus on removing password requirement.
+
                 await api.post(`/admin/users/${createdUserId}/tenants`, {
                     tenantIds: [id]
                 });
 
-                toast.success('Usuario creado y asignado');
+                toast.success('Usuario invitado y asignado correctamente');
             }
 
             setShowAddUserModal(false);
