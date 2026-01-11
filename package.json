@@ -1,0 +1,21 @@
+{
+    "name": "parking-app-monorepo",
+    "private": true,
+    "version": "0.0.0",
+    "workspaces": [
+        "client",
+        "server"
+    ],
+    "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build",
+        "lint": "turbo run lint",
+        "check-types": "turbo run ts-check",
+        "db:dev": "docker-compose -f docker-compose.dev.yml up -d postgres",
+        "clean": "rm -rf node_modules client/node_modules server/node_modules"
+    },
+    "devDependencies": {
+        "turbo": "^2.3.3"
+    },
+    "packageManager": "npm@10.0.0"
+}
