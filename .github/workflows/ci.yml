@@ -39,7 +39,9 @@ jobs:
         cache: 'npm'
         cache-dependency-path: client/package-lock.json
     - name: Install dependencies
-      run: npm install
+      run: |
+        rm package-lock.json
+        npm install
     - name: Build
       # Set dummy API URL for build process since it's required by Vite
       run: VITE_API_URL=http://localhost:3000/api npm run build
