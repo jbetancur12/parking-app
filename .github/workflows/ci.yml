@@ -40,7 +40,7 @@ jobs:
         cache-dependency-path: client/package-lock.json
     - name: Install dependencies
       run: |
-        rm package-lock.json
+        rm -rf node_modules package-lock.json
         npm install
     - name: Build
       # Set dummy API URL for build process since it's required by Vite
