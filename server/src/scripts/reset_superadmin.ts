@@ -22,6 +22,7 @@ const seed = async () => {
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
+            tokenVersion: 0,
         });
 
         await em.persistAndFlush(superAdmin);
