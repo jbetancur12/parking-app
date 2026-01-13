@@ -1,0 +1,36 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-server, build-client] # Optional: wait for CI to pass
+    # For now, we run it independently or we can duplicate CI steps here if needed, 
+    # but usually deployment implies CI passed if we use 'needs' effectively.
+    # However, 'build-server' and 'build-client' are in a different file 'ci.yml'.
+    # Cross-workflow dependencies are not direct.
+    # We will just run deployment on push to main.
+    
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT || 22 }}
+        script: |
+          cd parking-app
+          git pull
+          # Copy example env if not exists (safety check)
+          if [ ! -f .env ]; then
+            cp .env.example .env
+            echo "WARNING: Created .env from example. Please configure secrets!"
+          fi
+          # Build and deploy
+          docker compose up -d --build
+          # Prune old images to save space
+          docker image prune -f
