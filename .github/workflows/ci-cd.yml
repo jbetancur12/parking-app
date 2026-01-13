@@ -1,0 +1,84 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # 1. Build & Test Server
+  build-server:
+    name: Build Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    - name: Install dependencies
+      run: npm install
+    - name: Build
+      run: npm run build
+
+  # 2. Build & Test Client
+  build-client:
+    name: Build Client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+    - name: Install dependencies
+      # Aggressive fix for missing Linux binaries (rollup)
+      run: |
+        rm -rf node_modules package-lock.json
+        npm install
+        npm install @rollup/rollup-linux-x64-gnu --save-optional --no-save
+    - name: Build
+      # Set dummy API URL for build process since it's required by Vite
+      run: VITE_API_URL=http://localhost:3000/api npm run build
+
+  # 3. Deploy to VPS (Only if builds pass and branch is main)
+  deploy:
+    name: Deploy to VPS
+    needs: [build-server, build-client]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT || 22 }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd parking-app
+          git pull
+          
+          # Copy example env if not exists
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+          
+          # Build and deploy
+          docker compose up -d --build
+          
+          # Prune old images to save space
+          docker image prune -f
