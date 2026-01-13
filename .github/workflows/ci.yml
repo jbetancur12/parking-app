@@ -42,6 +42,7 @@ jobs:
       run: |
         rm -rf node_modules package-lock.json
         npm install
+        npm install @rollup/rollup-linux-x64-gnu --save-optional --no-save
     - name: Build
       # Set dummy API URL for build process since it's required by Vite
       run: VITE_API_URL=http://localhost:3000/api npm run build
