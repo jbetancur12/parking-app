@@ -21,7 +21,7 @@ export default function TenantsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-display font-bold text-brand-blue dark:text-white">Gestión de Empresas..</h1>
+                    <h1 className="text-3xl font-display font-bold text-brand-blue dark:text-white">Gestión de Empresas</h1>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1">Administrar tenants del sistema</p>
                 </div>
                 <div className="flex gap-3">
