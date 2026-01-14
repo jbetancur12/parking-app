@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { X, Rocket } from 'lucide-react';
 
-export default function CTABanner() {
+interface CTABannerProps {
+    appUrl: string;
+}
+
+export default function CTABanner({ appUrl }: CTABannerProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
 
@@ -37,7 +41,7 @@ export default function CTABanner() {
                     </div>
                     <div className="flex items-center gap-3">
                         <a
-                            href="http://localhost:5173"
+                            href={`${appUrl}/register`}
                             className="bg-brand-yellow text-brand-blue px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base hover:bg-yellow-400 transition-colors whitespace-nowrap"
                         >
                             Comenzar Gratis

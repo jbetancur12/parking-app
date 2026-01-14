@@ -13,6 +13,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CTABanner from '../components/CTABanner';
 import Analytics from '../components/Analytics.astro';
 import Footer from '../components/Footer.astro';
+import { APP_URL } from '../consts';
 ---
 
 <Layout title="Aparca - El Software #1 para Parqueaderos en Colombia">
@@ -29,6 +30,6 @@ import Footer from '../components/Footer.astro';
         <Contact />
 	</main>
 	<WhatsAppButton />
-	<CTABanner client:load />
+	<CTABanner client:load appUrl={APP_URL} />
 	<Footer />
 </Layout>
