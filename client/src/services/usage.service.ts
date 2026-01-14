@@ -1,6 +1,6 @@
 import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 
 export interface UsageLimits {
     sessions: {
@@ -32,7 +32,7 @@ export interface UsageLimits {
 
 export const usageService = {
     async getCurrentUsage(): Promise<UsageLimits> {
-        const response = await api.get(`${API_URL}/usage/current`);
+        const response = await api.get('/usage/current');
         return response.data;
     },
 };
