@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (Blue-Green)
 
 on:
   push:
@@ -43,23 +43,21 @@ jobs:
         cache: 'npm'
         cache-dependency-path: client/package-lock.json
     - name: Install dependencies
-      # Aggressive fix for missing Linux binaries (rollup)
       run: |
         rm -rf node_modules package-lock.json
         npm install
         npm install @rollup/rollup-linux-x64-gnu --save-optional --no-save
     - name: Build
-      # Set dummy API URL for build process since it's required by Vite
       run: VITE_API_URL=http://localhost:3000/api npm run build
 
-  # 3. Deploy to VPS (Only if builds pass and branch is main)
+  # 3. Deploy with Blue-Green Strategy
   deploy:
-    name: Deploy to VPS
+    name: Deploy (Blue-Green)
     needs: [build-server, build-client]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-    - name: Deploy via SSH
+    - name: Blue-Green Deploy via SSH
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VPS_HOST }}
@@ -77,8 +75,71 @@ jobs:
             cp .env.example .env
           fi
           
-          # Build and deploy
-          docker compose up -d --build
+          # Read current active color
+          CURRENT_COLOR=$(cat .deploy-color 2>/dev/null || echo "blue")
           
-          # Prune old images to save space
+          # Determine next color
+          if [ "$CURRENT_COLOR" = "blue" ]; then
+            NEXT_COLOR="green"
+            OLD_COLOR="blue"
+          else
+            NEXT_COLOR="blue"
+            OLD_COLOR="green"
+          fi
+          
+          echo "🔄 Current: $CURRENT_COLOR -> Deploying: $NEXT_COLOR"
+          
+          # Ensure infrastructure is running
+          docker compose -f docker-compose.blue-green.yml up -d postgres client nginx
+          
+          # Build and start new version
+          echo "📦 Building $NEXT_COLOR..."
+          docker compose -f docker-compose.blue-green.yml build server-$NEXT_COLOR
+          
+          echo "🚀 Starting $NEXT_COLOR..."
+          docker compose -f docker-compose.blue-green.yml --profile $NEXT_COLOR up -d server-$NEXT_COLOR
+          
+          # Wait for container to be ready
+          echo "⏳ Waiting for healthcheck..."
+          sleep 15
+          
+          # Check health
+          HEALTH=$(docker exec parking_server_$NEXT_COLOR curl -sf http://localhost:3000/health 2>/dev/null || echo "FAILED")
+          
+          if [ "$HEALTH" = "FAILED" ]; then
+            echo "❌ Health check failed! Aborting deployment."
+            docker compose -f docker-compose.blue-green.yml --profile $NEXT_COLOR stop server-$NEXT_COLOR
+            exit 1
+          fi
+          
+          echo "✅ $NEXT_COLOR is healthy!"
+          
+          # Switch traffic in NGINX config
+          echo "🔃 Switching traffic to $NEXT_COLOR..."
+          
+          # Update nginx config
+          if [ "$NEXT_COLOR" = "green" ]; then
+            sed -i 's/server parking_server_blue:3000;/# server parking_server_blue:3000;/' nginx/conf.d/default.conf
+            sed -i 's/# server parking_server_green:3000;/server parking_server_green:3000;/' nginx/conf.d/default.conf
+          else
+            sed -i 's/server parking_server_green:3000;/# server parking_server_green:3000;/' nginx/conf.d/default.conf
+            sed -i 's/# server parking_server_blue:3000;/server parking_server_blue:3000;/' nginx/conf.d/default.conf
+          fi
+          
+          # Reload nginx (graceful, no dropped connections)
+          docker exec parking_nginx nginx -s reload
+          
+          echo "✅ Traffic switched to $NEXT_COLOR!"
+          
+          # Wait a bit then stop old version
+          sleep 5
+          echo "🛑 Stopping old $OLD_COLOR..."
+          docker compose -f docker-compose.blue-green.yml --profile $OLD_COLOR stop server-$OLD_COLOR || true
+          
+          # Update state file
+          echo "$NEXT_COLOR" > .deploy-color
+          
+          # Cleanup
           docker image prune -f
+          
+          echo "🎉 Blue-Green deployment complete! Active: $NEXT_COLOR"
