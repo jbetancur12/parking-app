@@ -134,13 +134,31 @@ jobs:
           # Switch traffic in NGINX config
           echo "🔃 Switching traffic to $NEXT_COLOR..."
           
-          # Update nginx config
-          if [ "$NEXT_COLOR" = "green" ]; then
-            sed -i 's/server parking_server_blue:3000;/# server parking_server_blue:3000;/' nginx/conf.d/default.conf
-            sed -i 's/# server parking_server_green:3000;/server parking_server_green:3000;/' nginx/conf.d/default.conf
-          else
-            sed -i 's/server parking_server_green:3000;/# server parking_server_green:3000;/' nginx/conf.d/default.conf
-            sed -i 's/# server parking_server_blue:3000;/server parking_server_blue:3000;/' nginx/conf.d/default.conf
+          # Generate nginx config from template
+          export ACTIVE_COLOR=$NEXT_COLOR
+          envsubst '${ACTIVE_COLOR}' < nginx/conf.d/default.conf.tpl > nginx/conf.d/default.conf
+          
+          # Wait for nginx container to be running
+          echo "⏳ Waiting for nginx container..."
+          for i in $(seq 1 12); do
+            NGINX_RUNNING=$(docker inspect -f '{{.State.Running}}' parking_nginx 2>/dev/null || echo "false")
+            if [ "$NGINX_RUNNING" = "true" ]; then break; fi
+            sleep 2
+          done
+          
+          if [ "$NGINX_RUNNING" != "true" ]; then
+            echo "❌ nginx container is not running. Logs:"
+            docker logs parking_nginx --tail 200 || true
+            exit 1
+          fi
+          
+          # Test nginx config before reloading
+          echo "🔍 Testing nginx config..."
+          docker exec parking_nginx nginx -t
+          if [ $? -ne 0 ]; then
+            echo "❌ nginx config test failed. Logs:"
+            docker logs parking_nginx --tail 200 || true
+            exit 1
           fi
           
           # Reload nginx (graceful, no dropped connections)
