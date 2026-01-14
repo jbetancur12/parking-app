@@ -68,7 +68,8 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                 <div
                     ref={ref}
                     style={{
-                        width: '100%',
+                        width: '48mm',
+                        margin: '0 auto',
                         backgroundColor: '#fff',
                         boxSizing: 'border-box',
                         overflow: 'hidden',
