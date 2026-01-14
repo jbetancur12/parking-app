@@ -91,7 +91,12 @@ jobs:
             OLD_COLOR="green"
           fi
           
+          
           echo "🔄 Current: $CURRENT_COLOR -> Deploying: $NEXT_COLOR"
+          
+          # Regenerate nginx config for CURRENT active color (ensure valid config before start)
+          export ACTIVE_COLOR=$CURRENT_COLOR
+          envsubst '${ACTIVE_COLOR}' < nginx/conf.d/default.conf.tpl > nginx/conf.d/default.conf
           
           # Ensure infrastructure is running
           docker compose -f docker-compose.blue-green.yml up -d postgres client nginx
