@@ -130,7 +130,18 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
 
                         {regulations.length > 0 ? (
-                            regulations.map((line, i) => <p key={i}>{line}</p>)
+                            regulations.map((line, i) => (
+                                <p
+                                    key={i}
+                                    style={{
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'pre-wrap'
+                                    }}
+                                >
+                                    {line}
+                                </p>
+                            ))
                         ) : (
                             <>
                                 <p>CONSERVE ESTE TICKET</p>
