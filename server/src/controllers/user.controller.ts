@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs';
 import { addDays } from 'date-fns';
 import crypto from 'crypto';
 
+import { Location } from '../entities/Location';
+
 export class UserController {
     // Get all users (filtered by tenant for non-SUPER_ADMIN)
     async getAll(req: AuthRequest, res: Response) {
@@ -85,10 +87,10 @@ export class UserController {
             if (user.role === UserRole.ADMIN && user.tenants.length > 0) {
                 const tenantIds = user.tenants.getItems().map(t => t.id);
                 // Explicitly fetch ALL locations for the tenant
-                const allTenantLocations = await em.find('Location', {
+                const allTenantLocations = await em.find(Location, {
                     tenant: { $in: tenantIds },
                     isActive: true
-                });
+                }, { filters: false });
                 availableLocations = allTenantLocations as any;
             }
 
