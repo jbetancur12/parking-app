@@ -30,20 +30,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env.server
     environment:
       - PORT=3000
       - DB_TYPE=postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-password}
-      - DB_NAME=${DB_NAME:-parking_db}
-      - JWT_SECRET=${JWT_SECRET}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
-      - FRONTEND_URL=${FRONTEND_URL:-https://app.tu-dominio.com}
-      - NODE_ENV=production
-      # Add other environment variables as needed
+      # Other env vars will come from .env.server
     networks:
       - app_network
 
@@ -57,6 +51,8 @@ services:
     restart: always
     depends_on:
       - server
+    env_file:
+      - .env.client
     networks:
       - app_network
 
@@ -69,6 +65,8 @@ services:
         - PUBLIC_API_URL=${PUBLIC_API_URL:-https://parking.betancur.work/api/contact}
     container_name: parking_landing
     restart: always
+    env_file:
+      - .env.landing
     networks:
       - app_network
 
