@@ -105,6 +105,15 @@ const startServer = async () => {
 
         app.use('/api', protectedApi);
 
+        // Health check endpoint for Blue-Green deployment
+        app.get('/health', (req, res) => {
+            res.status(200).json({
+                status: 'healthy',
+                timestamp: new Date().toISOString(),
+                version: process.env.npm_package_version || '1.0.0'
+            });
+        });
+
         app.get('/', (req, res) => {
             res.send('Parking App API is running');
         });
