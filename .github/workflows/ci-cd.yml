@@ -70,7 +70,11 @@ jobs:
         script_stop: true
         script: |
           cd parking-app
-          git pull
+          
+          # Force sync with remote (discard local divergent history)
+          git fetch origin
+          git reset --hard origin/main
+
           
           # Copy example env if not exists
           if [ ! -f .env ]; then
