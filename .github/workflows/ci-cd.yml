@@ -93,6 +93,48 @@ jobs:
           
           echo "🔄 Current: $CURRENT_COLOR -> Deploying: $NEXT_COLOR"
           
+          # Ensure nginx config directory exists
+          mkdir -p nginx/conf.d
+          
+          # Create nginx configs if they don't exist
+          if [ ! -f nginx/nginx.conf ] || [ ! -f nginx/conf.d/default.conf ]; then
+            echo "📝 Creating nginx configs..."
+            
+            # Main nginx.conf
+            cat > nginx/nginx.conf << 'NGINX_MAIN'
+          events {
+              worker_connections 1024;
+          }
+          http {
+              include /etc/nginx/mime.types;
+              default_type application/octet-stream;
+              sendfile on;
+              keepalive_timeout 65;
+              gzip on;
+              include /etc/nginx/conf.d/*.conf;
+          }
+          NGINX_MAIN
+            
+            # default.conf with blue active by default
+            cat > nginx/conf.d/default.conf << 'NGINX_CONF'
+          upstream api_backend {
+              server parking_server_blue:3000;
+          }
+          upstream client_frontend {
+              server parking_client:80;
+          }
+          server {
+              listen 80;
+              location / {
+                  proxy_pass http://api_backend;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+              }
+          }
+          NGINX_CONF
+          fi
+          
           # Ensure infrastructure is running
           docker compose -f docker-compose.blue-green.yml up -d postgres client nginx
           
