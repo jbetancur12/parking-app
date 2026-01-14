@@ -19,12 +19,12 @@ api.interceptors.request.use(
         const currentTenant = localStorage.getItem('currentTenant');
         const currentLocation = localStorage.getItem('currentLocation');
 
-        if (currentTenant) {
+        if (currentTenant && !config.headers['x-tenant-id']) {
             const tenant = JSON.parse(currentTenant);
             config.headers['x-tenant-id'] = tenant.id;
         }
 
-        if (currentLocation) {
+        if (currentLocation && !config.headers['x-location-id']) {
             const location = JSON.parse(currentLocation);
             config.headers['x-location-id'] = location.id;
         }

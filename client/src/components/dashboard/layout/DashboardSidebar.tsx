@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronRight, X, Building2, MapPin, Sun, Moon, LogOut } from 'lucide-react';
+import { ChevronDown, ChevronRight, X, Building2, MapPin, Sun, Moon, LogOut, Trash } from 'lucide-react';
 import type { NavGroup } from '../../../hooks/useDashboardLogic';
 import { OfflineIndicator } from '../../OfflineIndicator';
+import { useOffline } from '../../../context/OfflineContext';
 
 interface DashboardSidebarProps {
     isSidebarOpen: boolean;
@@ -19,6 +20,26 @@ interface DashboardSidebarProps {
     toggleTheme: () => void;
     logout: () => void;
 }
+
+const ClearQueueButton = () => {
+    const { queue, clearOfflineQueue } = useOffline();
+
+    if (queue.length === 0) return null;
+
+    return (
+        <button
+            onClick={() => {
+                if (window.confirm(`¿Eliminar ${queue.length} acciones pendientes?`)) {
+                    clearOfflineQueue();
+                }
+            }}
+            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-1"
+            title="Limpiar cola offline"
+        >
+            <Trash size={12} />
+        </button>
+    );
+};
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     isSidebarOpen,
@@ -194,8 +215,9 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-800/30">
                     <div className="text-[9px] text-blue-500/50 select-none">v0.0.5</div>
-                    <div className="hidden lg:block">
+                    <div className="hidden lg:flex items-center">
                         <OfflineIndicator variant="minimal" />
+                        <ClearQueueButton />
                     </div>
                 </div>
             </div>

@@ -8,6 +8,8 @@ interface OfflineContextType {
     queue: OfflineAction[];
     syncQueue: () => Promise<void>;
     addOfflineItem: (action: Omit<OfflineAction, 'id' | 'timestamp' | 'status'>) => void;
+    removeOfflineItem: (id: string) => void;
+    clearOfflineQueue: () => void;
 }
 
 const OfflineContext = createContext<OfflineContextType | null>(null);
@@ -45,20 +47,47 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
         let successCount = 0;
         let errorCount = 0;
 
+        // Get fallback IDs from current session
+        const currentTenant = JSON.parse(localStorage.getItem('currentTenant') || '{}');
+        const currentLocation = JSON.parse(localStorage.getItem('currentLocation') || '{}');
+
         for (const action of currentQueue) {
             try {
+                // Backfill missing context if this is a "stale" action from before the update
+                const tenantId = action.tenantId || currentTenant.id;
+                const locationId = action.locationId || currentLocation.id;
+
+                const headers = {
+                    'x-tenant-id': tenantId,
+                    'x-location-id': locationId
+                };
+
                 if (action.type === 'ENTRY') {
-                    await api.post('/parking/entry', action.payload);
+                    await api.post('/parking/entry', action.payload, { headers });
                 } else if (action.type === 'EXIT') {
-                    await api.post('/parking/exit', action.payload);
+                    await api.post('/parking/exit', action.payload, { headers });
                 }
 
                 OfflineService.removeFromQueue(action.id);
                 successCount++;
             } catch (error: any) {
-                console.error('Sync error', error);
-                OfflineService.updateStatus(action.id, 'ERROR', error.response?.data?.message || 'Error desconocido');
-                errorCount++;
+                const errorMessage = error.response?.data?.message || 'Error desconocido';
+                console.error('Sync error:', errorMessage);
+
+                // Smart Conflict Handling
+                // 1. If ENTRY fails because "Vehicle already has active session", assume it was already synced or manually entered.
+                if (action.type === 'ENTRY' && errorMessage.includes('ya tiene una sesión activa')) {
+                    // Treat as success to unblock queue
+                    OfflineService.removeFromQueue(action.id);
+                    successCount++; // Count as success since state is desired (vehicle is in)
+                }
+                // 2. If EXIT fails because "Session not found" or similar, it might have been already exited.
+                // However, be careful not to delete legitimate errors. 
+                // For now, let's keep EXIT errors pending unless we are sure.
+                else {
+                    OfflineService.updateStatus(action.id, 'ERROR', errorMessage);
+                    errorCount++;
+                }
             }
         }
 
@@ -66,7 +95,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
         setIsSyncing(false);
 
         if (successCount > 0) toast.success(`${successCount} registros sincronizados.`);
-        if (errorCount > 0) toast.error(`${errorCount} registros fallaron al sincronizar.`);
+        if (errorCount > 0) toast.error(`${errorCount} registros fallaron. Revise la consola.`);
     };
 
     const addOfflineItem = (action: Omit<OfflineAction, 'id' | 'timestamp' | 'status'>) => {
@@ -74,8 +103,20 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
         setQueue(OfflineService.getQueue());
     };
 
+    const removeOfflineItem = (id: string) => {
+        OfflineService.removeFromQueue(id);
+        setQueue(OfflineService.getQueue());
+        toast.info('Registro offline eliminado.');
+    };
+
+    const clearOfflineQueue = () => {
+        OfflineService.clearQueue();
+        setQueue([]);
+        toast.info('Cola offline limpiada correctamente.');
+    };
+
     return (
-        <OfflineContext.Provider value={{ isOnline, isSyncing, queue, syncQueue, addOfflineItem }}>
+        <OfflineContext.Provider value={{ isOnline, isSyncing, queue, syncQueue, addOfflineItem, removeOfflineItem, clearOfflineQueue }}>
             {children}
         </OfflineContext.Provider>
     );

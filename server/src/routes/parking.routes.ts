@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus, getCompletedSessions } from '../controllers/parking.controller';
+import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus, getCompletedSessions, cancelSession } from '../controllers/parking.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { verifyTenantAccess } from '../middleware/permission.middleware';
 import { saasContext } from '../middleware/saasContext';
@@ -19,6 +19,7 @@ router.use(verifyTenantAccess);
 router.post('/entry', validateBody(CreateParkingEntryDto), checkSessionLimit, entryVehicle);
 router.get('/preview/:plate', previewExit);
 router.post('/exit', validateBody(CreateParkingExitDto), exitVehicle);
+router.post('/cancel', cancelSession);
 router.get('/active', getActiveSessions);
 router.get('/completed', getCompletedSessions);
 

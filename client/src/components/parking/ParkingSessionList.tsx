@@ -3,7 +3,7 @@ import { Car, Bike, Truck, Printer, X } from 'lucide-react';
 import { Skeleton } from '../Skeleton';
 
 interface ParkingSession {
-    id: number;
+    id: number | string;
     plate: string;
     vehicleType: string;
     entryTime: string;
@@ -17,7 +17,12 @@ interface ParkingSessionListProps {
     getPlanLabel: (session: ParkingSession) => string;
     onReprint: (session: ParkingSession) => void;
     onExit: (plate: string) => void;
+    onDelete?: (sessionId: number | string, reason: string) => void;
 }
+
+import { useAuth } from '../../context/AuthContext';
+import { Trash2 } from 'lucide-react';
+
 
 export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
     sessions,
@@ -25,8 +30,20 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
     searchTerm,
     getPlanLabel,
     onReprint,
-    onExit
+    onExit,
+    onDelete
 }) => {
+    const { user } = useAuth();
+    const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'super_admin';
+
+    const handleDeleteClick = (sessionId: number | string, plate: string) => {
+        if (!onDelete) return;
+
+        // Simple confirm for now, can be a modal later
+        if (window.confirm(`¿Está seguro de eliminar el vehículo ${plate} de la lista?\nEsta acción es irreversible y para corrección de errores.`)) {
+            onDelete(sessionId, 'Admin Deleted');
+        }
+    };
     if (loading) {
         return (
             <>
@@ -112,7 +129,7 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                        {session.plate} {session.id === -1 ? <span className="text-red-500 text-xs">(Offline)</span> : ''}
+                                        {session.plate} {typeof session.id === 'string' ? <span className="text-red-500 text-xs">(Offline)</span> : ''}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                         {new Date(session.entryTime).toLocaleTimeString()}
@@ -139,6 +156,16 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                                             >
                                                 Salida
                                             </button>
+
+                                            {isAdmin && onDelete && (
+                                                <button
+                                                    onClick={() => handleDeleteClick(session.id, session.plate)}
+                                                    className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-full transition-colors"
+                                                    title="Eliminar (Admin)"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -168,7 +195,7 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                         {session.plate}
-                                        {session.id === -1 && <span className="ml-2 text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">Offline</span>}
+                                        {typeof session.id === 'string' && <span className="ml-2 text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">Offline</span>}
                                     </h3>
                                     <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">{session.vehicleType === 'CAR' ? 'Carro' : session.vehicleType === 'MOTORCYCLE' ? 'Moto' : 'Otro'}</span>
                                 </div>
@@ -199,6 +226,15 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                             >
                                 <X size={16} /> Salida
                             </button>
+
+                            {isAdmin && onDelete && (
+                                <button
+                                    onClick={() => handleDeleteClick(session.id, session.plate)}
+                                    className="col-span-2 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 hover:text-red-600 py-2 rounded-lg font-medium text-sm border border-transparent hover:border-red-200 hover:bg-red-50 active:bg-red-100"
+                                >
+                                    <Trash2 size={16} /> Eliminar Registro
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

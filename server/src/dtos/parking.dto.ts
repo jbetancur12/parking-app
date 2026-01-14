@@ -37,15 +37,20 @@ export class CreateParkingEntryDto {
     @IsString({ message: 'Ticket number must be a string' })
     @MaxLength(50, { message: 'Ticket number must not exceed 50 characters' })
     ticketNumber?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: 'Entry time must be a valid ISO date string' })
+    entryTime?: string;
 }
 
 /**
  * DTO for creating a parking exit
  */
 export class CreateParkingExitDto {
+    @IsOptional()
     @IsNumber({}, { message: 'Session ID must be a number' })
     @Min(1, { message: 'Session ID must be at least 1' })
-    sessionId!: number;
+    sessionId?: number;
 
     @IsOptional()
     @IsString()

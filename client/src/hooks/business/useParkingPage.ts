@@ -5,9 +5,10 @@ import { settingService } from '../../services/setting.service';
 import { tariffService, type Tariff } from '../../services/tariff.service';
 import { useOffline } from '../../context/OfflineContext';
 import { useShift } from '../../context/ShiftContext';
+import { calculateOfflineCost } from '../../utils/pricing.utils';
 
 interface ParkingSession {
-    id: number;
+    id: number | string;
     plate: string;
     vehicleType: string;
     entryTime: string;
@@ -40,7 +41,9 @@ interface ParkingSession {
  * @returns {Function} returns.handleExitClick - Initiates exit preview
  * @returns {Function} returns.confirmExit - Confirms and processes vehicle exit
  * @returns {Function} returns.handleReprintTicket - Reprints entry ticket
+ * @returns {Function} returns.handleReprintTicket - Reprints entry ticket
  * @returns {Function} returns.handleReprintReceipt - Reprints exit receipt
+ * @returns {Function} returns.handleDeleteSession - Cancels/Deletes a session (Admin only)
  * 
  * @example
  * ```tsx
@@ -63,7 +66,7 @@ export const useParkingPage = (
     const [loading, setLoading] = useState(true);
 
     // Context
-    const { isOnline, addOfflineItem, queue, isSyncing } = useOffline();
+    const { isOnline, addOfflineItem, removeOfflineItem, queue, isSyncing } = useOffline();
     const { activeShift } = useShift();
 
     // UI State
@@ -83,6 +86,17 @@ export const useParkingPage = (
     // Initial Data Fetch
     useEffect(() => {
         const fetchData = async () => {
+            // Try to load from cache first for immediate display
+            const cachedSettings = localStorage.getItem('offline_settings');
+            const cachedTariffs = localStorage.getItem('offline_tariffs');
+            if (cachedSettings) setSettings(JSON.parse(cachedSettings));
+            if (cachedTariffs) setTariffs(JSON.parse(cachedTariffs));
+
+            if (!isOnline) {
+                setLoading(false);
+                return;
+            }
+
             // We can fetch in parallel
             try {
                 const [settingsData, tariffsData, agreementsRes] = await Promise.all([
@@ -90,18 +104,25 @@ export const useParkingPage = (
                     tariffService.getAll(),
                     api.get('/agreements/active')
                 ]);
-                console.log(settingsData);
+
+                // Update State
                 setSettings(settingsData);
                 setTariffs(tariffsData);
                 setAgreements(agreementsRes.data);
+
+                // Update Cache
+                localStorage.setItem('offline_settings', JSON.stringify(settingsData));
+                localStorage.setItem('offline_tariffs', JSON.stringify(tariffsData));
+
             } catch (error) {
                 console.error('Error loading initial data', error);
+                // Fallback to cache is already handled by initial load
             }
         };
 
         fetchData();
         fetchSessions();
-    }, []);
+    }, [isOnline]); // Re-run when online status changes to try syncing config
 
     // Polling / Queue Sync Effect
     useEffect(() => {
@@ -145,6 +166,9 @@ export const useParkingPage = (
         // Offline Handling
         if (!isOnline) {
             const entryDate = new Date();
+            const currentTenant = JSON.parse(localStorage.getItem('currentTenant') || '{}');
+            const currentLocation = JSON.parse(localStorage.getItem('currentLocation') || '{}');
+
             addOfflineItem({
                 type: 'ENTRY',
                 payload: {
@@ -152,7 +176,9 @@ export const useParkingPage = (
                     vehicleType,
                     planType,
                     entryTime: entryDate.toISOString()
-                }
+                },
+                tenantId: currentTenant.id,
+                locationId: currentLocation.id
             });
 
             // Mock session for printing
@@ -242,13 +268,33 @@ export const useParkingPage = (
     const handleExitClick = async (plate: string) => {
         // Offline Handling
         if (!isOnline) {
-            setPreviewData({
-                plate: plate,
-                cost: 0,
-                entryTime: new Date().toISOString(),
-                durationMinutes: 0,
-                isOffline: true
-            });
+            const session = sessions.find(s => s.plate === plate);
+
+            if (session) {
+                const { cost, durationMinutes, exitTime } = calculateOfflineCost(session, tariffs, settings);
+
+                setPreviewData({
+                    id: session.id, // Keep ID if available (likely numeric from server fetch)
+                    plate: session.plate,
+                    vehicleType: session.vehicleType,
+                    planType: session.planType,
+                    entryTime: session.entryTime,
+                    exitTime: exitTime,
+                    cost: cost,
+                    durationMinutes: durationMinutes,
+                    hourlyRate: 0, // Not critical for display usually
+                    isOffline: true
+                });
+            } else {
+                // Fallback if session not found in list (weird but safe)
+                setPreviewData({
+                    plate: plate,
+                    cost: 0,
+                    entryTime: new Date().toISOString(),
+                    durationMinutes: 0,
+                    isOffline: true
+                });
+            }
             return;
         }
 
@@ -270,21 +316,29 @@ export const useParkingPage = (
 
         // Offline Handling
         if (!isOnline) {
+            const currentTenant = JSON.parse(localStorage.getItem('currentTenant') || '{}');
+            const currentLocation = JSON.parse(localStorage.getItem('currentLocation') || '{}');
+
             addOfflineItem({
                 type: 'EXIT',
                 payload: {
                     plate: previewData.plate,
                     paymentMethod,
-                    discount,
+                    discount: discount ? Number(discount) : 0,
                     discountReason,
-                    agreementId
-                }
+                    agreementId: agreementId ? Number(agreementId) : undefined,
+                    sessionId: previewData.id // Include if available, useful for backend
+                },
+                tenantId: currentTenant.id,
+                locationId: currentLocation.id
             });
 
             setExitResult({
                 plate: previewData.plate,
-                cost: 0,
-                durationMinutes: 0,
+                cost: previewData.cost, // Use calculated cost
+                durationMinutes: previewData.durationMinutes,
+                entryTime: previewData.entryTime,
+                exitTime: new Date().toISOString(),
                 isOffline: true
             });
 
@@ -351,19 +405,55 @@ export const useParkingPage = (
         }
     };
 
+    const handleDeleteSession = async (sessionId: number | string, reason: string) => {
+        // Handle Offline Deletion
+        if (typeof sessionId === 'string') {
+            if (window.confirm('¿Eliminar este registro offline pendiente?')) {
+                removeOfflineItem(sessionId);
+            }
+            return;
+        }
+
+        if (!isOnline) {
+            toast.error('No se puede eliminar en modo offline');
+            return;
+        }
+
+        try {
+            await api.post('/parking/cancel', { id: sessionId, reason });
+            toast.success('Sesión eliminada correctamente');
+            fetchSessions();
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || 'Error al eliminar sesión');
+        }
+    };
+
     // --- Helper for List View ---
 
     const formattedOfflineSessions: ParkingSession[] = queue
-        .filter(item => item.type === 'ENTRY')
+        .filter(item => {
+            if (item.type !== 'ENTRY') return false;
+            // Filter by current location to avoid "Ghost Vehicles"
+            const currentLocation = JSON.parse(localStorage.getItem('currentLocation') || '{}');
+            return item.locationId === currentLocation.id;
+        })
         .map(item => ({
-            id: -1,
+            id: item.id,
             plate: item.payload?.plate || '???',
             vehicleType: item.payload?.vehicleType || 'CAR',
             entryTime: new Date(item.timestamp).toISOString(),
             planType: item.payload?.planType
         }));
 
-    const allSessions = [...formattedOfflineSessions, ...sessions];
+
+    // Calculate pending exits to hide them from the list immediately
+    const pendingExits = queue.filter(item => item.type === 'EXIT');
+    const pendingExitPlates = new Set(pendingExits.map(item => item.payload?.plate));
+
+    // Filter server sessions that have a pending exit
+    const visibleServerSessions = sessions.filter(session => !pendingExitPlates.has(session.plate));
+
+    const allSessions = [...formattedOfflineSessions, ...visibleServerSessions];
 
     const filteredSessions = allSessions.filter(session =>
         session.plate.includes(searchTerm.toUpperCase())
@@ -419,6 +509,7 @@ export const useParkingPage = (
         handleReprintReceipt,
         handleConfirmPrintEntry,
         handleCancelPrintEntry,
-        getPlanLabel
+        getPlanLabel,
+        handleDeleteSession
     };
 };

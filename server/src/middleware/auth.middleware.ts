@@ -12,7 +12,7 @@ export interface AuthRequest extends Request {
         username: string;
         role: string;
         tenant?: {
-            id: number;
+            id: string;
             plan: string;
         };
     };

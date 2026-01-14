@@ -63,7 +63,8 @@ export default function ParkingPage() {
         handleConfirmPrintEntry,
         handleCancelPrintEntry,
         getPlanLabel,
-        handleReprintReceipt
+        handleReprintReceipt,
+        handleDeleteSession
     } = useParkingPage(
         handlePrintTicket,
         handlePrintReceipt // Pass receipt handler to hook if needed (or keep in page)
@@ -178,6 +179,7 @@ export default function ParkingPage() {
                 getPlanLabel={getPlanLabel}
                 onReprint={handleReprintTicket}
                 onExit={handleExitClick}
+                onDelete={handleDeleteSession}
             />
 
             {/* Modals */}

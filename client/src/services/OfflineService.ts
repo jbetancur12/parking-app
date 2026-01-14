@@ -6,6 +6,8 @@ export interface OfflineAction {
     timestamp: number;
     status: 'PENDING' | 'SYNCED' | 'ERROR';
     errorMessage?: string;
+    tenantId: string;
+    locationId: string;
 }
 
 const STORAGE_KEY = 'parking_offline_queue';
