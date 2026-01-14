@@ -89,15 +89,26 @@ export const ExitHistoryModal: React.FC<ExitHistoryModalProps> = ({ isOpen, onCl
                                         const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                                         const duration = `${hours}h ${minutes}m`;
 
+                                        const getVehicleTypeLabel = (type: string) => {
+                                            const map: Record<string, string> = {
+                                                'CAR': 'Carro',
+                                                'MOTORCYCLE': 'Moto',
+                                                'BICYCLE': 'Bicicleta',
+                                                'TRUCK': 'Camión',
+                                                'VAN': 'Van'
+                                            };
+                                            return map[type] || type;
+                                        };
+
                                         return (
                                             <tr key={session.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className="text-lg font-bold text-gray-900 dark:text-white">{session.plate}</span>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{session.vehicleType}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{getVehicleTypeLabel(session.vehicleType)}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    <div>In: {entry.toLocaleTimeString()}</div>
-                                                    <div>Out: {exit.toLocaleTimeString()}</div>
+                                                    <div>Entrada: {entry.toLocaleTimeString()}</div>
+                                                    <div>Salida: {exit.toLocaleTimeString()}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                                                     {duration}
