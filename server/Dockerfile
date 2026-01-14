@@ -5,6 +5,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Install dependencies
 RUN npm install
 
