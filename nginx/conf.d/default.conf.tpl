@@ -10,7 +10,7 @@ resolver 127.0.0.11 valid=30s;
 
 # ACTIVE BACKEND - Dynamically set during deployment
 upstream api_backend {
-    server parking_server_${ACTIVE_COLOR}:3000 resolve;
+    server parking_server_${ACTIVE_COLOR}:3000;
 }
 
 upstream client_frontend {
