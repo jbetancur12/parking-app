@@ -60,6 +60,15 @@ services:
     networks:
       - app_network
 
+  landing:
+    build:
+      context: ./landing
+      dockerfile: Dockerfile
+    container_name: parking_landing
+    restart: always
+    networks:
+      - app_network
+
   # --- PROXY ---
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
