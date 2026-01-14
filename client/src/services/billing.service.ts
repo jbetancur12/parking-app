@@ -1,6 +1,6 @@
 import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 
 export interface Subscription {
     id: string;
@@ -50,39 +50,39 @@ export interface Payment {
 
 export const subscriptionService = {
     async getCurrentSubscription(): Promise<Subscription> {
-        const response = await api.get(`${API_URL}/subscription/current`);
+        const response = await api.get(`/subscription/current`);
         return response.data;
     },
 
     async getPlans(): Promise<Record<string, PlanFeatures>> {
-        const response = await api.get(`${API_URL}/subscription/plans`);
+        const response = await api.get(`/subscription/plans`);
         return response.data;
     },
 
     async changePlan(plan: string): Promise<Subscription> {
-        const response = await api.post(`${API_URL}/subscription/change-plan`, { plan });
+        const response = await api.post(`/subscription/change-plan`, { plan });
         return response.data.subscription;
     },
 
     async cancelSubscription(immediately: boolean = false): Promise<Subscription> {
-        const response = await api.post(`${API_URL}/subscription/cancel`, { immediately });
+        const response = await api.post(`/subscription/cancel`, { immediately });
         return response.data.subscription;
     },
 };
 
 export const billingService = {
     async getInvoices(): Promise<Invoice[]> {
-        const response = await api.get(`${API_URL}/billing/invoices`);
+        const response = await api.get(`/billing/invoices`);
         return response.data;
     },
 
     async getInvoiceById(id: string): Promise<Invoice> {
-        const response = await api.get(`${API_URL}/billing/invoices/${id}`);
+        const response = await api.get(`/billing/invoices/${id}`);
         return response.data;
     },
 
     async getPayments(): Promise<Payment[]> {
-        const response = await api.get(`${API_URL}/billing/payments`);
+        const response = await api.get(`/billing/payments`);
         return response.data;
     },
 };
