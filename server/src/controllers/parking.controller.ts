@@ -174,7 +174,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
     });
 
     if (existingSession) {
-        return res.status(400).json({ message: 'Vehicle already has an active session in this location' });
+        return res.status(400).json({ message: 'El vehículo ya tiene una sesión activa en este parqueadero' });
     }
 
     // Check for Active Monthly Subscription
