@@ -118,6 +118,19 @@ jobs:
           
           echo "✅ $NEXT_COLOR is healthy!"
           
+          # Double-check container is still running (not restarting)
+          echo "🔍 Verifying container stability..."
+          sleep 5
+          CONTAINER_STATUS=$(docker inspect --format='{{.State.Status}}' parking_server_$NEXT_COLOR)
+          
+          if [ "$CONTAINER_STATUS" != "running" ]; then
+            echo "❌ Container is $CONTAINER_STATUS! Showing logs:"
+            docker logs --tail 50 parking_server_$NEXT_COLOR
+            echo "Aborting deployment."
+            docker compose -f docker-compose.blue-green.yml --profile $NEXT_COLOR stop server-$NEXT_COLOR
+            exit 1
+          fi
+          
           # Switch traffic in NGINX config
           echo "🔃 Switching traffic to $NEXT_COLOR..."
           
