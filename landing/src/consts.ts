@@ -5,4 +5,4 @@ export const CONTACT_ADDRESS = 'Pereira, Risaralda';
 
 export const API_URL = import.meta.env.PUBLIC_API_URL || (import.meta.env.DEV
     ? 'http://localhost:3001/api/contact'
-    : '/api/contact');
+    : 'https://parking.betancur.work/api/contact');
