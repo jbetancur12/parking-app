@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 
 interface TransactionPrintManagerProps {
@@ -24,6 +24,22 @@ export const TransactionPrintManager: React.FC<TransactionPrintManagerProps> = (
     title = '✅ Transacción Exitosa',
     successMessage = 'El registro se ha guardado correctamente.'
 }) => {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (showConfirm && e.key === 'Escape') {
+                onCancel();
+            }
+        };
+
+        if (showConfirm) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showConfirm, onCancel]);
+
     return (
         <>
             {/* Hidden Print Receipt */}

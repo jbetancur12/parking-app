@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface ConfirmationModalProps {
@@ -22,6 +22,22 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onCancel,
     type = 'primary'
 }) => {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (isOpen && e.key === 'Escape') {
+                onCancel();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onCancel]);
+
     if (!isOpen) return null;
 
     const colors = {
