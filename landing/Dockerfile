@@ -2,6 +2,11 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+
+# Accept build arguments
+ARG PUBLIC_APP_URL
+ARG PUBLIC_API_URL
+
 COPY package*.json ./
 RUN npm install
 COPY . .

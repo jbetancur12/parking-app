@@ -64,6 +64,9 @@ services:
     build:
       context: ./landing
       dockerfile: Dockerfile
+      args:
+        - PUBLIC_APP_URL=${PUBLIC_APP_URL:-https://parking.betancur.work}
+        - PUBLIC_API_URL=${PUBLIC_API_URL:-https://parking.betancur.work/api/contact}
     container_name: parking_landing
     restart: always
     networks:
