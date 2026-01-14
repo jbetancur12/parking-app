@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+    appUrl: string;
+}
+
+export default function MobileMenu({ appUrl }: MobileMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -78,7 +82,7 @@ export default function MobileMenu() {
                             </a>
                             <div className="pt-6 border-t border-gray-200">
                                 <a
-                                    href="http://localhost:5173"
+                                    href={appUrl}
                                     className="block w-full text-center bg-brand-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-900 transition-colors"
                                 >
                                     Ingresar

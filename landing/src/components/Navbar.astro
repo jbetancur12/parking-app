@@ -1,6 +1,7 @@
 ---
 import MobileMenu from './MobileMenu';
 import DemoVideoModal from './DemoVideoModal';
+import { APP_URL } from '../consts';
 ---
 
 <nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100/50 shadow-sm transition-all duration-300" id="navbar">
@@ -25,7 +26,7 @@ import DemoVideoModal from './DemoVideoModal';
             <div className="hidden md:flex items-center gap-4">
                 <DemoVideoModal client:load />
                 <a 
-                    href="http://localhost:5173" 
+                    href={APP_URL} 
                     class="bg-brand-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-900 transition-all shadow-lg hover:shadow-brand-blue/20 active:scale-95"
                 >
                     Ingresar
@@ -33,7 +34,7 @@ import DemoVideoModal from './DemoVideoModal';
             </div>
 
             <!-- Mobile Menu -->
-            <MobileMenu client:load />
+            <MobileMenu client:load appUrl={APP_URL} />
         </div>
     </div>
 </nav>
