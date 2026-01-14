@@ -130,8 +130,7 @@ services:
     environment:
       - NGINX_ENVSUBST_TEMPLATE_SUFFIX=
     depends_on:
-      - server-blue
-      - server-green
+      - client
 
 volumes:
   postgres_data:
