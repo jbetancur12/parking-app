@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import MobileMenu from '../components/MobileMenu.tsx';
+import DemoVideoModal from '../components/DemoVideoModal.tsx';
 import Hero from '../components/Hero.astro';
 import TrustBadges from '../components/TrustBadges.astro';
 import Features from '../components/Features.astro';
@@ -21,6 +22,7 @@ import { APP_URL } from '../consts';
 	<Analytics />
 	<Navbar />
 	<MobileMenu client:load appUrl={APP_URL} />
+	<DemoVideoModal client:load />
 	<main>
 		<Hero />
 		<TrustBadges />

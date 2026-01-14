@@ -1,5 +1,4 @@
 ---
-import DemoVideoModal from './DemoVideoModal.tsx';
 import { APP_URL } from '../consts';
 ---
 
@@ -23,7 +22,15 @@ import { APP_URL } from '../consts';
 
             <!-- Action Buttons -->
             <div className="hidden md:flex items-center gap-4">
-                <DemoVideoModal client:load />
+                <button
+                    id="demo-video-trigger"
+                    class="inline-flex items-center gap-2 text-brand-blue font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-all border border-transparent hover:border-blue-100"
+                >
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Ver Demo
+                </button>
                 <a 
                     href={APP_URL} 
                     class="bg-brand-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-900 transition-all shadow-lg hover:shadow-brand-blue/20 active:scale-95"
