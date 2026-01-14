@@ -1,5 +1,6 @@
 ---
 import { Mail, Phone, MapPin } from 'lucide-react';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_ADDRESS } from '../consts';
 ---
 
 <section id="contact" class="py-24 bg-brand-blue text-white relative overflow-hidden">
@@ -20,7 +21,7 @@ import { Mail, Phone, MapPin } from 'lucide-react';
                         </div>
                         <div>
                             <p class="text-sm text-blue-200">Correo Electrónico</p>
-                            <p class="font-bold">hola@aparca.app</p>
+                            <p class="font-bold">{CONTACT_EMAIL}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -29,7 +30,7 @@ import { Mail, Phone, MapPin } from 'lucide-react';
                         </div>
                         <div>
                             <p class="text-sm text-blue-200">Línea de Ventas</p>
-                            <p class="font-bold">+57 300 123 4567</p>
+                            <p class="font-bold">{CONTACT_PHONE_DISPLAY}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -38,34 +39,125 @@ import { Mail, Phone, MapPin } from 'lucide-react';
                         </div>
                         <div>
                             <p class="text-sm text-blue-200">Oficina Principal</p>
-                            <p class="font-bold">Bogotá D.C., Colombia</p>
+                            <p class="font-bold">{CONTACT_ADDRESS}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10">
-                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="space-y-4">
+            <div class="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 relative">
+                <form id="contact-form" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Nombre Completo</label>
-                        <input type="text" name="name" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Tu nombre" required />
+                        <input type="text" id="name" name="name" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Tu nombre" required />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Correo Electrónico</label>
-                        <input type="email" name="email" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="tucorreo@empresa.com" required />
+                        <input type="email" id="email" name="email" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="tucorreo@empresa.com" required />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-100 mb-1">Mensaje</label>
-                        <textarea name="message" rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Cuéntanos sobre tu parqueadero..." required></textarea>
+                        <textarea id="message" name="message" rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:ring-2 focus:ring-brand-yellow outline-none" placeholder="Cuéntanos sobre tu parqueadero..." required></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-brand-yellow text-brand-blue font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-lg">
+                    <button type="submit" id="submit-btn" class="w-full bg-brand-yellow text-brand-blue font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         Enviar Mensaje
                     </button>
                     <p class="text-xs text-center text-blue-300 mt-4">
                         Al enviar este formulario aceptas nuestra <a href="/privacy" class="underline hover:text-white">Política de Privacidad</a>.
                     </p>
                 </form>
+
+                <!-- Success/Error Message Overlay -->
+                <div id="form-status" class="hidden absolute inset-0 flex items-center justify-center bg-brand-blue/95 rounded-3xl p-6 text-center">
+                    <div>
+                        <div id="status-icon" class="mx-auto mb-4 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white">
+                            <!-- Icon injected via JS -->
+                        </div>
+                        <h3 id="status-title" class="text-xl font-bold mb-2">Mensaje Enviado</h3>
+                        <p id="status-message" class="text-blue-100">Gracias por escribirnos. Pronto te contactaremos.</p>
+                        <button id="reset-form-btn" class="mt-6 px-6 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-colors">
+                            Volver al formulario
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    const form = document.getElementById('contact-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const statusDiv = document.getElementById('form-status');
+    const statusIcon = document.getElementById('status-icon');
+    const statusTitle = document.getElementById('status-title');
+    const statusMessage = document.getElementById('status-message');
+    const resetBtn = document.getElementById('reset-form-btn');
+
+    import { API_URL } from '../consts';
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!submitBtn) return;
+        
+        // Disable button
+        const originalText = submitBtn.innerText;
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Enviando...';
+
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message')
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showStatus('success', '¡Mensaje Enviado!', 'Gracias por escribirnos. Nuestro equipo te contactará pronto.');
+                form.reset();
+            } else {
+                showStatus('error', 'Error al enviar', result.message || 'Hubo un problema al enviar tu mensaje. Intenta de nuevo.');
+            }
+
+        } catch (error) {
+            console.error('Contact form error:', error);
+            showStatus('error', 'Error de conexión', 'No pudimos conectar con el servidor. Verifica tu conexión e intenta de nuevo.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        }
+    });
+
+    resetBtn?.addEventListener('click', () => {
+        statusDiv?.classList.add('hidden');
+    });
+
+    function showStatus(type: 'success' | 'error', title: string, message: string) {
+        if (!statusDiv || !statusIcon || !statusTitle || !statusMessage) return;
+
+        statusTitle.innerText = title;
+        statusMessage.innerText = message;
+
+        if (type === 'success') {
+            statusIcon.className = 'mx-auto mb-4 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white';
+            statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        } else {
+            statusIcon.className = 'mx-auto mb-4 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white';
+            statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        }
+
+        statusDiv.classList.remove('hidden');
+    }
+</script>

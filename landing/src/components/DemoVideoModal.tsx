@@ -8,9 +8,9 @@ export default function DemoVideoModal() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="inline-flex items-center gap-2 text-brand-blue font-bold hover:text-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 text-brand-blue font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-all border border-transparent hover:border-blue-100"
             >
-                <Play className="w-5 h-5" />
+                <Play className="w-5 h-5 fill-current" />
                 Ver Demo
             </button>
 

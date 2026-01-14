@@ -43,13 +43,20 @@ import { authenticateToken } from './middleware/auth.middleware';
 import { verifyTenantAccess } from './middleware/permission.middleware';
 import { startSubscriptionCronJob } from './jobs/subscription.cron';
 import { errorHandler } from './middleware/error.middleware';
+import contactRoutes from './routes/contact.routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [
+        process.env.FRONTEND_URL,
+        'https://aparca.app',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:4321'
+    ].filter(Boolean) as string[],
     credentials: true
 }));
 app.use(compression());
@@ -69,6 +76,7 @@ const startServer = async () => {
 
         // Public Routes (NO SAAS CONTEXT HERE)
         app.use('/api/auth', authRoutes);
+        app.use('/api/contact', contactRoutes);
         app.use('/api/parking', parkingRoutes); // Managed internally (mixed public/private)
 
         // Protected Routes Middleware

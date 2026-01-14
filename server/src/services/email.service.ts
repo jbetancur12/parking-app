@@ -57,4 +57,30 @@ export class EmailService {
             throw error;
         }
     }
+
+    async sendContactFormEmail(data: { name: string; email: string; message: string }) {
+        const toEmail = 'jabetancur12@gmail.com'; // Hardcoded as per request
+
+        try {
+            await this.resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || 'Aparca Contacto <onboarding@resend.dev>',
+                to: toEmail,
+                replyTo: data.email,
+                subject: `Nuevo Mensaje de Contacto: ${data.name}`,
+                html: `
+                    <h1>Nuevo Mensaje desde el Landing Page</h1>
+                    <p><strong>Nombre:</strong> ${data.name}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Mensaje:</strong></p>
+                    <blockquote style="background: #f9f9f9; border-left: 5px solid #ccc; margin: 1.5em 10px; padding: 0.5em 10px;">
+                        ${data.message.replace(/\n/g, '<br>')}
+                    </blockquote>
+                `
+            });
+            console.log(`Contact form email sent from ${data.email}`);
+        } catch (error) {
+            console.error('Error sending contact form email:', error);
+            throw error;
+        }
+    }
 }
