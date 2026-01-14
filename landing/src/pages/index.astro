@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
+import MobileMenu from '../components/MobileMenu.tsx';
 import Hero from '../components/Hero.astro';
 import TrustBadges from '../components/TrustBadges.astro';
 import Features from '../components/Features.astro';
@@ -19,6 +20,7 @@ import { APP_URL } from '../consts';
 <Layout title="Aparca - El Software #1 para Parqueaderos en Colombia">
 	<Analytics />
 	<Navbar />
+	<MobileMenu client:load appUrl={APP_URL} />
 	<main>
 		<Hero />
 		<TrustBadges />
