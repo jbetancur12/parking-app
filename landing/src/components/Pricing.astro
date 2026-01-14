@@ -1,5 +1,6 @@
 ---
 import { Check, Zap } from 'lucide-react';
+import { APP_URL } from '../consts';
 
 const plans = [
     {
@@ -85,7 +86,7 @@ const plans = [
                         </div>
 
                         <a 
-                            href="http://localhost:5173" 
+                            href={`${APP_URL}/register`}
                             class={`block w-full text-center py-3 rounded-xl font-bold transition-all mb-8 ${plan.highlighted ? 'bg-brand-blue text-white hover:bg-blue-900 shadow-lg' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
                         >
                             {plan.cta}
