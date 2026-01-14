@@ -23,12 +23,12 @@ export default function MobileMenu({ appUrl }: MobileMenuProps) {
 
             {/* Mobile Menu Overlay */}
             {isOpen && (
-                <div className="fixed inset-0 z-50 md:hidden">
+                <div className="fixed inset-0 z-[60] md:hidden">
                     <div
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[61]"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="fixed right-0 top-0 bottom-0 w-64 bg-white shadow-2xl p-6 animate-slide-in-right">
+                    <div className="fixed right-0 top-0 bottom-0 w-64 bg-white shadow-2xl p-6 animate-slide-in-right z-[62]">
                         <div className="flex justify-end mb-8">
                             <button
                                 onClick={() => setIsOpen(false)}
