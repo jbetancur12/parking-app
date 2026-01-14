@@ -152,6 +152,11 @@ jobs:
             exit 1
           fi
           
+          
+          # Wait a moment for Docker DNS to register the new backend alias
+          echo "⏳ Giving Docker DNS a moment..."
+          sleep 5
+
           # Test nginx config before reloading
           echo "🔍 Testing nginx config..."
           docker exec parking_nginx nginx -t

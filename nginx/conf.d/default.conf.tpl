@@ -5,9 +5,12 @@
 # The ${ACTIVE_COLOR} placeholder is replaced by the deploy script
 # =============================================================================
 
+# Docker internal DNS resolver (required for dynamic upstream resolution)
+resolver 127.0.0.11 valid=30s;
+
 # ACTIVE BACKEND - Dynamically set during deployment
 upstream api_backend {
-    server parking_server_${ACTIVE_COLOR}:3000;
+    server parking_server_${ACTIVE_COLOR}:3000 resolve;
 }
 
 upstream client_frontend {
