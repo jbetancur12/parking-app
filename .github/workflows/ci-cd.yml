@@ -75,6 +75,10 @@ jobs:
             cp .env.example .env
           fi
           
+          # Stop old traditional compose if running (first-time migration)
+          echo "🧹 Cleaning up old containers..."
+          docker compose down || true
+          
           # Read current active color
           CURRENT_COLOR=$(cat .deploy-color 2>/dev/null || echo "blue")
           
