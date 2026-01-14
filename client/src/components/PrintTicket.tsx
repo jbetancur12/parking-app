@@ -22,7 +22,22 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
         const regulations: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const line = settings?.[`regulation_text_${i}`];
-            if (line) regulations.push(line);
+
+            if (line) {
+                // Smart wrap: split by words and build lines max 35 chars
+                const words = line.split(' ');
+                let currentLine = '';
+
+                words.forEach((word: string) => {
+                    if ((currentLine + word).length <= 33) {
+                        currentLine += (currentLine ? ' ' : '') + word;
+                    } else {
+                        if (currentLine) regulations.push(currentLine);
+                        currentLine = word;
+                    }
+                });
+                if (currentLine) regulations.push(currentLine);
+            }
         }
 
         return (
@@ -54,7 +69,6 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                     ref={ref}
                     style={{
                         width: '100%',
-                        padding: '4px',
                         backgroundColor: '#fff',
                         boxSizing: 'border-box',
                         overflow: 'hidden',
@@ -136,7 +150,11 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                                     style={{
                                         wordBreak: 'break-word',
                                         overflowWrap: 'break-word',
-                                        whiteSpace: 'pre-wrap'
+                                        whiteSpace: 'pre-wrap',
+                                        margin: '0',
+                                        padding: '0',
+                                        textAlign: 'center', // Force left align for regulations
+                                        width: '100%'
                                     }}
                                 >
                                     {line}
