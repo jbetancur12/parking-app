@@ -268,13 +268,31 @@ export const useParkingPage = (
     const handleExitClick = async (plate: string) => {
         // Offline Handling
         if (!isOnline) {
-            const session = sessions.find(s => s.plate === plate);
+            let session = sessions.find(s => s.plate === plate);
+
+            // If not found in server sessions, look in offline queue
+            if (!session) {
+                const offlineEntry = queue.find(item =>
+                    item.type === 'ENTRY' && item.payload?.plate === plate
+                );
+
+                if (offlineEntry && offlineEntry.payload) {
+                    session = {
+                        id: offlineEntry.id,
+                        plate: offlineEntry.payload.plate,
+                        vehicleType: offlineEntry.payload.vehicleType,
+                        planType: offlineEntry.payload.planType,
+                        entryTime: offlineEntry.payload.entryTime || new Date(offlineEntry.timestamp).toISOString(),
+                        ticketNumber: 'OFFLINE'
+                    };
+                }
+            }
 
             if (session) {
                 const { cost, durationMinutes, exitTime } = calculateOfflineCost(session, tariffs, settings);
 
                 setPreviewData({
-                    id: session.id, // Keep ID if available (likely numeric from server fetch)
+                    id: session.id,
                     plate: session.plate,
                     vehicleType: session.vehicleType,
                     planType: session.planType,
@@ -282,7 +300,7 @@ export const useParkingPage = (
                     exitTime: exitTime,
                     cost: cost,
                     durationMinutes: durationMinutes,
-                    hourlyRate: 0, // Not critical for display usually
+                    hourlyRate: 0,
                     isOffline: true
                 });
             } else {
@@ -302,6 +320,27 @@ export const useParkingPage = (
             const response = await api.get(`/parking/preview/${plate}`);
             setPreviewData(response.data);
         } catch (err: any) {
+            // If vehicle not found on server (404) but exists locally (e.g. pending offline entry), 
+            // calculate cost locally
+            if (err.response?.status === 404) {
+                const session = sessions.find(s => s.plate === plate);
+                if (session) {
+                    const { cost, durationMinutes, exitTime } = calculateOfflineCost(session, tariffs, settings);
+                    setPreviewData({
+                        id: session.id,
+                        plate: session.plate,
+                        vehicleType: session.vehicleType,
+                        planType: session.planType,
+                        entryTime: session.entryTime,
+                        exitTime: exitTime,
+                        cost: cost,
+                        durationMinutes: durationMinutes,
+                        hourlyRate: 0,
+                        isOffline: true
+                    });
+                    return;
+                }
+            }
             toast.error(err.response?.data?.message || 'Error al obtener vista previa');
         }
     };
@@ -314,8 +353,9 @@ export const useParkingPage = (
 
 
 
-        // Offline Handling
-        if (!isOnline) {
+
+        // Offline Handling OR Forced Offline (if entry pending)
+        if (!isOnline || previewData.isOffline) {
             const currentTenant = JSON.parse(localStorage.getItem('currentTenant') || '{}');
             const currentLocation = JSON.parse(localStorage.getItem('currentLocation') || '{}');
 
