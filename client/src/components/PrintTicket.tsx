@@ -134,7 +134,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                             width={2}
                             height={50}
                             fontSize={10}
-                            displayValue
+                            displayValue={false}
                             margin={0}
                         />
                     </div>
