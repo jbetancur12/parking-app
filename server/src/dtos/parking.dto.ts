@@ -41,6 +41,11 @@ export class CreateParkingEntryDto {
     @IsOptional()
     @IsDateString({}, { message: 'Entry time must be a valid ISO date string' })
     entryTime?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })
+    notes?: string;
 }
 
 /**

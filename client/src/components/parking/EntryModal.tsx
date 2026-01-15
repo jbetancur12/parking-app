@@ -25,6 +25,8 @@ export const EntryModal: React.FC<EntryModalProps> = ({
         setVehicleType,
         planType,
         setPlanType,
+        notes,
+        setNotes,
         getFormData
     } = useEntryForm({ isOpen, tariffs });
 
@@ -112,6 +114,17 @@ export const EntryModal: React.FC<EntryModalProps> = ({
                             </div>
                         </div>
                     )}
+                    <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones / Comentarios</label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-blue focus:border-brand-blue text-sm"
+                            placeholder="Ej. Casco incluido, Rayón puerta izq..."
+                            rows={2}
+                        />
+                    </div>
+
                     <button
                         type="submit"
                         disabled={isSubmitting}

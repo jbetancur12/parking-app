@@ -10,6 +10,7 @@ interface PrintTicketProps {
         entryTime: string;
         planType: string;
         ticketNumber?: string;
+        notes?: string;
     };
     settings?: any;
 }
@@ -95,6 +96,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                         {settings?.company_address && <div className="text-[10pt]">{settings.company_address}</div>}
                         {settings?.company_phone && <div className="text-[10pt]">Tel: {settings.company_phone}</div>}
 
+
                         <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }} />
                     </div>
 
@@ -138,6 +140,14 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                             margin={0}
                         />
                     </div>
+
+
+                    {/* The following lines are added based on the instruction */}
+                    {session.notes && (
+                        <div className="ticket-row" style={{ fontSize: '14px', marginTop: '5px', borderTop: '1px dashed black', paddingTop: '2px' }}>
+                            <span style={{ fontWeight: 'bold' }}>Obs:</span> {session.notes}
+                        </div>
+                    )}
 
                     {/* FOOTER */}
                     <div className="text-center text-[10pt] mt-2">

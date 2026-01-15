@@ -11,12 +11,15 @@ export const useEntryForm = ({ isOpen, tariffs }: UseEntryFormProps) => {
     const [vehicleType, setVehicleType] = useState('CAR');
     const [planType, setPlanType] = useState('HOUR');
 
+    const [notes, setNotes] = useState('');
+
     // Reset form when modal opens
     useEffect(() => {
         if (isOpen) {
             setPlate('');
             setVehicleType('CAR');
             setPlanType('HOUR');
+            setNotes('');
         }
     }, [isOpen]);
 
@@ -32,7 +35,8 @@ export const useEntryForm = ({ isOpen, tariffs }: UseEntryFormProps) => {
     const getFormData = () => ({
         plate,
         vehicleType,
-        planType
+        planType,
+        notes
     });
 
     return {
@@ -42,6 +46,8 @@ export const useEntryForm = ({ isOpen, tariffs }: UseEntryFormProps) => {
         setVehicleType,
         planType,
         setPlanType,
+        notes,
+        setNotes,
         getFormData
     };
 };

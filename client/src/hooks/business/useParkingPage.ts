@@ -156,12 +156,12 @@ export const useParkingPage = (
         setIsEntryModalOpen(true);
     };
 
-    const handleEntrySubmit = async (e: React.FormEvent, data: { plate: string; vehicleType: string; planType: string }) => {
+    const handleEntrySubmit = async (e: React.FormEvent, data: { plate: string; vehicleType: string; planType: string; notes?: string }) => {
         e.preventDefault();
         if (isSubmitting) return;
 
         setIsSubmitting(true);
-        const { plate, vehicleType, planType } = data;
+        const { plate, vehicleType, planType, notes } = data;
 
         // Offline Handling
         if (!isOnline) {
@@ -175,6 +175,7 @@ export const useParkingPage = (
                     plate: plate.toUpperCase(),
                     vehicleType,
                     planType,
+                    notes,
                     entryTime: entryDate.toISOString()
                 },
                 tenantId: currentTenant.id,
@@ -190,6 +191,7 @@ export const useParkingPage = (
                     vehicleType,
                     entryTime: entryDate.toISOString(),
                     planType: planType,
+                    notes,
                     ticketNumber: 'OFFLINE'
                 }
             });
@@ -198,6 +200,7 @@ export const useParkingPage = (
                 plate: plate.toUpperCase(),
                 vehicleType,
                 planType,
+                notes,
                 ticketNumber: 'OFFLINE'
             });
 
@@ -209,7 +212,7 @@ export const useParkingPage = (
         }
 
         try {
-            const response = await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType });
+            const response = await api.post('/parking/entry', { plate: plate.toUpperCase(), vehicleType, planType, notes });
             const newSession = response.data;
 
             // Save for printing
@@ -221,7 +224,8 @@ export const useParkingPage = (
                     vehicleType: newSession.vehicleType,
                     entryTime: newSession.entryTime,
                     planType: newSession.planType,
-                    ticketNumber: newSession.ticketNumber
+                    ticketNumber: newSession.ticketNumber,
+                    notes: newSession.notes
                 }
             });
 
