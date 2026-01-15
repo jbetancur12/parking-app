@@ -7,6 +7,7 @@ import { OfflineProvider } from './context/OfflineContext';
 import { ShiftProvider } from './context/ShiftContext';
 import { Loader2 } from 'lucide-react';
 import DashboardLayout from './layouts/DashboardLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy Load Pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -42,6 +43,7 @@ const AdminPricingPage = lazy(() => import('./pages/admin/AdminPricingPage'));
 const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage').then(module => ({ default: module.AdminNotificationsPage }))); // Named export
 const AdminUserList = lazy(() => import('./pages/admin/AdminUserList'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
+const ErrorLogsPage = lazy(() => import('./pages/admin/ErrorLogsPage'));
 const UsageDashboardPage = lazy(() => import('./pages/UsageDashboardPage'));
 
 // Detect if running in Electron
@@ -66,64 +68,70 @@ const LoadingSpinner = () => (
 
 function App() {
   return (
-    <OfflineProvider>
-      <AuthProvider>
-        <SaasProvider>
-          <ShiftProvider>
-            <Toaster richColors position="top-center" />
-            <Router>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/forgot-password" element={<ResetPasswordPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/setup" element={<SetupPage />} />
-                  <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
-                  <Route path="/activate" element={<LicenseActivationPage />} />
+    <>
+      <Toaster richColors position="top-center" />
+      <ErrorBoundary>
+        <OfflineProvider>
+          <AuthProvider>
+            <SaasProvider>
+              <ShiftProvider>
+                <Router>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <Routes>
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/forgot-password" element={<ResetPasswordPage />} />
+                      <Route path="/reset-password" element={<ResetPasswordPage />} />
+                      <Route path="/setup" element={<SetupPage />} />
+                      <Route path="/ticket/:ticketId" element={<TicketStatusPage />} />
+                      <Route path="/activate" element={<LicenseActivationPage />} />
 
-                  <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route path="dashboard" element={<DashboardPage />} />
-                    <Route path="select-location" element={<LocationSelectionPage />} />
+                      <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route path="dashboard" element={<DashboardPage />} />
+                        <Route path="select-location" element={<LocationSelectionPage />} />
 
-                    <Route path="parking" element={<ParkingPage />} />
-                    <Route path="monthly" element={<MonthlyClientsPage />} />
-                    <Route path="reports" element={<ReportsPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="billing" element={<BillingPage />} />
-                    <Route path="usage" element={<UsageDashboardPage />} />
-                    <Route path="audit-logs" element={<AuditLogsPage />} />
-                    <Route path="brands" element={<BrandsPage />} />
-                    <Route path="expenses" element={<ExpensesPage />} />
-                    <Route path="incomes" element={<IncomesPage />} />
-                    <Route path="wash" element={<WashPage />} />
-                    <Route path="users" element={<UsersPage />} />
-                    <Route path="profile" element={<ProfilePage />} />
-                    <Route path="agreements" element={<AgreementsPage />} />
-                    <Route path="shifts" element={<ShiftHistoryPage />} />
-                    <Route path="transactions" element={<TransactionsPage />} />
-                    <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="parking" element={<ParkingPage />} />
+                        <Route path="monthly" element={<MonthlyClientsPage />} />
+                        <Route path="reports" element={<ReportsPage />} />
+                        <Route path="settings" element={<SettingsPage />} />
+                        <Route path="billing" element={<BillingPage />} />
+                        <Route path="usage" element={<UsageDashboardPage />} />
+                        <Route path="audit-logs" element={<AuditLogsPage />} />
+                        <Route path="brands" element={<BrandsPage />} />
+                        <Route path="expenses" element={<ExpensesPage />} />
+                        <Route path="incomes" element={<IncomesPage />} />
+                        <Route path="wash" element={<WashPage />} />
+                        <Route path="users" element={<UsersPage />} />
+                        <Route path="profile" element={<ProfilePage />} />
+                        <Route path="agreements" element={<AgreementsPage />} />
+                        <Route path="shifts" element={<ShiftHistoryPage />} />
+                        <Route path="transactions" element={<TransactionsPage />} />
+                        <Route path="inventory" element={<InventoryPage />} />
 
-                    {/* Admin Routes */}
-                    <Route path="admin/tenants" element={<TenantsPage />} />
-                    <Route path="admin/tenants/new" element={<TenantFormPage />} />
-                    <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
-                    <Route path="admin/locations" element={<LocationsPage />} />
-                    <Route path="admin/billing" element={<AdminBillingPage />} />
-                    <Route path="admin/pricing" element={<AdminPricingPage />} />
-                    <Route path="admin/pricing" element={<AdminPricingPage />} />
-                    <Route path="admin/notifications" element={<AdminNotificationsPage />} />
-                    <Route path="admin/users" element={<AdminUserList />} />
-                    <Route path="admin/dashboard" element={<AdminDashboardPage />} />
-                  </Route>
-                </Routes>
-              </Suspense>
-            </Router>
-          </ShiftProvider>
-        </SaasProvider>
-      </AuthProvider>
-    </OfflineProvider>
+                        {/* Admin Routes */}
+                        <Route path="admin/tenants" element={<TenantsPage />} />
+                        <Route path="admin/tenants/new" element={<TenantFormPage />} />
+                        <Route path="admin/tenants/:id" element={<TenantDetailPage />} />
+                        <Route path="admin/locations" element={<LocationsPage />} />
+                        <Route path="admin/billing" element={<AdminBillingPage />} />
+                        <Route path="admin/pricing" element={<AdminPricingPage />} />
+                        <Route path="admin/pricing" element={<AdminPricingPage />} />
+                        <Route path="admin/notifications" element={<AdminNotificationsPage />} />
+                        <Route path="admin/users" element={<AdminUserList />} />
+                        <Route path="admin/users" element={<AdminUserList />} />
+                        <Route path="admin/dashboard" element={<AdminDashboardPage />} />
+                        <Route path="admin/errors" element={<ErrorLogsPage />} />
+                      </Route>
+                    </Routes>
+                  </Suspense>
+                </Router>
+              </ShiftProvider>
+            </SaasProvider>
+          </AuthProvider>
+        </OfflineProvider>
+      </ErrorBoundary>
+    </>
   );
 }
 

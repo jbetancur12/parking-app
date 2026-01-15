@@ -44,6 +44,7 @@ import { verifyTenantAccess } from './middleware/permission.middleware';
 import { startSubscriptionCronJob } from './jobs/subscription.cron';
 import { errorHandler } from './middleware/error.middleware';
 import contactRoutes from './routes/contact.routes';
+import errorLogRoutes from './routes/errorLog.routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -78,6 +79,7 @@ const startServer = async () => {
         // Public Routes (NO SAAS CONTEXT HERE)
         app.use('/api/auth', authRoutes);
         app.use('/api/contact', contactRoutes);
+        app.use('/api/error-logs', errorLogRoutes); // Public POST, protected GET/PATCH
         app.use('/api/parking', parkingRoutes); // Managed internally (mixed public/private)
 
         // Protected Routes Middleware

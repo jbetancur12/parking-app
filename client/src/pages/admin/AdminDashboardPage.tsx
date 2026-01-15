@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
-import { TrendingUp, TrendingDown, Users, Building2, DollarSign, Activity, Calendar, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Building2, DollarSign, Activity, Calendar, RefreshCw, AlertTriangle, ArrowRight } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // Currency formatter for COP
@@ -61,6 +62,23 @@ export default function AdminDashboardPage() {
                     <RefreshCw size={18} />
                     Actualizar
                 </button>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-6">
+                <Link
+                    to="/admin/errors"
+                    className="inline-flex bg-white p-4 rounded-lg shadow-sm border border-red-100 hover:border-red-300 transition-colors items-center gap-3 group"
+                >
+                    <div className="p-2 bg-red-100 rounded-full text-red-600">
+                        <AlertTriangle size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-800 group-hover:text-red-600 transition-colors">Reportes de Error</h3>
+                        <p className="text-xs text-gray-500">Ver logs de frontend</p>
+                    </div>
+                    <ArrowRight size={20} className="text-gray-300 ml-2 group-hover:text-red-500 transition-colors" />
+                </Link>
             </div>
 
             {/* KPI Cards */}

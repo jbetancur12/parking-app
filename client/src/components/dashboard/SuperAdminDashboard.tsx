@@ -1,4 +1,5 @@
-import { Users, Building, MapPin, TrendingUp, Activity } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Users, Building, MapPin, TrendingUp, Activity, AlertTriangle, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { Skeleton } from '../Skeleton';
 import { useSuperAdminStats } from '../../hooks/useSuperAdminStats';
@@ -56,6 +57,29 @@ export const SuperAdminDashboard = () => {
 
     return (
         <div className="space-y-6">
+            {/* Quick Actions / Alerts */}
+            <div className="flex gap-4">
+                <Link
+                    to="/admin/errors"
+                    className="flex-1 bg-white p-4 rounded-lg shadow-sm border border-red-100 hover:border-red-300 transition-colors flex items-center justify-between group"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-full text-red-600">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-800 group-hover:text-red-600 transition-colors">Reportes de Error</h3>
+                            <p className="text-xs text-gray-500">Ver logs de frontend</p>
+                        </div>
+                    </div>
+                    <ArrowRight size={20} className="text-gray-300 group-hover:text-red-500 transition-colors" />
+                </Link>
+                {/* Placeholder for more widgets */}
+                <div className="flex-1 hidden md:block"></div>
+                <div className="flex-1 hidden md:block"></div>
+                <div className="flex-1 hidden md:block"></div>
+            </div>
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cards.map((card, idx) => (

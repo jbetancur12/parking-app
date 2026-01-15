@@ -83,4 +83,44 @@ export class EmailService {
             throw error;
         }
     }
+    async sendErrorAlert(errorDetails: {
+        errorMessage: string;
+        errorStack?: string;
+        tenantName?: string;
+        username?: string;
+        url?: string;
+        timestamp: Date;
+    }) {
+        const toEmail = 'jabetancur12@gmail.com'; // Hardcoded Super Admin email
+
+        try {
+            await this.resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL_ALERTS || process.env.RESEND_FROM_EMAIL || 'Aparca Alertas <alerts@resend.dev>',
+                to: toEmail,
+                subject: `🚨 Error Nuevo: ${errorDetails.errorMessage.substring(0, 50)}...`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #D32F2F;">Nuevo Error Reportado</h2>
+                        <p><strong>Mensaje:</strong> ${errorDetails.errorMessage}</p>
+                        <p><strong>Fecha:</strong> ${errorDetails.timestamp.toLocaleString('es-CO')}</p>
+                        <hr />
+                        <p><strong>Usuario:</strong> ${errorDetails.username || 'Anónimo'}</p>
+                        <p><strong>Empresa:</strong> ${errorDetails.tenantName || 'N/A'}</p>
+                        <p><strong>URL:</strong> ${errorDetails.url || 'N/A'}</p>
+                        <hr />
+                        <h3>Stack Trace:</h3>
+                        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px;">
+${errorDetails.errorStack || 'No stack trace available'}
+                        </pre>
+                        <br />
+                        <a href="${process.env.FRONTEND_URL || 'https://aparca.app'}/admin/errors" style="padding: 10px 20px; background-color: #003B5C; color: white; text-decoration: none; border-radius: 5px;">Ver en Dashboard</a>
+                    </div>
+                `
+            });
+            console.log(`Error alert sent to ${toEmail}`);
+        } catch (error) {
+            console.error('Error sending error alert email:', error);
+            // Don't throw, we don't want to fail the log request if email fails
+        }
+    }
 }

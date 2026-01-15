@@ -21,6 +21,9 @@ import { CloseShiftModal } from '../components/dashboard/CloseShiftModal';
 import { ShiftSummaryModal } from '../components/dashboard/ShiftSummaryModal';
 import { SuperAdminDashboard } from '../components/dashboard/SuperAdminDashboard';
 
+// TODO: REMOVE AFTER TESTING - Solo para probar Error Boundary
+import TestErrorBoundary from '../components/TestErrorBoundary';
+
 export default function DashboardPage() {
     const { user } = useAuth();
 
@@ -168,6 +171,9 @@ export default function DashboardPage() {
                     />
                 )}
             </div>
+
+            {/* TODO: REMOVE AFTER TESTING - Botón para probar Error Boundary (solo dev) */}
+            <TestErrorBoundary />
         </div>
     );
 }
