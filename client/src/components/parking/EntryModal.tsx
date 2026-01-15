@@ -83,35 +83,50 @@ export const EntryModal: React.FC<EntryModalProps> = ({
                         </div>
                     </div>
 
-                    {tariffs.find(t => t.vehicleType === vehicleType)?.pricingModel === 'TRADITIONAL' && (
-                        <div className="animate-fade-in">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Plan de Facturación</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setPlanType('HOUR')}
-                                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm'
-                                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-200 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                        }`}
-                                >
-                                    <Clock size={24} className="mb-1" />
-                                    <span className="text-xs font-bold">Por Hora</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setPlanType('DAY')}
-                                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
-                                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 shadow-sm'
-                                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:border-purple-200 dark:hover:border-gray-500 hover:bg-purple-50 dark:hover:bg-gray-600'
-                                        }`}
-                                >
-                                    <Calendar size={24} className="mb-1" />
-                                    <span className="text-xs font-bold">Por Día</span>
-                                </button>
+                    {/* Show Plan Selector if Traditional Model (Check specific first, then fallback to CAR/Global) */}
+                    {(() => {
+                        if (!Array.isArray(tariffs)) return false;
+                        const tariff = tariffs.find(t => t.vehicleType === vehicleType);
+                        const fallbackTariff = tariffs.find(t => t.vehicleType === 'CAR');
+
+                        // Force OTHER to follow Global/CAR model because it might have been created with default MINUTE model
+                        // effectively ignoring the global setting if relying on specific tariff
+                        const effectiveModel = vehicleType === 'OTHER'
+                            ? fallbackTariff?.pricingModel
+                            : (tariff?.pricingModel || fallbackTariff?.pricingModel);
+
+                        const model = effectiveModel || 'MINUTE';
+
+                        return model === 'TRADITIONAL';
+                    })() && (
+                            <div className="animate-fade-in">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Plan de Facturación</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlanType('HOUR')}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'HOUR'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm'
+                                            : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-200 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                            }`}
+                                    >
+                                        <Clock size={24} className="mb-1" />
+                                        <span className="text-xs font-bold">Por Hora</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlanType('DAY')}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${planType === 'DAY'
+                                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 shadow-sm'
+                                            : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:border-purple-200 dark:hover:border-gray-500 hover:bg-purple-50 dark:hover:bg-gray-600'
+                                            }`}
+                                    >
+                                        <Calendar size={24} className="mb-1" />
+                                        <span className="text-xs font-bold">Por Día</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
                     <button
                         type="submit"
                         disabled={isSubmitting}

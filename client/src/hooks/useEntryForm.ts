@@ -22,9 +22,19 @@ export const useEntryForm = ({ isOpen, tariffs }: UseEntryFormProps) => {
 
     // Auto-select plan type logic
     useEffect(() => {
+        if (!Array.isArray(tariffs)) return; // Safety check
         const currentTariff = tariffs.find(t => t.vehicleType === vehicleType);
+        const fallbackTariff = tariffs.find(t => t.vehicleType === 'CAR');
+
+        // Force OTHER to follow Global/CAR model
+        const effectiveModel = vehicleType === 'OTHER'
+            ? fallbackTariff?.pricingModel
+            : (currentTariff?.pricingModel || fallbackTariff?.pricingModel);
+
+        const model = effectiveModel || 'MINUTE';
+
         // If NOT traditional, force HOUR (Standard) plan
-        if (currentTariff && currentTariff.pricingModel !== 'TRADITIONAL') {
+        if (model !== 'TRADITIONAL') {
             setPlanType('HOUR');
         }
     }, [vehicleType, tariffs]);

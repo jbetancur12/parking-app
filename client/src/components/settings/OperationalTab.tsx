@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Car, Bike, Receipt, RefreshCw } from 'lucide-react';
+import { Settings, Car, Bike, Receipt, RefreshCw, Truck } from 'lucide-react';
 import { type Tariff } from '../../services/tariff.service';
 import { CurrencyInput } from '../common/CurrencyInput';
 
@@ -86,6 +86,7 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
                             getTariff={getTariff}
                             handleTariffChange={handleTariffChange}
                             calculateSmartSuggestion={calculateSmartSuggestion}
+                            globalPricingModel={tariffs[0]?.pricingModel || 'MINUTE'}
                         />
 
                         {/* Motos */}
@@ -97,6 +98,19 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
                             getTariff={getTariff}
                             handleTariffChange={handleTariffChange}
                             calculateSmartSuggestion={calculateSmartSuggestion}
+                            globalPricingModel={tariffs[0]?.pricingModel || 'MINUTE'}
+                        />
+
+                        {/* Otros */}
+                        <TariffBlock
+                            title="Otros (Camiones/Biciletas)"
+                            icon={<Truck className="mr-2" size={18} />}
+                            vehicleType="OTHER"
+                            tariffs={tariffs}
+                            getTariff={getTariff}
+                            handleTariffChange={handleTariffChange}
+                            calculateSmartSuggestion={calculateSmartSuggestion}
+                            globalPricingModel={tariffs[0]?.pricingModel || 'MINUTE'}
                         />
                     </div>
                 </div>
@@ -164,9 +178,11 @@ export const OperationalTab: React.FC<OperationalTabProps> = ({
 
 // Sub-component for Tariff Block to reduce duplication
 const TariffBlock: React.FC<any> = ({
-    title, icon, vehicleType, tariffs, getTariff, handleTariffChange, calculateSmartSuggestion
+    title, icon, vehicleType, getTariff, handleTariffChange, calculateSmartSuggestion, globalPricingModel
 }) => {
-    const pricingModel = tariffs.find((t: any) => t.vehicleType === vehicleType)?.pricingModel || 'MINUTE';
+    // Use the passed global model instead of trying to find one for this specific vehicle type
+    // This allows "Other" to follow the global selection even if it doesn't have records yet
+    const pricingModel = globalPricingModel || 'MINUTE';
 
 
 

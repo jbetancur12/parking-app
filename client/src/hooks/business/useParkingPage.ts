@@ -61,7 +61,16 @@ export const useParkingPage = (
     // Data State
     const [sessions, setSessions] = useState<ParkingSession[]>([]);
     const [settings, setSettings] = useState<any>(null);
-    const [tariffs, setTariffs] = useState<Tariff[]>([]);
+    const [tariffs, setTariffs] = useState<Tariff[]>(() => {
+        try {
+            const cached = localStorage.getItem('offline_tariffs');
+            if (!cached || cached === 'undefined' || cached === 'null') return [];
+            return JSON.parse(cached);
+        } catch (e) {
+            console.warn('Failed to parse offline_tariffs', e);
+            return [];
+        }
+    });
     const [agreements, setAgreements] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -99,35 +108,74 @@ export const useParkingPage = (
 
             // We can fetch in parallel
             try {
-                const [settingsData, tariffsData, agreementsRes] = await Promise.all([
+                const [sessionsRes, settingsRes, tariffsRes, agreementsRes] = await Promise.all([
+                    api.get('/parking/active'),
                     settingService.getAll(),
                     tariffService.getAll(),
                     api.get('/agreements/active')
                 ]);
 
-                // Update State
-                setSettings(settingsData);
-                setTariffs(tariffsData);
+                setSessions(sessionsRes.data);
+                setSettings(settingsRes); // Service returns data directly
+                setTariffs(tariffsRes);   // Service returns data directly
                 setAgreements(agreementsRes.data);
 
-                // Update Cache
-                localStorage.setItem('offline_settings', JSON.stringify(settingsData));
-                localStorage.setItem('offline_tariffs', JSON.stringify(tariffsData));
-
+                // Update cache
+                localStorage.setItem('offline_settings', JSON.stringify(settingsRes));
+                localStorage.setItem('offline_tariffs', JSON.stringify(tariffsRes));
             } catch (error) {
-                console.error('Error loading initial data', error);
-                // Fallback to cache is already handled by initial load
+                console.error('Error fetching parking data:', error);
+                if (isOnline) toast.error('Error actualizando datos');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
-        fetchSessions();
-    }, [isOnline]); // Re-run when online status changes to try syncing config
+        // Setup polling every 30 seconds for live updates
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
+    }, [isOnline]); // removed empty dependency array to allow re-run if generic props change, but mainly relying on interval
+
+    // Manual Refresh Function
+    const refreshData = async () => {
+        try {
+            const [tariffsRes, settingsRes] = await Promise.all([
+                tariffService.getAll(),
+                settingService.getAll()
+            ]);
+            setTariffs(tariffsRes || []);
+            setSettings(settingsRes || {});
+        } catch (e) { console.error(e); }
+    };
 
     // Polling / Queue Sync Effect
     useEffect(() => {
         if (isOnline && !isSyncing && queue.length === 0) {
-            fetchSessions();
+            // When online, not syncing, and queue is empty, refetch all data
+            // This ensures the UI is up-to-date after offline operations are synced
+            // or if the connection was restored and no offline items were pending.
+            const fetchDataOnSync = async () => {
+                try {
+                    setLoading(true);
+                    const [sessionsRes, settingsRes, tariffsRes, agreementsRes] = await Promise.all([
+                        api.get('/parking/active'),
+                        settingService.getAll(),
+                        tariffService.getAll(),
+                        api.get('/agreements/active')
+                    ]);
+                    setSessions(sessionsRes.data);
+                    setSettings(settingsRes.data);
+                    setTariffs(tariffsRes.data);
+                    setAgreements(agreementsRes.data);
+                } catch (err) {
+                    console.error('Error fetching data after sync:', err);
+                    toast.error('Error al actualizar datos después de la sincronización.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchDataOnSync();
         }
     }, [isOnline, isSyncing, queue.length]);
 
@@ -147,12 +195,10 @@ export const useParkingPage = (
 
     const handleOpenEntryModal = () => {
         if (!activeShift) {
-            toast.error('Debe abrir un turno antes de registrar entradas', {
-                duration: 4000,
-                style: { border: '2px solid #EF4444' }
-            });
+            toast.error('No hay un turno activo. Debe iniciar caja primero.');
             return;
         }
+        refreshData(); // Ensure tariffs are up to date
         setIsEntryModalOpen(true);
     };
 
@@ -529,12 +575,17 @@ export const useParkingPage = (
     );
 
     const getPlanLabel = (session: ParkingSession) => {
+        if (!Array.isArray(tariffs)) return 'Por Hora';
         const tariff = tariffs.find(t => t.vehicleType === session.vehicleType);
         if (!tariff) return 'Por Hora';
 
-        if (tariff.pricingModel === 'TRADITIONAL') {
+        // Check Global Model if tariff lacks specific model (legacy support)
+        const fallbackTariff = tariffs.find(t => t.vehicleType === 'CAR');
+        const model = tariff.pricingModel || fallbackTariff?.pricingModel || 'MINUTE';
+
+        if (model === 'TRADITIONAL') {
             return session.planType === 'DAY' ? 'Por Día' : 'Por Hora';
-        } else if (tariff.pricingModel === 'MINUTE') {
+        } else if (model === 'MINUTE') {
             return 'Por Minuto';
         } else {
             return 'Por Bloques';
