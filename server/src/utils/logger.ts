@@ -14,6 +14,11 @@ export const logger = pino({
             },
         }
         : undefined,
-    base: isProduction ? undefined : { pid: process.pid }, // Remove pid/hostname in prod to save bytes if needed, or keep for tracing
+    base: isProduction ? undefined : { pid: process.pid },
     timestamp: pino.stdTimeFunctions.isoTime,
+    formatters: {
+        level: (label) => {
+            return { level: label.toUpperCase() };
+        },
+    },
 });
