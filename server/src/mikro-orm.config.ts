@@ -30,6 +30,15 @@ const config: Options = {
     schemaGenerator: {
         ignoreSchema: ['storage', 'auth', 'extensions', 'graphql', 'realtime', 'vault', 'supabase_functions'],
     },
+    migrations: {
+        path: path.join(__dirname, './migrations'),
+        pathTs: path.join(__dirname, './migrations'),
+        glob: '!(*.d).{js,ts}',
+        transactional: true,
+        disableForeignKeys: false,
+        allOrNothing: true,
+        emit: 'ts'
+    },
 };
 
 export default config;

@@ -81,6 +81,10 @@ jobs:
             cp .env.example .env
           fi
           
+          # Run database migrations (safe - won't fail if up-to-date)
+          echo "📦 Running database migrations..."
+          docker compose run --rm server npm run migration:up
+          
           # Build and deploy
           docker compose up -d --build
           
