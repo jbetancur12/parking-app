@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import api from '../services/api';
 import { useSaas } from './SaasContext';
+import { useAuth } from './AuthContext';
 
 interface Shift {
     id: number;
@@ -21,9 +22,17 @@ export const ShiftProvider = ({ children }: { children: ReactNode }) => {
     const [activeShift, setActiveShift] = useState<Shift | null>(null);
     const [loading, setLoading] = useState(true);
     const { currentLocation } = useSaas();
+    const { user } = useAuth();
 
     const checkActiveShift = async () => {
         if (!currentLocation) {
+            setActiveShift(null);
+            setLoading(false);
+            return;
+        }
+
+        // SuperAdmin doesn't operate the parking lot, so skip shift check
+        if (user?.role?.toLowerCase() === 'super_admin') {
             setActiveShift(null);
             setLoading(false);
             return;
