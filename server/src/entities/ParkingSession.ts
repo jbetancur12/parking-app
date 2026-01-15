@@ -59,7 +59,7 @@ export class ParkingSession extends BaseTenantEntity {
     @ManyToOne(() => Shift, { nullable: true })
     exitShift?: Shift;
 
-    @Property({ nullable: true })
+    @Property({ nullable: true, columnType: 'text' })
     notes?: string;
 
     @Property({ type: 'decimal', precision: 10, scale: 2, nullable: true })
