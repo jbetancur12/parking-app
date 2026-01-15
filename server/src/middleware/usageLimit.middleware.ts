@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { UsageService } from '../services/usage.service';
+import { logger } from '../utils/logger';
 
 const usageService = new UsageService();
 
@@ -45,7 +46,7 @@ export const checkSessionLimit = async (req: Request, res: Response, next: NextF
 
         next();
     } catch (error) {
-        console.error('Error checking session limit:', error);
+        logger.error({ error }, 'Error checking session limit');
         // Don't block on error, just log and continue
         next();
     }
@@ -86,7 +87,7 @@ export const checkLocationLimit = async (req: Request, res: Response, next: Next
 
         next();
     } catch (error) {
-        console.error('Error checking location limit:', error);
+        logger.error({ error }, 'Error checking location limit');
         next();
     }
 };
@@ -126,7 +127,7 @@ export const checkUserLimit = async (req: Request, res: Response, next: NextFunc
 
         next();
     } catch (error) {
-        console.error('Error checking user limit:', error);
+        logger.error({ error }, 'Error checking user limit');
         next();
     }
 };

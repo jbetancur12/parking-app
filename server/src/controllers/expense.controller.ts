@@ -3,6 +3,7 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { Expense } from '../entities/Expense';
 import { Shift } from '../entities/Shift';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
+import { logger } from '../utils/logger';
 
 export class ExpenseController {
 
@@ -58,7 +59,7 @@ export class ExpenseController {
 
             res.status(201).json(expense);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error creating expense');
             res.status(500).json({ message: 'Error creating expense' });
         }
     }

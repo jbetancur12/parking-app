@@ -4,6 +4,7 @@ import { Invoice } from '../entities/Invoice';
 import { Tenant } from '../entities/Tenant';
 import { InvoiceService } from './invoice.service';
 import { SubscriptionService } from './subscription.service';
+import { logger } from '../utils/logger';
 
 export class PaymentService {
     private invoiceService = new InvoiceService();
@@ -49,9 +50,15 @@ export class PaymentService {
             if (invoice.subscription) {
                 try {
                     await this.subscriptionService.renewSubscription(invoice.subscription.id);
-                    console.log(`Auto-renewed subscription ${invoice.subscription.id} after payment of invoice ${invoice.id}`);
+                    logger.info({
+                        subscriptionId: invoice.subscription.id,
+                        invoiceId: invoice.id
+                    }, 'Auto-renewed subscription after payment');
                 } catch (error) {
-                    console.error('Failed to auto-renew subscription during payment:', error);
+                    logger.error({
+                        error,
+                        subscriptionId: invoice.subscription.id
+                    }, 'Failed to auto-renew subscription during payment');
                 }
             }
         }

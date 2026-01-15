@@ -15,6 +15,7 @@ import { cacheService } from '../services/CacheService';
 import { Location } from '../entities/Location';
 import { ReceiptService } from '../services/ReceiptService';
 import { UsageService } from '../services/usage.service';
+import { logger } from '../utils/logger';
 
 export const calculateParkingCost = (session: ParkingSession, tariffs: Tariff[], gracePeriod: number) => {
     // 1. Determine active pricing model from global setting (stored on any tariff)
@@ -228,7 +229,7 @@ export const entryVehicle = async (req: AuthRequest, res: Response) => {
         const usageService = new UsageService();
         await usageService.trackSession(shift.tenant.id);
     } catch (error) {
-        console.error('Error tracking session usage:', error);
+        logger.error({ error }, 'Error tracking session usage');
         // Don't fail the request if tracking fails
     }
 

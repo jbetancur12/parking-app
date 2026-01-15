@@ -4,6 +4,7 @@ import { Tenant } from '../entities/Tenant';
 import { Invoice, InvoiceStatus } from '../entities/Invoice';
 import { getPlanFeatures, PRICING_PLANS } from '../config/pricing.config';
 import { addDays, addMonths } from 'date-fns';
+import { logger } from '../utils/logger';
 
 export class SubscriptionService {
     /**
@@ -32,6 +33,7 @@ export class SubscriptionService {
         } as any);
 
         await em.persistAndFlush(subscription);
+        logger.info({ tenantId, plan, subscriptionId: subscription.id }, 'Subscription created');
         return subscription;
     }
 
@@ -63,7 +65,12 @@ export class SubscriptionService {
 
         await em.flush();
 
-        console.log(`Subscription changed from ${oldPlan} to ${newPlan} for tenant ${tenantId}`);
+        logger.info({
+            tenantId,
+            oldPlan,
+            newPlan,
+            subscriptionId: subscription.id
+        }, 'Subscription plan changed');
         return subscription;
     }
 
@@ -106,6 +113,7 @@ export class SubscriptionService {
         subscription.status = SubscriptionStatus.ACTIVE;
 
         await em.flush();
+        logger.info({ subscriptionId, newPeriodEnd: subscription.currentPeriodEnd }, 'Subscription renewed');
         return subscription;
     }
 
@@ -123,7 +131,7 @@ export class SubscriptionService {
             if (new Date() > subscription.trialEnd) {
                 // Trial ended, downgrade to basic
                 await this.changePlan(tenantId, 'basic');
-                console.log(`Trial ended for tenant ${tenantId}, downgraded to basic`);
+                logger.info({ tenantId }, 'Trial ended, downgraded to basic');
             }
         }
     }
@@ -176,13 +184,13 @@ export class SubscriptionService {
                     // Generate invoice for the expired period
                     await invoiceService.generateMonthlyInvoice(subscription.id);
                     invoicesGenerated++;
-                    console.log(`Generated invoice for expired subscription ${subscription.id}`);
+                    logger.info({ subscriptionId: subscription.id }, 'Generated invoice for expired subscription');
                 }
 
                 // Mark subscription as past_due if not cancelled
                 if (!subscription.cancelAtPeriodEnd) {
                     subscription.status = SubscriptionStatus.PAST_DUE;
-                    console.log(`Marked subscription ${subscription.id} as PAST_DUE`);
+                    logger.warn({ subscriptionId: subscription.id }, 'Marked subscription as PAST_DUE');
                 }
             }
         }

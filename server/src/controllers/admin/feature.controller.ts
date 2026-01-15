@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { FeatureDefinition } from '../../entities/FeatureDefinition';
+import { logger } from '../../utils/logger';
 
 export const getFeatures = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -10,7 +11,7 @@ export const getFeatures = async (req: Request, res: Response) => {
         const features = await em.find(FeatureDefinition, {}, { orderBy: { category: 'ASC', key: 'ASC' } });
         return res.json(features);
     } catch (error) {
-        console.error('Error fetching features:', error);
+        logger.error({ error }, 'Error fetching features');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -42,7 +43,7 @@ export const createFeature = async (req: Request, res: Response) => {
         await em.persistAndFlush(feature);
         return res.status(201).json(feature);
     } catch (error) {
-        console.error('Error creating feature:', error);
+        logger.error({ error }, 'Error creating feature');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -66,7 +67,7 @@ export const updateFeature = async (req: Request, res: Response) => {
         await em.persistAndFlush(feature);
         return res.json(feature);
     } catch (error) {
-        console.error('Error updating feature:', error);
+        logger.error({ error }, 'Error updating feature');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -86,7 +87,7 @@ export const deleteFeature = async (req: Request, res: Response) => {
         await em.removeAndFlush(feature);
         return res.json({ message: 'Feature deleted successfully' });
     } catch (error) {
-        console.error('Error deleting feature:', error);
+        logger.error({ error }, 'Error deleting feature');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Agreement } from '../entities/Agreement';
 import { Transaction } from '../entities/Transaction';
+import { logger } from '../utils/logger';
 
 export class AgreementController {
     async getAll(req: Request, res: Response) {
@@ -18,7 +19,7 @@ export class AgreementController {
             const agreements = await em.find(Agreement, filter, { orderBy: { name: 'ASC' } });
             res.json(agreements);
         } catch (error) {
-            console.error('Error fetching agreements:', error);
+            logger.error({ error }, 'Error fetching agreements');
             res.status(500).json({ message: 'Error fetching agreements' });
         }
     }
@@ -37,7 +38,7 @@ export class AgreementController {
             const agreements = await em.find(Agreement, filter, { orderBy: { name: 'ASC' } });
             res.json(agreements);
         } catch (error) {
-            console.error('Error fetching active agreements:', error);
+            logger.error({ error }, 'Error fetching active agreements');
             res.status(500).json({ message: 'Error fetching active agreements' });
         }
     }
@@ -74,7 +75,7 @@ export class AgreementController {
             await em.persistAndFlush(agreement);
             res.status(201).json(agreement);
         } catch (error) {
-            console.error('Error creating agreement:', error);
+            logger.error({ error }, 'Error creating agreement');
             res.status(500).json({ message: 'Error creating agreement' });
         }
     }
@@ -102,7 +103,7 @@ export class AgreementController {
 
             res.json(agreement);
         } catch (error) {
-            console.error('Error toggling agreement status:', error);
+            logger.error({ error }, 'Error toggling agreement status');
             res.status(500).json({ message: 'Error updating agreement' });
         }
     }
@@ -127,7 +128,7 @@ export class AgreementController {
                 const start = new Date(startDate as string);
                 const end = new Date(endDate as string);
 
-                console.log('Agreement Stats Filter:', { start: start.toISOString(), end: end.toISOString(), locationId });
+                logger.debug({ start: start.toISOString(), end: end.toISOString(), locationId }, 'Agreement Stats Filter');
 
                 dateFilter = 'AND t.timestamp >= ? AND t.timestamp <= ?';
                 params.push(start.toISOString(), end.toISOString());
@@ -170,7 +171,7 @@ export class AgreementController {
 
             res.json(result);
         } catch (error) {
-            console.error('Error fetching agreement stats:', error);
+            logger.error({ error }, 'Error fetching agreement stats');
             res.status(500).json({ message: 'Error fetching stats' });
         }
     }

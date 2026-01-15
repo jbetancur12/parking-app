@@ -9,6 +9,7 @@ import { Brand } from '../entities/Brand';
 import { MonthlyClient } from '../entities/MonthlyClient';
 import { Expense } from '../entities/Expense';
 import { WashEntry } from '../entities/WashEntry';
+import { logger } from '../utils/logger';
 
 export const exportData = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -69,7 +70,7 @@ export const exportData = async (req: Request, res: Response) => {
         res.json(backupData);
 
     } catch (error) {
-        console.error('Error creating backup:', error);
+        logger.error({ error }, 'Error creating backup');
         res.status(500).json({ message: 'Error creating backup' });
     }
 };

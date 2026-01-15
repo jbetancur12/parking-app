@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { ErrorLog } from '../entities/ErrorLog';
 import { Tenant } from '../entities/Tenant';
 import { User } from '../entities/User';
+import { logger } from '../utils/logger';
 
 import { EmailService } from '../services/email.service';
 
@@ -14,7 +15,7 @@ export const createErrorLog = async (req: Request, res: Response) => {
     try {
         const em = RequestContext.getEntityManager();
         if (!em) {
-            console.error('Failed to get entity manager');
+            logger.error('Failed to get entity manager');
             return res.status(500).json({ message: 'Database connection failed' });
         }
 
@@ -69,7 +70,7 @@ export const createErrorLog = async (req: Request, res: Response) => {
             id: errorLog.id
         });
     } catch (error: any) {
-        console.error('Failed to log error:', error);
+        logger.error({ error }, 'Failed to log error');
         return res.status(500).json({ message: 'Failed to log error' });
     }
 };
@@ -111,7 +112,7 @@ export const getErrorLogs = async (req: Request, res: Response) => {
             offset: Number(offset)
         });
     } catch (error: any) {
-        console.error('Failed to fetch error logs:', error);
+        logger.error({ error }, 'Failed to fetch error logs');
         return res.status(500).json({ message: 'Failed to fetch error logs' });
     }
 };
@@ -147,7 +148,7 @@ export const resolveErrorLog = async (req: Request, res: Response) => {
             errorLog
         });
     } catch (error: any) {
-        console.error('Failed to resolve error log:', error);
+        logger.error({ error }, 'Failed to resolve error log');
         return res.status(500).json({ message: 'Failed to resolve error log' });
     }
 };

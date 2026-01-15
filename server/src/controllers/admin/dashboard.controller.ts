@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Tenant, TenantStatus } from '../../entities/Tenant';
 import { User, UserRole } from '../../entities/User';
 import { Subscription, SubscriptionStatus } from '../../entities/Subscription';
+import { logger } from '../../utils/logger';
 
 export const getDashboardMetrics = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -49,7 +50,7 @@ export const getDashboardMetrics = async (req: Request, res: Response) => {
             activeUsersPercentage: totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0
         });
     } catch (error) {
-        console.error('Error fetching dashboard metrics:', error);
+        logger.error({ error }, 'Error fetching dashboard metrics');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -86,7 +87,7 @@ export const getChurnMetrics = async (req: Request, res: Response) => {
             churnRate: parseFloat(churnRate.toFixed(2))
         });
     } catch (error) {
-        console.error('Error calculating churn:', error);
+        logger.error({ error }, 'Error calculating churn');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -133,7 +134,7 @@ export const getLTVMetrics = async (req: Request, res: Response) => {
             averageMonthlyRevenue: parseFloat(avgMonthlyRevenue.toFixed(2))
         });
     } catch (error) {
-        console.error('Error calculating LTV:', error);
+        logger.error({ error }, 'Error calculating LTV');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -173,7 +174,7 @@ export const getActiveUsage = async (req: Request, res: Response) => {
             activeMonthPercentage: totalUsers > 0 ? (activeLastMonth / totalUsers) * 100 : 0
         });
     } catch (error) {
-        console.error('Error fetching active usage:', error);
+        logger.error({ error }, 'Error fetching active usage');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -225,7 +226,7 @@ export const getTrends = async (req: Request, res: Response) => {
 
         return res.json(trends);
     } catch (error) {
-        console.error('Error fetching trends:', error);
+        logger.error({ error }, 'Error fetching trends');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

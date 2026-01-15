@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { plainToClass } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
+import { logger } from '../utils/logger';
 
 /**
  * Middleware to validate request body against a DTO class
@@ -38,7 +39,7 @@ export function validateBody(dtoClass: any, skipMissingProperties = false) {
             req.body = dtoInstance;
             next();
         } catch (error) {
-            console.error('Validation middleware error:', error);
+            logger.error({ error }, 'Validation middleware error');
             return res.status(500).json({
                 message: 'Internal validation error',
             });
@@ -73,7 +74,7 @@ export function validateQuery(dtoClass: any) {
             req.query = dtoInstance as any;
             next();
         } catch (error) {
-            console.error('Query validation error:', error);
+            logger.error({ error }, 'Query validation error');
             return res.status(500).json({
                 message: 'Internal validation error',
             });
@@ -105,7 +106,7 @@ export function validateParams(dtoClass: any) {
             req.params = dtoInstance as any;
             next();
         } catch (error) {
-            console.error('Params validation error:', error);
+            logger.error({ error }, 'Params validation error');
             return res.status(500).json({
                 message: 'Internal validation error',
             });

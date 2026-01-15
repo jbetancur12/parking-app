@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { AuditLog } from '../entities/AuditLog';
+import { logger } from '../utils/logger';
 
 export class AuditController {
     async getAll(req: Request, res: Response) {
@@ -60,7 +61,7 @@ export class AuditController {
 
             res.json(logs);
         } catch (error) {
-            console.error('Error fetching audit logs:', error);
+            logger.error({ error }, 'Error fetching audit logs');
             res.status(500).json({ message: 'Error fetching logs' });
         }
     }

@@ -1,14 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../utils/logger';
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Internal Server Error';
 
-    // Log the full error stack in server console for debugging
-    console.error(`[Error] ${statusCode} - ${message}`);
-    if (process.env.NODE_ENV !== 'production') {
-        console.error(err.stack);
-    }
+    // Log error with context using structured logger
+    logger.error({
+        err,
+        statusCode,
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.get('user-agent')
+    }, `[Error] ${statusCode} - ${message}`);
 
     // Response structure
     res.status(statusCode).json({

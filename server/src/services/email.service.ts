@@ -1,5 +1,6 @@
 
 import { Resend } from 'resend';
+import { logger } from '../utils/logger';
 
 export class EmailService {
     private resend: Resend;
@@ -7,7 +8,7 @@ export class EmailService {
     constructor() {
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey) {
-            console.warn('RESEND_API_KEY is not defined. Email service will not work.');
+            logger.warn('RESEND_API_KEY is not defined. Email service will not work.');
         }
         this.resend = new Resend(apiKey || 're_123');
     }
@@ -28,9 +29,9 @@ export class EmailService {
                     <p>Si no esperabas este correo, puedes ignorarlo.</p>
                 `
             });
-            console.log(`Welcome email sent to ${email}`);
+            logger.info({ email }, 'Welcome email sent');
         } catch (error) {
-            console.error('Error sending welcome email:', error);
+            logger.error({ error, email }, 'Error sending welcome email');
             throw error;
         }
     }
@@ -51,9 +52,9 @@ export class EmailService {
                     <p>Si no has solicitado esto, ignora este correo.</p>
                 `
             });
-            console.log(`Reset email sent to ${email}`);
+            logger.info({ email }, 'Reset email sent');
         } catch (error) {
-            console.error('Error sending reset email:', error);
+            logger.error({ error, email }, 'Error sending reset email');
             throw error;
         }
     }
@@ -77,9 +78,9 @@ export class EmailService {
                     </blockquote>
                 `
             });
-            console.log(`Contact form email sent from ${data.email}`);
+            logger.info({ fromEmail: data.email }, 'Contact form email sent');
         } catch (error) {
-            console.error('Error sending contact form email:', error);
+            logger.error({ error, fromEmail: data.email }, 'Error sending contact form email');
             throw error;
         }
     }
@@ -117,10 +118,10 @@ ${errorDetails.errorStack || 'No stack trace available'}
                     </div>
                 `
             });
-            console.log(`Error alert sent to ${toEmail}`);
+            logger.info({ to: toEmail }, 'Error alert email sent successfully');
         } catch (error) {
-            console.error('Error sending error alert email:', error);
-            // Don't throw, we don't want to fail the log request if email fails
+            // We use error level here but we don't throw to avoid loop if this was called from error handler
+            logger.error({ error, to: toEmail }, 'Failed to send error alert email');
         }
     }
 }

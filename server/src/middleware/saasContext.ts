@@ -15,6 +15,8 @@ declare global {
     }
 }
 
+import { logger } from '../utils/logger';
+
 export const saasContext = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const em = RequestContext.getEntityManager();
@@ -54,7 +56,10 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                     if (user?.role !== UserRole.ADMIN && user?.role !== UserRole.SUPER_ADMIN) {
                         const hasAccess = user?.locations.getItems().some(l => l.id === locationId);
                         if (!hasAccess) {
-                            console.warn(`[SaaS Context] User ${user?.username} attempted to access unauthorized location ${locationId}`);
+                            logger.warn({
+                                username: user?.username,
+                                locationId
+                            }, '[SaaS Context] User attempted to access unauthorized location');
                             // We could block here, but for now we just won't apply the filter/context which might result in empty data or 403 later
                             locationId = '';
                         }
@@ -67,12 +72,15 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                         if (locations.length === 1) {
                             locationId = locations[0].id;
                             req.location = locations[0];
-                            console.log(`[SaaS Context] Auto-applying single assigned location for ${user?.username}: ${locations[0].name}`);
+                            logger.info({
+                                username: user?.username,
+                                locationName: locations[0].name
+                            }, '[SaaS Context] Auto-applying single assigned location');
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error loading user locations:', error);
+                logger.error({ error }, 'Error loading user locations');
             }
         }
 
@@ -92,11 +100,16 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                         const now = new Date();
                         const trialEnd = new Date(tenant.trialEndsAt);
 
-                        console.log(`[Trial Check] Tenant: ${tenant.name}, Plan: ${tenant.plan}, Ends: ${trialEnd.toISOString()}, Now: ${now.toISOString()}`);
+                        logger.debug({
+                            tenantName: tenant.name,
+                            plan: tenant.plan,
+                            trialEnd: trialEnd.toISOString(),
+                            now: now.toISOString()
+                        }, '[Trial Check] Verifying trial status');
 
                         // Block if expired AND NOT SuperAdmin
                         if (now > trialEnd && authReq.user?.role !== UserRole.SUPER_ADMIN) {
-                            console.log('BLOCKED: Trial Expired');
+                            logger.warn({ tenantId: tenant.id }, 'BLOCKED: Trial Expired');
                             return res.status(403).json({
                                 message: 'Tu periodo de prueba ha finalizado. Por favor actualiza tu plan para continuar.',
                                 code: 'TRIAL_EXPIRED'
@@ -110,7 +123,7 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                     }
                 }
             } catch (error) {
-                console.error('Error loading tenant context:', error);
+                logger.error({ error }, 'Error loading tenant context');
             }
         }
 
@@ -121,20 +134,20 @@ export const saasContext = async (req: Request, res: Response, next: NextFunctio
                 if (location) {
                     // Security check: Location must belong to the tenant
                     if (req.tenant && location.tenant.id !== req.tenant.id) {
-                        console.warn(`Security Warning: Mismatch location ${locationId} for tenant ${tenantId}`);
+                        logger.warn({ locationId, tenantId }, 'Security Warning: Mismatch location for tenant');
                         // We don't set req.location to prevent unauthorized access
                     } else {
                         req.location = location;
                     }
                 }
             } catch (error) {
-                console.error('Error loading location context:', error);
+                logger.error({ error }, 'Error loading location context');
             }
         }
 
         next();
     } catch (error) {
-        console.error('Fatal Error in SaaS Context Middleware:', error);
+        logger.error({ error }, 'Fatal Error in SaaS Context Middleware');
         return res.status(500).json({ message: 'Internal Server Error (SaaS Context)' });
     }
 };

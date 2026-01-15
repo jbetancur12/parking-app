@@ -65,11 +65,13 @@ app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 
+import { logger } from './utils/logger';
+
 const startServer = async () => {
     try {
         const orm = await MikroORM.init(config);
         await orm.getSchemaGenerator().updateSchema();
-        console.log('✅ Database connected successfully and schema updated');
+        logger.info('✅ Database connected successfully and schema updated');
 
         // Fork the entity manager for each request
         app.use((req, res, next) => {
@@ -124,10 +126,10 @@ const startServer = async () => {
         app.use(errorHandler);
 
         app.listen(port, () => {
-            console.log(`🚀 Server running on http://localhost:${port}`);
+            logger.info(`🚀 Server running on http://localhost:${port}`);
         });
     } catch (error) {
-        console.error('❌ Error starting server:', error);
+        logger.error({ error }, '❌ Error starting server');
         process.exit(1);
     }
 };

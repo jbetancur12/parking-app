@@ -2,6 +2,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth.middleware';
 import { User, UserRole } from '../entities/User';
+import { logger } from '../utils/logger';
 
 export const requireRole = (allowedRoles: UserRole[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -69,7 +70,7 @@ export const verifyTenantAccess = async (req: AuthRequest, res: Response, next: 
 
         next();
     } catch (error) {
-        console.error('Error verifying tenant access:', error);
+        logger.error({ error }, 'Error verifying tenant access');
         return res.status(500).json({ message: 'Internal Server Error during permission check' });
     }
 };

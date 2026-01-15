@@ -2,6 +2,8 @@ import { EntityManager } from '@mikro-orm/core';
 import { AuditLog, AuditAction } from '../entities/AuditLog';
 import { Request } from 'express';
 
+import { logger } from '../utils/logger';
+
 export class AuditService {
     static async log(
         em: EntityManager,
@@ -52,7 +54,7 @@ export class AuditService {
             // For now, standard persist.
 
         } catch (error) {
-            console.error('Failed to create audit log:', error);
+            logger.error({ error }, 'Failed to create audit log');
             // Don't throw, we don't want to break the main operation if logging fails
         }
     }
