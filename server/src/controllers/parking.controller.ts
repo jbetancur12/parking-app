@@ -742,6 +742,14 @@ export const updateVehicleType = async (req: AuthRequest, res: Response) => {
         return res.status(403).json({ message: 'Access denied to this session' });
     }
 
+    // Only allow changes on ACTIVE sessions (before exit/payment)
+    if (session.status !== ParkingStatus.ACTIVE) {
+        return res.status(400).json({
+            message: 'Solo se puede cambiar el tipo de vehículo en sesiones activas (antes de salir)',
+            currentStatus: session.status
+        });
+    }
+
     // Check if type is actually changing
     if (session.vehicleType === vehicleType) {
         return res.status(400).json({ message: 'Vehicle type is already set to ' + vehicleType });
@@ -750,36 +758,9 @@ export const updateVehicleType = async (req: AuthRequest, res: Response) => {
     const oldVehicleType = session.vehicleType;
     session.vehicleType = vehicleType as VehicleType;
 
-    // Recalculate cost if session is completed
-    if (session.status === ParkingStatus.COMPLETED && session.exitTime) {
-        // Get tariffs for the new vehicle type
-        const tariffs = await em.find(Tariff, {
-            vehicleType: session.vehicleType,
-            tenant: session.tenant
-        });
-
-        // Get grace period from settings (similar to exitVehicle)
-        const gracePeriod = parseInt(cacheService.get(`setting_grace_period_${session.tenant.id}`) || '10', 10);
-
-        // Recalculate with updated vehicle type
-        const calculation = calculateParkingCost(session, tariffs, gracePeriod);
-
-        // Apply discount if it was previously applied
-        let newCost = calculation.cost;
-        if (session.discount && session.discount > 0) {
-            newCost = Math.max(0, newCost - session.discount);
-        }
-
-        session.cost = newCost;
-
-        // Add note about the change
-        const changeNote = `Vehicle type changed from ${oldVehicleType} to ${vehicleType} by ${req.user.username}. Cost recalculated.`;
-        session.notes = session.notes ? `${session.notes} | ${changeNote}` : changeNote;
-    } else {
-        // For active sessions, just add a note
-        const changeNote = `Vehicle type changed from ${oldVehicleType} to ${vehicleType} by ${req.user.username}`;
-        session.notes = session.notes ? `${session.notes} | ${changeNote}` : changeNote;
-    }
+    // Add note about the change
+    const changeNote = `Vehicle type changed from ${oldVehicleType} to ${vehicleType} by ${req.user.username}`;
+    session.notes = session.notes ? `${session.notes} | ${changeNote}` : changeNote;
 
     await em.flush();
 
@@ -790,7 +771,6 @@ export const updateVehicleType = async (req: AuthRequest, res: Response) => {
             plate: session.plate,
             vehicleType: session.vehicleType,
             status: session.status,
-            cost: session.cost,
             oldVehicleType
         }
     });

@@ -242,7 +242,6 @@ export default function ParkingPage() {
                 currentVehicleType={changeVehicleTypeModal.session?.vehicleType || ''}
                 sessionId={changeVehicleTypeModal.session?.id || ''}
                 plate={changeVehicleTypeModal.session?.plate || ''}
-                isCompleted={changeVehicleTypeModal.session?.status === 'COMPLETED'}
             />
 
             {/* Hidden Print Components */}

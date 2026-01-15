@@ -8,7 +8,6 @@ interface ChangeVehicleTypeModalProps {
     currentVehicleType: string;
     sessionId: number | string;
     plate: string;
-    isCompleted?: boolean;
 }
 
 const vehicleTypes = [
@@ -22,8 +21,7 @@ export default function ChangeVehicleTypeModal({
     onClose,
     onConfirm,
     currentVehicleType,
-    plate,
-    isCompleted = false
+    plate
 }: ChangeVehicleTypeModalProps) {
     const [selectedType, setSelectedType] = useState(currentVehicleType);
 
@@ -68,14 +66,6 @@ export default function ChangeVehicleTypeModal({
                         </p>
                     </div>
 
-                    {isCompleted && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                            <p className="text-sm text-amber-800">
-                                ⚠️ Esta sesión está completada. El costo se recalculará automáticamente.
-                            </p>
-                        </div>
-                    )}
-
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">
                             Seleccionar nuevo tipo:
@@ -85,8 +75,8 @@ export default function ChangeVehicleTypeModal({
                                 <label
                                     key={type.value}
                                     className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${selectedType === type.value
-                                            ? 'border-brand-blue bg-blue-50'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-brand-blue bg-blue-50'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <input
