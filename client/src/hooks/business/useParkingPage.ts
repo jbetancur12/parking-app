@@ -478,12 +478,19 @@ export const useParkingPage = (
         }
 
         try {
-            const response = await api.patch(`/parking/${sessionId}/vehicle-type`, {
+            await api.patch(`/parking/${sessionId}/vehicle-type`, {
                 vehicleType: newVehicleType
             });
 
-            const updatedSession = response.data.session;
-            toast.success(`Tipo de vehículo actualizado a ${newVehicleType}${updatedSession.cost ? ` - Nuevo costo: $${updatedSession.cost}` : ''}`);
+            // Translate enum to Spanish
+            const vehicleTypeLabels: Record<string, string> = {
+                'CAR': 'Carro',
+                'MOTORCYCLE': 'Moto',
+                'OTHER': 'Otro'
+            };
+            const typeLabel = vehicleTypeLabels[newVehicleType] || newVehicleType;
+
+            toast.success(`Tipo de vehículo actualizado a ${typeLabel}`);
             fetchSessions();
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Error al cambiar tipo de vehículo');
