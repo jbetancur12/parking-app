@@ -81,12 +81,17 @@ jobs:
             cp .env.example .env
           fi
           
+          # Build new images with updated code
+          echo "🔨 Building Docker images..."
+          docker compose build
+          
           # Run database migrations (safe - won't fail if up-to-date)
           echo "📦 Running database migrations..."
           docker compose run --rm server npm run migration:up
           
-          # Build and deploy
-          docker compose up -d --build
+          # Deploy updated services
+          echo "🚀 Deploying services..."
+          docker compose up -d
           
           # Prune old images to save space
           docker image prune -f
