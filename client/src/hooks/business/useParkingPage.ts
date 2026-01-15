@@ -468,6 +468,28 @@ export const useParkingPage = (
         }
     };
 
+    /**
+     * Change vehicle type for a parking session (Admin only)
+     */
+    const handleChangeVehicleType = async (sessionId: number | string, newVehicleType: string) => {
+        if (!isOnline) {
+            toast.error('Esta operación no está disponible en modo offline');
+            return;
+        }
+
+        try {
+            const response = await api.patch(`/parking/${sessionId}/vehicle-type`, {
+                vehicleType: newVehicleType
+            });
+
+            const updatedSession = response.data.session;
+            toast.success(`Tipo de vehículo actualizado a ${newVehicleType}${updatedSession.cost ? ` - Nuevo costo: $${updatedSession.cost}` : ''}`);
+            fetchSessions();
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || 'Error al cambiar tipo de vehículo');
+        }
+    };
+
     // --- Helper for List View ---
 
     const formattedOfflineSessions: ParkingSession[] = queue
@@ -550,6 +572,7 @@ export const useParkingPage = (
         handleConfirmPrintEntry,
         handleCancelPrintEntry,
         getPlanLabel,
-        handleDeleteSession
+        handleDeleteSession,
+        handleChangeVehicleType
     };
 };

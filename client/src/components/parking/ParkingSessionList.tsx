@@ -1,5 +1,5 @@
 import React from 'react';
-import { Car, Bike, Truck, Printer, X } from 'lucide-react';
+import { Car, Bike, Truck, Printer, X, RefreshCw } from 'lucide-react';
 import { Skeleton } from '../Skeleton';
 
 interface ParkingSession {
@@ -18,6 +18,7 @@ interface ParkingSessionListProps {
     onReprint: (session: ParkingSession) => void;
     onExit: (plate: string) => void;
     onDelete?: (sessionId: number | string, reason: string) => void;
+    onChangeVehicleType?: (session: ParkingSession) => void;
 }
 
 import { useAuth } from '../../context/AuthContext';
@@ -31,7 +32,8 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
     getPlanLabel,
     onReprint,
     onExit,
-    onDelete
+    onDelete,
+    onChangeVehicleType
 }) => {
     const { user } = useAuth();
     const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'super_admin';
@@ -164,6 +166,16 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                                                     title="Eliminar (Admin)"
                                                 >
                                                     <Trash2 size={16} />
+                                                </button>
+                                            )}
+
+                                            {isAdmin && onChangeVehicleType && (
+                                                <button
+                                                    onClick={() => onChangeVehicleType(session)}
+                                                    className="text-gray-500 hover:text-brand-blue hover:bg-blue-50 p-1.5 rounded-full transition-colors"
+                                                    title="Cambiar Tipo de Vehículo (Admin)"
+                                                >
+                                                    <RefreshCw size={16} />
                                                 </button>
                                             )}
                                         </div>

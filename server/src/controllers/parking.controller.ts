@@ -4,6 +4,7 @@ import { RequestContext, LockMode } from '@mikro-orm/core';
 import { ParkingSession, ParkingStatus, VehicleType, PlanType } from '../entities/ParkingSession';
 import { Shift } from '../entities/Shift';
 import { Tariff, TariffType, PricingModel } from '../entities/Tariff';
+import { Tenant } from '../entities/Tenant';
 import { Agreement, AgreementType } from '../entities/Agreement';
 import { SystemSetting } from '../entities/SystemSetting';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
@@ -692,4 +693,105 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
     await em.flush();
 
     return res.json({ message: 'Session cancelled', id: session.id });
+};
+
+/**
+ * Update Vehicle Type (Admin Only)
+ * PATCH /api/parking/:id/vehicle-type
+ * Allows administrators to correct vehicle type errors
+ * Automatically recalculates cost for completed sessions
+ */
+export const updateVehicleType = async (req: AuthRequest, res: Response) => {
+    const em = RequestContext.getEntityManager();
+    if (!em || !req.user) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+    // Authorization: Admin or SuperAdmin only
+    const userRole = req.user.role.toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'super_admin') {
+        return res.status(403).json({ message: 'Not authorized to change vehicle type' });
+    }
+
+    const { id } = req.params;
+    const { vehicleType } = req.body;
+
+    // Validate inputs
+    if (!id || isNaN(Number(id))) {
+        return res.status(400).json({ message: 'Valid session ID is required' });
+    }
+
+    if (!vehicleType || !Object.values(VehicleType).includes(vehicleType as VehicleType)) {
+        return res.status(400).json({
+            message: 'Valid vehicle type is required',
+            validTypes: Object.values(VehicleType)
+        });
+    }
+
+    // Find the session
+    const session = await em.findOne(ParkingSession, {
+        id: Number(id)
+    }, { populate: ['entryShift', 'exitShift', 'tenant'] });
+
+    if (!session) {
+        return res.status(404).json({ message: 'Parking session not found' });
+    }
+
+    // Verify tenant access
+    if (session.tenant.id !== req.user.tenant?.id && userRole !== 'super_admin') {
+        return res.status(403).json({ message: 'Access denied to this session' });
+    }
+
+    // Check if type is actually changing
+    if (session.vehicleType === vehicleType) {
+        return res.status(400).json({ message: 'Vehicle type is already set to ' + vehicleType });
+    }
+
+    const oldVehicleType = session.vehicleType;
+    session.vehicleType = vehicleType as VehicleType;
+
+    // Recalculate cost if session is completed
+    if (session.status === ParkingStatus.COMPLETED && session.exitTime) {
+        // Get tariffs for the new vehicle type
+        const tariffs = await em.find(Tariff, {
+            vehicleType: session.vehicleType,
+            tenant: session.tenant
+        });
+
+        // Get grace period from settings (similar to exitVehicle)
+        const gracePeriod = parseInt(cacheService.get(`setting_grace_period_${session.tenant.id}`) || '10', 10);
+
+        // Recalculate with updated vehicle type
+        const calculation = calculateParkingCost(session, tariffs, gracePeriod);
+
+        // Apply discount if it was previously applied
+        let newCost = calculation.cost;
+        if (session.discount && session.discount > 0) {
+            newCost = Math.max(0, newCost - session.discount);
+        }
+
+        session.cost = newCost;
+
+        // Add note about the change
+        const changeNote = `Vehicle type changed from ${oldVehicleType} to ${vehicleType} by ${req.user.username}. Cost recalculated.`;
+        session.notes = session.notes ? `${session.notes} | ${changeNote}` : changeNote;
+    } else {
+        // For active sessions, just add a note
+        const changeNote = `Vehicle type changed from ${oldVehicleType} to ${vehicleType} by ${req.user.username}`;
+        session.notes = session.notes ? `${session.notes} | ${changeNote}` : changeNote;
+    }
+
+    await em.flush();
+
+    return res.json({
+        message: 'Vehicle type updated successfully',
+        session: {
+            id: session.id,
+            plate: session.plate,
+            vehicleType: session.vehicleType,
+            status: session.status,
+            cost: session.cost,
+            oldVehicleType
+        }
+    });
 };

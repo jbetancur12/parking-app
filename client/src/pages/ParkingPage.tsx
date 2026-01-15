@@ -4,6 +4,7 @@ import { useElectronPrint } from '../hooks/useElectronPrint';
 import { PrintTicket } from '../components/PrintTicket';
 import { PrintReceipt } from '../components/PrintReceipt';
 import { useParkingPage } from '../hooks/business/useParkingPage';
+import ChangeVehicleTypeModal from '../components/ChangeVehicleTypeModal';
 
 // Components
 import { ParkingSessionList } from '../components/parking/ParkingSessionList';
@@ -64,7 +65,8 @@ export default function ParkingPage() {
         handleCancelPrintEntry,
         getPlanLabel,
         handleReprintReceipt,
-        handleDeleteSession
+        handleDeleteSession,
+        handleChangeVehicleType
     } = useParkingPage(
         handlePrintTicket,
         handlePrintReceipt // Pass receipt handler to hook if needed (or keep in page)
@@ -72,6 +74,9 @@ export default function ParkingPage() {
 
     // History Modal State
     const [isHistoryModalOpen, setIsHistoryModalOpen] = React.useState(false);
+
+    // Change Vehicle Type Modal State
+    const [changeVehicleTypeModal, setChangeVehicleTypeModal] = React.useState<{ isOpen: boolean; session: any | null }>({ isOpen: false, session: null });
 
     // Reprint Receipt Handler (from History)
 
@@ -180,6 +185,7 @@ export default function ParkingPage() {
                 onReprint={handleReprintTicket}
                 onExit={handleExitClick}
                 onDelete={handleDeleteSession}
+                onChangeVehicleType={(session) => setChangeVehicleTypeModal({ isOpen: true, session })}
             />
 
             {/* Modals */}
@@ -223,6 +229,20 @@ export default function ParkingPage() {
                 isOpen={isHistoryModalOpen}
                 onClose={() => setIsHistoryModalOpen(false)}
                 onReprint={handleReprintReceipt}
+            />
+
+            <ChangeVehicleTypeModal
+                isOpen={changeVehicleTypeModal.isOpen}
+                onClose={() => setChangeVehicleTypeModal({ isOpen: false, session: null })}
+                onConfirm={(newType) => {
+                    if (changeVehicleTypeModal.session) {
+                        handleChangeVehicleType(changeVehicleTypeModal.session.id, newType);
+                    }
+                }}
+                currentVehicleType={changeVehicleTypeModal.session?.vehicleType || ''}
+                sessionId={changeVehicleTypeModal.session?.id || ''}
+                plate={changeVehicleTypeModal.session?.plate || ''}
+                isCompleted={changeVehicleTypeModal.session?.status === 'COMPLETED'}
             />
 
             {/* Hidden Print Components */}

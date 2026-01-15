@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus, getCompletedSessions, cancelSession } from '../controllers/parking.controller';
+import { entryVehicle, exitVehicle, getActiveSessions, previewExit, publicStatus, getCompletedSessions, cancelSession, updateVehicleType } from '../controllers/parking.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { verifyTenantAccess } from '../middleware/permission.middleware';
 import { saasContext } from '../middleware/saasContext';
@@ -20,6 +20,7 @@ router.post('/entry', validateBody(CreateParkingEntryDto), checkSessionLimit, en
 router.get('/preview/:plate', previewExit);
 router.post('/exit', validateBody(CreateParkingExitDto), exitVehicle);
 router.post('/cancel', cancelSession);
+router.patch('/:id/vehicle-type', updateVehicleType); // Admin only - authorization checked in controller
 router.get('/active', getActiveSessions);
 router.get('/completed', getCompletedSessions);
 
