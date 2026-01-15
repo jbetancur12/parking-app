@@ -22,8 +22,8 @@ async function fixLegacyPlans() {
         connectionConfig.port = Number(process.env.DB_PORT);
     }
 
-    // SSL is typically required in production (Render), but depends on env var
-    if (process.env.NODE_ENV === 'production' || process.env.DB_SSL === 'true') {
+    // SSL is only enabled if explicitly requested via environment variable
+    if (process.env.DB_SSL === 'true') {
         connectionConfig.ssl = {
             rejectUnauthorized: false
         };
