@@ -72,9 +72,16 @@ docker exec -it parking_server npm run migration:up
 
 ### Solución para Produccion
 
-#### Paso 1: Marcar migración inicial como ejecutada (sin ejecutarla)
+**¡IMPORTANTE!** Las migraciones ahora se ejecutan automáticamente en el workflow de CI/CD.
 
-En el VPS:
+Cada vez que hagas push a `main`, el workflow:
+1. Hace pull del código
+2. **Ejecuta `npm run migration:up`** (esto es nuevo)
+3. Hace `docker compose up -d --build`
+
+#### Paso 1: Marcar migración inicial como ejecutada
+
+Solo la **PRIMERA VEZ**, debes marcar la migración inicial como ejecutada en producción:
 
 ```bash
 # Conectarse a Postgres
@@ -95,19 +102,19 @@ VALUES ('Migration20260115003959');
 \q
 ```
 
-#### Paso 2: Ejecutar SQL manual para cambiar `notes` a TEXT
+#### Paso 2: Futuras migraciones
 
-```bash
-docker exec -it parking_db psql -U postgres -d parking_db -c "ALTER TABLE parking_session ALTER COLUMN notes TYPE TEXT;"
-```
+**Ya no necesitas hacer nada manualmente!** 
 
-#### Paso 3: Verificar
+Cuando crees una nueva migración y hagas push a `main`:
+- GitHub Actions la ejecutará automáticamente
+- Si falla, el deployment se detiene
+- Si pasa, continúa con el deploy
 
-```bash
-docker exec -it parking_db psql -U postgres -d parking_db -c "\d parking_session"
-```
+#### ¿Qué pasa si el esquema ya está al día?
 
-Deberías ver `notes | text |`.
+**No hay problema!** `npm run migration:up` simplemente dice "No pending migrations" y continúa. 
+**Nunca falla** si no hay nada que migrar.
 
 ### Para Desarrollo Local
 
