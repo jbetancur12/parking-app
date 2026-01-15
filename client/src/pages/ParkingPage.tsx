@@ -155,14 +155,14 @@ export default function ParkingPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="mb-6 relative">
-                <div className="relative">
-                    <Search className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" size={20} />
+            <div className="mb-6 relative flex flex-col items-center">
+                <div className="relative w-full max-w-[340px]">
+                    <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={32} />
                     <input
                         ref={searchInputRef}
                         type="text"
-                        placeholder="Buscar por placa o escanear ticket..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none uppercase transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+                        placeholder="PLACA"
+                        className="w-full pl-16 pr-4 h-32 text-4xl font-bold placeholder:font-normal placeholder:text-2xl border-4 rounded-2xl focus:ring-4 focus:ring-brand-blue focus:border-transparent outline-none uppercase transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500 text-center shadow-xl"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
                         onKeyDown={handleSearchKeyDown}
@@ -170,8 +170,8 @@ export default function ParkingPage() {
                     />
                 </div>
                 {/* UX Hint */}
-                <div className="mt-1 text-xs text-gray-400 dark:text-gray-500 flex items-center justify-end px-1">
-                    <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-[10px] font-mono mr-1 border border-gray-200 dark:border-gray-600">ENTER</span>
+                <div className="mt-2 text-sm text-gray-400 dark:text-gray-500 flex items-center justify-center">
+                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs font-mono mr-2 border border-gray-200 dark:border-gray-600">ENTER</span>
                     <span>para salida rápida</span>
                 </div>
             </div>
