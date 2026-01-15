@@ -128,27 +128,26 @@ export const EntryModal: React.FC<EntryModalProps> = ({
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    )}
-            <div className="animate-fade-in">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones / Comentarios</label>
-                <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-blue focus:border-brand-blue text-sm"
-                    placeholder="Ej. Casco incluido, Rayón puerta izq..."
-                    rows={2}
-                />
-            </div>
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                data-testid="btn-register-entry"
-            >
-                {isSubmitting ? 'Registrando...' : 'Registrar Entrada'}
-            </button>
-        </form>
+                        )}
+                    <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones / Comentarios</label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-blue focus:border-brand-blue text-sm"
+                            placeholder="Ej. Casco incluido, Rayón puerta izq..."
+                            rows={2}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`w-full bg-brand-yellow text-brand-blue font-bold py-3 rounded-lg hover:bg-yellow-400 shadow-md transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        data-testid="btn-register-entry"
+                    >
+                        {isSubmitting ? 'Registrando...' : 'Registrar Entrada'}
+                    </button>
+                </form>
             </div >
         </div >
     );
