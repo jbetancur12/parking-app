@@ -9,7 +9,7 @@
     "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:prod": "node dist/scripts/fix_legacy_plans.js && node dist/index.js",
+    "start:prod": "node dist/index.js",
     "seed": "npx ts-node src/scripts/seed_full.ts",
     "seed:saas": "npx ts-node src/scripts/seed_saas.ts",
     "db:reset": "npx ts-node src/scripts/reset_superadmin.ts",
