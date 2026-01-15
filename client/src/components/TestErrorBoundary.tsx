@@ -16,8 +16,11 @@ export default function TestErrorBoundary() {
         throw new Error('🧪 Test Error - Error Boundary is working!');
     }
 
-    // Only show in development
-    if (!import.meta.env.DEV) {
+    // Only show in development OR if manually enabled via localStorage
+    const isDev = import.meta.env.DEV;
+    const isManuallyEnabled = localStorage.getItem('ENABLE_TEST_ERROR') === 'true';
+
+    if (!isDev && !isManuallyEnabled) {
         return null;
     }
 
