@@ -17,6 +17,7 @@ export const useExitCalculations = ({ previewData, agreements, tariffs }: UseExi
     const [cashReceived, setCashReceived] = useState('');
 
     const getPlanLabel = () => {
+        if (!Array.isArray(tariffs)) return 'Por Hora';
         const tariff = tariffs.find(t => t.vehicleType === previewData.vehicleType);
         if (!tariff) return 'Por Hora';
         if (tariff.pricingModel === 'TRADITIONAL') {

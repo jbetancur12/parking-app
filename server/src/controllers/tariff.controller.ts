@@ -120,6 +120,10 @@ export class TariffController {
                 { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.MINUTE, cost: 60, pricingModel: PricingModel.MINUTE, basePrice: 60, baseTimeMinutes: 1, extraFracPrice: 0, extraFracTimeMinutes: 1 },
                 { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.HOUR, cost: 1500, pricingModel: PricingModel.BLOCKS, basePrice: 1500, baseTimeMinutes: 60, extraFracPrice: 1000, extraFracTimeMinutes: 15 },
                 { vehicleType: VehicleType.MOTORCYCLE, tariffType: TariffType.DAY, cost: 8000, pricingModel: PricingModel.BLOCKS, basePrice: 8000, baseTimeMinutes: 1440, extraFracPrice: 0, extraFracTimeMinutes: 0 },
+
+                { vehicleType: VehicleType.OTHER, tariffType: TariffType.MINUTE, cost: 100, pricingModel: PricingModel.MINUTE, basePrice: 100, baseTimeMinutes: 1, extraFracPrice: 0, extraFracTimeMinutes: 1 },
+                { vehicleType: VehicleType.OTHER, tariffType: TariffType.HOUR, cost: 2000, pricingModel: PricingModel.BLOCKS, basePrice: 2000, baseTimeMinutes: 60, extraFracPrice: 1000, extraFracTimeMinutes: 15 },
+                { vehicleType: VehicleType.OTHER, tariffType: TariffType.DAY, cost: 10000, pricingModel: PricingModel.BLOCKS, basePrice: 10000, baseTimeMinutes: 1440, extraFracPrice: 0, extraFracTimeMinutes: 0 },
             ];
 
             const tenant = await em.getReference('Tenant', tenantId);

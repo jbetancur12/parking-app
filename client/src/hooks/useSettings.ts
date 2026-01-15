@@ -69,13 +69,15 @@ export const useSettings = () => {
                 return prev.map((t, i) => i === index ? { ...t, [field]: value } : t);
             } else {
                 // Create new item if not exists
-                // Note: ID will be undefined, backend handles creation
+                // Inherit pricing model from other tariffs (Global Model) or default to MINUTE
+                const activeModel = prev.length > 0 ? prev[0].pricingModel : 'MINUTE';
+
                 const newItem: any = {
                     vehicleType,
                     tariffType,
                     [field]: value,
-                    cost: field === 'cost' ? value : 0, // Ensure cost exists if setting cost
-                    pricingModel: 'MINUTE' // Default
+                    cost: field === 'cost' ? value : 0,
+                    pricingModel: activeModel
                 };
                 return [...prev, newItem];
             }
