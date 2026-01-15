@@ -25,6 +25,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Trash2 } from 'lucide-react';
 
 
+import { ConfirmationModal } from '../ConfirmationModal';
+
 export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
     sessions,
     loading,
@@ -37,15 +39,19 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
 }) => {
     const { user } = useAuth();
     const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'super_admin';
+    const [deleteSession, setDeleteSession] = React.useState<{ id: number | string; plate: string } | null>(null);
 
     const handleDeleteClick = (sessionId: number | string, plate: string) => {
-        if (!onDelete) return;
+        setDeleteSession({ id: sessionId, plate });
+    };
 
-        // Simple confirm for now, can be a modal later
-        if (window.confirm(`¿Está seguro de eliminar el vehículo ${plate} de la lista?\nEsta acción es irreversible y para corrección de errores.`)) {
-            onDelete(sessionId, 'Admin Deleted');
+    const handleConfirmDelete = () => {
+        if (deleteSession && onDelete) {
+            onDelete(deleteSession.id, 'Admin Deleted');
+            setDeleteSession(null);
         }
     };
+
     if (loading) {
         return (
             <>
@@ -257,6 +263,17 @@ export const ParkingSessionList: React.FC<ParkingSessionListProps> = ({
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={!!deleteSession}
+                title="¿Eliminar vehículo?"
+                message={`¿Está seguro de eliminar el vehículo ${deleteSession?.plate} de la lista? Esta acción es irreversible y solo debe usarse para corrección de errores.`}
+                confirmText="Eliminar Definitivamente"
+                cancelText="Cancelar"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setDeleteSession(null)}
+                type="danger"
+            />
         </>
     );
 };
