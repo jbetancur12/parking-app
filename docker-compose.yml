@@ -70,6 +70,18 @@ services:
     networks:
       - app_network
 
+  # --- MONITORING ---
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: parking_dozzle
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOZZLE_LEVEL: info
+    networks:
+      - app_network
+
   # --- PROXY ---
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
