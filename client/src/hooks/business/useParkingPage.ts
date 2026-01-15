@@ -96,10 +96,20 @@ export const useParkingPage = (
     useEffect(() => {
         const fetchData = async () => {
             // Try to load from cache first for immediate display
-            const cachedSettings = localStorage.getItem('offline_settings');
-            const cachedTariffs = localStorage.getItem('offline_tariffs');
-            if (cachedSettings) setSettings(JSON.parse(cachedSettings));
-            if (cachedTariffs) setTariffs(JSON.parse(cachedTariffs));
+            // Try to load from cache first for immediate display
+            try {
+                const cachedSettings = localStorage.getItem('offline_settings');
+                if (cachedSettings && cachedSettings !== 'undefined' && cachedSettings !== 'null') {
+                    setSettings(JSON.parse(cachedSettings));
+                }
+            } catch (e) { console.warn('Error parsing offline_settings', e); }
+
+            try {
+                const cachedTariffs = localStorage.getItem('offline_tariffs');
+                if (cachedTariffs && cachedTariffs !== 'undefined' && cachedTariffs !== 'null') {
+                    setTariffs(JSON.parse(cachedTariffs));
+                }
+            } catch (e) { console.warn('Error parsing offline_tariffs', e); }
 
             if (!isOnline) {
                 setLoading(false);
