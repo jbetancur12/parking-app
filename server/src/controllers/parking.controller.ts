@@ -259,7 +259,10 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
     }
 
     // ... (rest is same)
-    const tariffs = await em.find(Tariff, { vehicleType: session.vehicleType });
+    const tariffs = await em.find(Tariff, {
+        vehicleType: session.vehicleType,
+        location: session.location
+    });
     const settingsList = await em.find(SystemSetting, {});
     const settings: Record<string, string> = {};
     settingsList.forEach(s => settings[s.key] = s.value);
@@ -355,7 +358,11 @@ export const exitVehicle = async (req: AuthRequest, res: Response) => {
     let tariffs = cacheService.get<Tariff[]>(tariffCacheKey);
 
     if (!tariffs) {
-        tariffs = await em.find(Tariff, { vehicleType: session.vehicleType, tenant: shift.tenant });
+        tariffs = await em.find(Tariff, {
+            vehicleType: session.vehicleType,
+            tenant: shift.tenant,
+            location: shift.location
+        });
         cacheService.set(tariffCacheKey, tariffs);
     }
 
@@ -588,8 +595,8 @@ export const publicStatus = async (req: Request, res: Response) => {
 
     const tariffs = await em.find(Tariff, {
         vehicleType: session.vehicleType,
-        tenant: session.tenant
-    }, { filters: false });
+        location: session.location
+    });
 
     // Check if SystemSetting is tenant-scoped (it usually is in this SaaS architecture)
     // If it throws the same error, we must disable filters and pass tenant manually

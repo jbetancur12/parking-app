@@ -15,10 +15,12 @@ export class TariffController {
             const locationIdRaw = req.headers['x-location-id'];
             const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
-            const filter: any = {};
-            if (locationId) {
-                filter.location = locationId;
+            if (!locationId) {
+                // Prevent leaking all tariffs if context is missing
+                return res.json([]);
             }
+
+            const filter: any = { location: locationId };
 
             const tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
             res.json(tariffs);
