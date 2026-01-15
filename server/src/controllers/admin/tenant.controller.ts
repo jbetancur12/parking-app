@@ -4,6 +4,7 @@ import { Tenant, TenantStatus, TenantPlan } from '../../entities/Tenant';
 import { SAAS_PLANS } from '../../config/saas.config';
 import { AuditService } from '../../services/AuditService';
 import { SettingsInitService } from '../../services/SettingsInitService';
+import { logger } from '../../utils/logger';
 
 // Create new tenant
 export const createTenant = async (req: Request, res: Response) => {
@@ -49,9 +50,10 @@ export const createTenant = async (req: Request, res: Response) => {
         // Create default settings for the new tenant (tenant-level only, no location yet)
         try {
             await SettingsInitService.createDefaultSettings(em, tenant.id);
-            console.log(`✅ Default settings created for tenant ${tenant.name}`);
+            await SettingsInitService.createDefaultSettings(em, tenant.id);
+            logger.info(`Default settings created for tenant ${tenant.name}`);
         } catch (error) {
-            console.error('Failed to create default settings:', error);
+            logger.error({ error }, 'Failed to create default settings:');
             // Don't fail tenant creation if settings creation fails
         }
 
@@ -60,9 +62,10 @@ export const createTenant = async (req: Request, res: Response) => {
             const { SubscriptionService } = await import('../../services/subscription.service');
             const subscriptionService = new SubscriptionService();
             await subscriptionService.createSubscription(tenant.id, selectedPlan);
-            console.log(`✅ Subscription created for tenant ${tenant.name} with plan ${selectedPlan}`);
+            await subscriptionService.createSubscription(tenant.id, selectedPlan);
+            logger.info(`Subscription created for tenant ${tenant.name} with plan ${selectedPlan}`);
         } catch (error) {
-            console.error('Failed to create subscription for tenant:', error);
+            logger.error({ error }, 'Failed to create subscription for tenant:');
             // Don't fail tenant creation if subscription fails
         }
 
@@ -78,7 +81,7 @@ export const createTenant = async (req: Request, res: Response) => {
 
         return res.status(201).json(tenant);
     } catch (error) {
-        console.error('Error creating tenant:', error);
+        logger.error({ error }, 'Error creating tenant:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -117,7 +120,7 @@ export const getAllTenants = async (req: Request, res: Response) => {
 
         return res.json(tenantsWithCounts);
     } catch (error) {
-        console.error('Error fetching tenants:', error);
+        logger.error({ error }, 'Error fetching tenants:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -139,7 +142,7 @@ export const getTenantById = async (req: Request, res: Response) => {
 
         return res.json(tenant);
     } catch (error) {
-        console.error('Error fetching tenant:', error);
+        logger.error({ error }, 'Error fetching tenant:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -172,7 +175,7 @@ export const updateTenantStatus = async (req: Request, res: Response) => {
 
         return res.json(tenant);
     } catch (error) {
-        console.error('Error updating tenant status:', error);
+        logger.error({ error }, 'Error updating tenant status:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -223,9 +226,10 @@ export const updateTenant = async (req: Request, res: Response) => {
                 const { SubscriptionService } = await import('../../services/subscription.service');
                 const subscriptionService = new SubscriptionService();
                 await subscriptionService.changePlan(tenant.id, plan);
-                console.log(`✅ Subscription updated for tenant ${tenant.name}: ${oldPlan} → ${plan}`);
+                await subscriptionService.changePlan(tenant.id, plan);
+                logger.info(`Subscription updated for tenant ${tenant.name}: ${oldPlan} → ${plan}`);
             } catch (error) {
-                console.error('Failed to update subscription:', error);
+                logger.error({ error }, 'Failed to update subscription:');
                 // Continue with tenant update even if subscription update fails
             }
         }
@@ -245,7 +249,7 @@ export const updateTenant = async (req: Request, res: Response) => {
 
         return res.json(tenant);
     } catch (error) {
-        console.error('Error updating tenant:', error);
+        logger.error({ error }, 'Error updating tenant:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -278,7 +282,7 @@ export const deleteTenant = async (req: Request, res: Response) => {
 
         return res.json({ message: 'Tenant archived successfully' });
     } catch (error) {
-        console.error('Error deleting tenant:', error);
+        logger.error({ error }, 'Error deleting tenant:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

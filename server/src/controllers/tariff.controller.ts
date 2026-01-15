@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/core';
+import { RequestContext } from '@mikro-orm/core';
 import { Tariff, VehicleType, TariffType, PricingModel } from '../entities/Tariff';
 import { AuditService } from '../services/AuditService';
+import { logger } from '../utils/logger';
 
 export class TariffController {
 
@@ -22,7 +23,7 @@ export class TariffController {
             const tariffs = await em.find(Tariff, filter, { orderBy: { vehicleType: 'ASC', tariffType: 'ASC' } });
             res.json(tariffs);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching tariffs');
             res.status(500).json({ message: 'Error fetching tariffs' });
         }
     }
@@ -94,7 +95,7 @@ export class TariffController {
 
             res.json({ message: 'Tariffs updated' });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error updating tariffs');
             res.status(500).json({ message: 'Error updating tariffs' });
         }
     }
@@ -137,7 +138,7 @@ export class TariffController {
             await em.flush();
             res.json({ message: 'Seeded' });
         } catch (e) {
-            console.error(e);
+            logger.error({ error: e }, 'Error seeding');
             res.status(500).json({ message: 'Error seeding' });
         }
     }

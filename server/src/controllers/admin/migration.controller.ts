@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Tenant } from '../../entities/Tenant';
 import { Subscription } from '../../entities/Subscription';
 import { SubscriptionService } from '../../services/subscription.service';
+import { logger } from '../../utils/logger';
 
 /**
  * MIGRATION ENDPOINT - Run once to create subscriptions for existing tenants
@@ -31,7 +32,7 @@ export const migrateExistingTenants = async (req: Request, res: Response) => {
                 const existingSubscription = await em.findOne(Subscription, { tenant: tenant.id });
 
                 if (existingSubscription) {
-                    console.log(`Tenant ${tenant.name} already has subscription, skipping`);
+                    logger.info(`Tenant ${tenant.name} already has subscription, skipping`);
                     results.skipped++;
                     continue;
                 }
@@ -40,10 +41,11 @@ export const migrateExistingTenants = async (req: Request, res: Response) => {
                 const plan = tenant.plan || 'basic';
                 await subscriptionService.createSubscription(tenant.id, plan);
 
-                console.log(`✅ Created ${plan} subscription for tenant: ${tenant.name}`);
+                // console.log(`✅ Created ${plan} subscription for tenant: ${tenant.name}`);
+                logger.info(`Created ${plan} subscription for tenant: ${tenant.name}`);
                 results.migrated++;
             } catch (error: any) {
-                console.error(`Failed to migrate tenant ${tenant.name}:`, error);
+                logger.error({ error }, 'Failed to migrate tenant ${tenant.name}:');
                 results.errors.push(`${tenant.name}: ${error.message}`);
             }
         }
@@ -54,7 +56,7 @@ export const migrateExistingTenants = async (req: Request, res: Response) => {
             results
         });
     } catch (error) {
-        console.error('Migration error:', error);
+        logger.error({ error }, 'Migration error:');
         return res.status(500).json({ message: 'Migration failed', error });
     }
 };

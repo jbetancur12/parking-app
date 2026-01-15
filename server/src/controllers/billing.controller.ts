@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { InvoiceService } from '../services/invoice.service';
 import { PaymentService } from '../services/payment.service';
 import { PaymentMethod } from '../entities/Payment';
+import { logger } from '../utils/logger';
 
 const invoiceService = new InvoiceService();
 const paymentService = new PaymentService();
@@ -20,7 +21,7 @@ export const getInvoices = async (req: Request, res: Response) => {
         const invoices = await invoiceService.getByTenant(tenantId);
         return res.json(invoices);
     } catch (error) {
-        console.error('Get invoices error:', error);
+        logger.error({ error }, 'Get invoices error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -47,7 +48,7 @@ export const getInvoiceById = async (req: Request, res: Response) => {
 
         return res.json(invoice);
     } catch (error) {
-        console.error('Get invoice error:', error);
+        logger.error({ error }, 'Get invoice error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -60,7 +61,7 @@ export const getAllInvoices = async (req: Request, res: Response) => {
         const invoices = await invoiceService.getAll();
         return res.json(invoices);
     } catch (error) {
-        console.error('Get all invoices error:', error);
+        logger.error({ error }, 'Get all invoices error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -84,7 +85,7 @@ export const createInvoice = async (req: Request, res: Response) => {
 
         return res.status(201).json(invoice);
     } catch (error) {
-        console.error('Create invoice error:', error);
+        logger.error({ error }, 'Create invoice error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -110,7 +111,7 @@ export const recordPayment = async (req: Request, res: Response) => {
 
         return res.status(201).json(payment);
     } catch (error) {
-        console.error('Record payment error:', error);
+        logger.error({ error }, 'Record payment error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -128,7 +129,7 @@ export const getPayments = async (req: Request, res: Response) => {
         const payments = await paymentService.getByTenant(tenantId);
         return res.json(payments);
     } catch (error) {
-        console.error('Get payments error:', error);
+        logger.error({ error }, 'Get payments error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -141,7 +142,7 @@ export const getAllPayments = async (req: Request, res: Response) => {
         const payments = await paymentService.getAll();
         return res.json(payments);
     } catch (error) {
-        console.error('Get all payments error:', error);
+        logger.error({ error }, 'Get all payments error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -154,7 +155,7 @@ export const getPaymentStats = async (req: Request, res: Response) => {
         const stats = await paymentService.getStats();
         return res.json(stats);
     } catch (error) {
-        console.error('Get payment stats error:', error);
+        logger.error({ error }, 'Get payment stats error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

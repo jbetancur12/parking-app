@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { Subscription, SubscriptionStatus } from '../../entities/Subscription';
+import { logger } from '../../utils/logger';
 import { SubscriptionService } from '../../services/subscription.service';
 
 const subscriptionService = new SubscriptionService();
@@ -16,7 +18,7 @@ export const checkExpiredSubscriptions = async (req: Request, res: Response) => 
             ...result
         });
     } catch (error: any) {
-        console.error('Check expired subscriptions error:', error);
+        logger.error({ error }, 'Check expired subscriptions error:');
         return res.status(500).json({
             message: 'Failed to check expired subscriptions',
             error: error.message

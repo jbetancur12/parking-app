@@ -1,6 +1,8 @@
+
 import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { Subscription, SubscriptionStatus } from '../../entities/Subscription';
+import { logger } from '../../utils/logger';
 import { addMonths } from 'date-fns';
 
 /**
@@ -43,7 +45,7 @@ export const renewSubscription = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Renew subscription error:', error);
+        logger.error({ error }, 'Renew subscription error:');
         return res.status(500).json({
             message: 'Failed to renew subscription',
             error: error.message

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { UsageService } from '../../services/usage.service';
 import { RequestContext } from '@mikro-orm/core';
 import { Tenant } from '../../entities/Tenant';
+import { logger } from '../../utils/logger';
 
 const usageService = new UsageService();
 
@@ -74,7 +75,7 @@ export const getAllTenantsUsage = async (req: Request, res: Response) => {
 
         return res.json(tenantsWithUsage);
     } catch (error) {
-        console.error('Get all tenants usage error:', error);
+        logger.error({ error }, 'Get all tenants usage error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -121,7 +122,7 @@ export const getTenantUsage = async (req: Request, res: Response) => {
 
         return res.json(response);
     } catch (error) {
-        console.error('Get tenant usage error:', error);
+        logger.error({ error }, 'Get tenant usage error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

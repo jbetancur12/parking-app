@@ -3,6 +3,7 @@ import config from '../mikro-orm.config';
 import { Tenant, TenantStatus, TenantPlan } from '../entities/Tenant';
 import { Location } from '../entities/Location';
 import { User, UserRole } from '../entities/User';
+import { logger } from '../utils/logger';
 import bcrypt from 'bcryptjs';
 
 async function seedSaaS() {
@@ -217,7 +218,7 @@ async function seedSaaS() {
         console.log('━'.repeat(50));
 
     } catch (error) {
-        console.error('❌ Error seeding database:', error);
+        logger.error({ error }, '❌ Error seeding database:');
         throw error;
     } finally {
         await orm.close();
@@ -230,6 +231,6 @@ seedSaaS()
         process.exit(0);
     })
     .catch((error) => {
-        console.error('\n❌ Seed script failed:', error);
+        logger.error({ error }, '\n❌ Seed script failed:');
         process.exit(1);
     });

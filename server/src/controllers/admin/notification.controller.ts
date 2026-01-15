@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { SystemNotification, NotificationType } from '../../entities/SystemNotification';
 import { UserRole } from '../../entities/User';
+import { logger } from '../../utils/logger';
 
 export const createNotification = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -80,7 +81,7 @@ export const getActiveNotifications = async (req: Request, res: Response) => {
         return res.json(visibleNotifications);
 
     } catch (error) {
-        console.error('Error fetching notifications:', error);
+        logger.error({ error }, 'Error fetching notifications:');
         return res.status(500).json({ message: 'Error fetching notifications' });
     }
 };

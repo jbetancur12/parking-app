@@ -4,6 +4,7 @@ import { Transaction, TransactionType, PaymentMethod } from '../entities/Transac
 import { Shift } from '../entities/Shift';
 import { Product } from '../entities/Product';
 import { ReceiptService } from '../services/ReceiptService';
+import { logger } from '../utils/logger';
 
 export class SaleController {
 
@@ -102,7 +103,7 @@ export class SaleController {
 
             res.status(201).json({ ...transactionResult.transaction, receiptNumber: transactionResult.receiptNumber });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error registering sale');
             res.status(500).json({ message: 'Error registering sale' });
         }
     }

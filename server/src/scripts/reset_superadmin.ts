@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { User, UserRole } from '../entities/User';
+import { logger } from '../utils/logger';
 import bcrypt from 'bcryptjs';
 
 const seed = async () => {
@@ -30,7 +31,7 @@ const seed = async () => {
         console.log('✅ Created SuperAdmin: jabetancur12@gmail.com / 12345678');
 
     } catch (error) {
-        console.error('❌ Reset failed:', error);
+        logger.error({ error }, '❌ Reset failed:');
     } finally {
         await orm.close();
     }

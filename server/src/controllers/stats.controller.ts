@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { Tenant, TenantStatus } from '../entities/Tenant';
 import { Location } from '../entities/Location';
 import { User } from '../entities/User';
+import { logger } from '../utils/logger';
 
 export const getPeakHours = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -265,7 +266,7 @@ export const getSuperAdminStats = async (req: Request, res: Response) => {
             activity
         });
     } catch (error) {
-        console.error('Super Admin Stats Error:', error);
+        logger.error({ error }, 'Super Admin Stats Error:');
         return res.status(500).json({ message: 'Error fetching super admin stats' });
     }
 };

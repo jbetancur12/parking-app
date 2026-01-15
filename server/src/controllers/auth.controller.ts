@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { addDays } from 'date-fns';
 import { SettingsInitService } from '../services/SettingsInitService';
 import crypto from 'crypto';
+import { logger } from '../utils/logger';
 
 
 
@@ -72,7 +73,7 @@ export const registerTenant = async (req: Request, res: Response) => {
     try {
         await SettingsInitService.createDefaultSettings(em, tenant.id, location.id);
     } catch (error) {
-        console.error('Failed to create default settings:', error);
+        logger.error({ error }, 'Failed to create default settings:');
         // Don't fail registration if settings creation fails
     }
 
@@ -81,9 +82,10 @@ export const registerTenant = async (req: Request, res: Response) => {
         const { SubscriptionService } = await import('../services/subscription.service');
         const subscriptionService = new SubscriptionService();
         await subscriptionService.createSubscription(tenant.id, 'trial');
-        console.log(`✅ Trial subscription created for tenant ${tenant.id}`);
+        await subscriptionService.createSubscription(tenant.id, 'trial');
+        logger.info(`Trial subscription created for tenant ${tenant.id}`);
     } catch (error) {
-        console.error('Failed to create subscription:', error);
+        logger.error({ error }, 'Failed to create subscription:');
         // Don't fail registration if subscription creation fails
     }
 
@@ -271,7 +273,7 @@ export const impersonateTenant = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'User context missing despite middleware' });
         }
 
-        console.log('Impersonation requested by:', userRequesting.username, 'Role:', userRequesting.role);
+        logger.info({ username: userRequesting.username, role: userRequesting.role }, 'Impersonation requested');
 
         if (userRequesting.role !== 'SUPER_ADMIN' && userRequesting.role !== 'super_admin') {
             return res.status(403).json({ message: 'Only Super Admin can impersonate' });
@@ -383,7 +385,7 @@ export const impersonateTenant = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Impersonation Handler Error:', error);
+        logger.error({ error }, 'Impersonation Handler Error:');
         return res.status(500).json({
             message: 'Internal Server Error during Impersonation',
             error: error.message,
@@ -460,7 +462,7 @@ export const setupAdmin = async (req: Request, res: Response) => {
                 await SettingsInitService.createDefaultSettings(em, tenant.id, location.id);
             }
         } catch (error) {
-            console.error('Failed to create default settings:', error);
+            logger.error({ error }, 'Failed to create default settings:');
             // Don't fail setup if settings creation fails
         }
 
@@ -498,7 +500,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
         res.json({ message: 'If the email exists, a reset link has been sent.' });
     } catch (error) {
-        console.error('Forgot Password Error:', error);
+        logger.error({ error }, 'Forgot Password Error:');
         res.status(500).json({ message: 'Error processing request' });
     }
 };
@@ -510,37 +512,24 @@ export const resetPassword = async (req: Request, res: Response) => {
         if (!em) return res.status(500).json({ message: 'No EntityManager' });
 
         // DEBUGGING: Check what we received
-        console.log('Reset Password Request - Token:', token);
+        logger.debug({ token }, 'Reset Password Request - Token');
 
         // 1. Try to find user JUST by token - DISABLE FILTERS
         const userByToken = await em.findOne(User, { resetPasswordToken: token }, { filters: false });
         if (!userByToken) {
-            console.error('Debug: No user found with this token.');
+            logger.warn('Reset Password: No user found with this token.');
             return res.status(400).json({ message: 'Invalid or expired token (Token not found)' });
         }
 
-        console.log('Debug: User found:', userByToken.username);
-        console.log('Debug: Expiry stored:', userByToken.resetPasswordExpires);
-        console.log('Debug: Current server time:', new Date());
+        logger.debug({ username: userByToken.username, expiry: userByToken.resetPasswordExpires, now: new Date() }, 'Reset Password - User Found');
 
         // 2. Now check expiration manually to be verbose
         if (!userByToken.resetPasswordExpires || userByToken.resetPasswordExpires < new Date()) {
-            console.error('Debug: Token expired.');
+            logger.warn('Reset Password: Token expired.');
             return res.status(400).json({ message: 'Invalid or expired token (Expired)' });
         }
 
         const user = userByToken;
-
-        /* Original logic replaced by verbose check above
-        const user = await em.findOne(User, {
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: new Date() } // Expires > Now
-        });
-        
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid or expired token' });
-        }
-        */
 
         // Update Password
         user.password = await bcrypt.hash(password, 10);
@@ -555,7 +544,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         res.json({ message: 'Password updated successfully' });
     } catch (error) {
-        console.error('Reset Password Error:', error);
+        logger.error({ error }, 'Reset Password Error:');
         res.status(500).json({ message: 'Error resetting password' });
     }
 };

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+
+import { logger } from '../../utils/logger';
 import { PricingPlanService } from '../../services/pricingPlan.service';
 
 const pricingPlanService = new PricingPlanService();
@@ -12,7 +14,7 @@ export const getAllPlans = async (req: Request, res: Response) => {
         const plans = await pricingPlanService.getAllPlans(includeInactive);
         return res.json(plans);
     } catch (error) {
-        console.error('Get all plans error:', error);
+        logger.error({ error }, 'Get all plans error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -31,7 +33,7 @@ export const getPlanByCode = async (req: Request, res: Response) => {
 
         return res.json(plan);
     } catch (error) {
-        console.error('Get plan error:', error);
+        logger.error({ error }, 'Get plan error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -51,7 +53,7 @@ export const createPlan = async (req: Request, res: Response) => {
 
         return res.status(201).json(plan);
     } catch (error: any) {
-        console.error('Create plan error:', error);
+        logger.error({ error }, 'Create plan error:');
         if (error.message === 'Plan code already exists') {
             return res.status(409).json({ message: error.message });
         }
@@ -74,7 +76,7 @@ export const updatePlan = async (req: Request, res: Response) => {
             plan
         });
     } catch (error: any) {
-        console.error('Update plan error:', error);
+        logger.error({ error }, 'Update plan error:');
         if (error.message === 'Plan not found') {
             return res.status(404).json({ message: error.message });
         }
@@ -97,7 +99,7 @@ export const togglePlanStatus = async (req: Request, res: Response) => {
             plan
         });
     } catch (error: any) {
-        console.error('Toggle plan status error:', error);
+        logger.error({ error }, 'Toggle plan status error:');
         if (error.message === 'Plan not found') {
             return res.status(404).json({ message: error.message });
         }

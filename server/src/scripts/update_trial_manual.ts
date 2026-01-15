@@ -1,6 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { Tenant, TenantPlan } from '../entities/Tenant';
+import { Subscription, SubscriptionStatus } from '../entities/Subscription';
+import { logger } from '../utils/logger';
 import { User } from '../entities/User';
 
 async function updateTenant() {
@@ -52,7 +54,7 @@ async function updateTenant() {
         console.log('------------------------------------------------');
 
     } catch (error) {
-        console.error('❌ Error updating tenant:', error);
+        logger.error({ error }, '❌ Error updating tenant:');
     } finally {
         await orm.close();
     }

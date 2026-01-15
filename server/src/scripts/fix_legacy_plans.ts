@@ -1,4 +1,6 @@
 import { Client } from 'pg';
+import { Tenant, TenantPlan } from '../entities/Tenant';
+import { logger } from '../utils/logger';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -47,7 +49,7 @@ async function fixLegacyPlans() {
 
         console.log('✅ Plan data verification complete.');
     } catch (err) {
-        console.error('⚠️  Error running plan fix script:', err);
+        logger.error({ err }, '⚠️  Error running plan fix script:');
         // We don't exit(1) to allow the server to attempt startup anyway, 
         // in case this is just a connection glitch but the app might work.
     } finally {

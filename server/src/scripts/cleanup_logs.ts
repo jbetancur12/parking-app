@@ -1,6 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { AuditLog } from '../entities/AuditLog';
+import { ErrorLog } from '../entities/ErrorLog';
+import { logger } from '../utils/logger';
 
 const cleanupLogs = async () => {
     try {
@@ -24,7 +26,7 @@ const cleanupLogs = async () => {
         await orm.close();
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error during cleanup:', error);
+        logger.error({ error }, '❌ Error during cleanup:');
         process.exit(1);
     }
 };

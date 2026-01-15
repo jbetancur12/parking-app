@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/core';
+import { RequestContext } from '@mikro-orm/core';
 import { WashEntry } from '../entities/WashEntry';
 import { WashServiceType } from '../entities/WashServiceType';
 import { Shift } from '../entities/Shift';
 import { Transaction, TransactionType } from '../entities/Transaction';
 import { ReceiptService } from '../services/ReceiptService';
+import { logger } from '../utils/logger';
 
 export class WashController {
 
@@ -16,6 +17,7 @@ export class WashController {
             const types = await em.find(WashServiceType, { isActive: true });
             res.json(types);
         } catch (error) {
+            logger.error({ error }, 'Error fetching services');
             res.status(500).json({ message: 'Error fetching services' });
         }
     }
@@ -74,7 +76,7 @@ export class WashController {
 
             res.status(201).json({ ...transactionResult.washEntry, receiptNumber: transactionResult.receiptNumber });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error creating wash entry');
             res.status(500).json({ message: 'Error creating wash entry' });
         }
     }
@@ -93,6 +95,7 @@ export class WashController {
 
             res.json(entries);
         } catch (error) {
+            logger.error({ error }, 'Error fetching wash entries');
             res.status(500).json({ message: 'Error fetching wash entries' });
         }
     }
@@ -138,7 +141,7 @@ export class WashController {
             }
             res.json({ message: 'Seeded' });
         } catch (error) {
-            console.error('Seed Wash Error:', error);
+            logger.error({ error }, 'Seed Wash Error:');
             res.status(500).json({ message: 'Failed to seed wash services' });
         }
     }
@@ -174,7 +177,7 @@ export class WashController {
             await em.persistAndFlush(newType);
             res.status(201).json(newType);
         } catch (error) {
-            console.error('Create Wash Type Error:', error);
+            logger.error({ error }, 'Create Wash Type Error:');
             res.status(500).json({ message: 'Error creating wash service type' });
         }
     }
@@ -198,7 +201,7 @@ export class WashController {
             await em.flush();
             res.json(serviceType);
         } catch (error) {
-            console.error('Update Wash Type Error:', error);
+            logger.error({ error }, 'Update Wash Type Error:');
             res.status(500).json({ message: 'Error updating wash service type' });
         }
     }
@@ -222,7 +225,7 @@ export class WashController {
 
             res.json({ message: 'Service type deactivated' });
         } catch (error) {
-            console.error('Delete Wash Type Error:', error);
+            logger.error({ error }, 'Delete Wash Type Error:');
             res.status(500).json({ message: 'Error deleting wash service type' });
         }
     }

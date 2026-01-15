@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/core';
+import { RequestContext } from '@mikro-orm/core';
 import { Product } from '../entities/Product';
 import { Location } from '../entities/Location';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { AuditService } from '../services/AuditService';
+import { logger } from '../utils/logger';
 
 export class ProductController {
 
@@ -56,7 +57,7 @@ export class ProductController {
 
             res.status(201).json(product);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error creating product');
             res.status(500).json({ message: 'Error creating product' });
         }
     }
@@ -82,6 +83,7 @@ export class ProductController {
 
             res.json(products);
         } catch (error) {
+            logger.error({ error }, 'Error fetching products');
             res.status(500).json({ message: 'Error fetching products' });
         }
     }
@@ -120,6 +122,7 @@ export class ProductController {
 
             res.json(product);
         } catch (error) {
+            logger.error({ error }, 'Error updating product');
             res.status(500).json({ message: 'Error updating product' });
         }
     }
@@ -144,7 +147,7 @@ export class ProductController {
                 em,
                 'DELETE_PRODUCT',
                 'Product',
-                String(id),
+                String(product.id),
                 (req as any).user,
                 { id, name: product.name },
                 req
@@ -152,6 +155,7 @@ export class ProductController {
 
             res.json({ message: 'Product deleted' });
         } catch (error) {
+            logger.error({ error }, 'Error deleting product');
             res.status(500).json({ message: 'Error deleting product' });
         }
     }

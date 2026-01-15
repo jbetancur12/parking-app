@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { Tenant } from '../entities/Tenant';
+import { logger } from '../utils/logger';
 import { Location } from '../entities/Location';
 import { SettingsInitService } from '../services/SettingsInitService';
 
@@ -66,7 +67,7 @@ const backfillSettings = async () => {
         console.log(`\n\n✅ Migration completed!`);
         console.log(`📊 Total settings created: ${totalCreated}`);
     } catch (error) {
-        console.error('❌ Migration failed:', error);
+        logger.error({ error }, '❌ Migration failed:');
     } finally {
         await orm.close();
     }

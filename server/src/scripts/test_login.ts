@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { User } from '../entities/User';
+import { logger } from '../utils/logger';
 import bcrypt from 'bcryptjs';
 
 async function testLogin() {
@@ -37,7 +38,7 @@ async function testLogin() {
             console.log(`Test compare against new hash: ${testMatch ? 'PASS' : 'FAIL'}`);
         }
     } catch (error) {
-        console.error('❌ Error:', error);
+        logger.error({ error }, '❌ Error:');
     } finally {
         await orm.close();
     }

@@ -1,6 +1,7 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { MonthlyClient } from '../entities/MonthlyClient';
+import { logger } from '../utils/logger';
 import fs from 'fs';
 import readline from 'readline';
 
@@ -14,7 +15,7 @@ async function migrate() {
     const sqlFilePath = 'c:\\Users\\alejo\\Documents\\carpetaprotegida\\parkingsof.sql';
 
     if (!fs.existsSync(sqlFilePath)) {
-        console.error('SQL file not found:', sqlFilePath);
+        logger.error({ sqlFilePath }, 'SQL file not found:');
         process.exit(1);
     }
 
@@ -143,7 +144,7 @@ async function migrate() {
                 if (count % 50 === 0) console.log(`Processed ${count} records...`);
 
             } catch (err) {
-                console.error(`Error parsing line: ${line}`, err);
+                logger.error({ err }, 'Error parsing line: ${line}');
                 errors++;
             }
         }

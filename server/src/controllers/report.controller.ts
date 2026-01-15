@@ -4,6 +4,7 @@ import { Shift } from '../entities/Shift';
 import { Transaction } from '../entities/Transaction';
 import { SystemSetting } from '../entities/SystemSetting';
 import { fromZonedTime } from 'date-fns-tz';
+import { logger } from '../utils/logger';
 
 export class ReportController {
 
@@ -39,7 +40,7 @@ export class ReportController {
             });
 
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching shift report');
             res.status(500).json({ message: 'Error fetching shift report' });
         }
     }
@@ -79,9 +80,9 @@ export class ReportController {
             const startDate = fromZonedTime(startString, timeZone);
             const endDate = fromZonedTime(endString, timeZone);
 
-            console.log(`[Report Debug] Zone: ${timeZone}`);
-            console.log(`[Report Debug] Input: ${startString} to ${endString}`);
-            console.log(`[Report Debug] UTC: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+            logger.debug({ timeZone }, '[Report Debug] Zone');
+            logger.debug({ startString, endString }, '[Report Debug] Input');
+            logger.debug({ utcStart: startDate.toISOString(), utcEnd: endDate.toISOString() }, '[Report Debug] UTC Range');
 
             // Find transactions between these dates
             const transactions = await em.find(Transaction, {
@@ -139,7 +140,7 @@ export class ReportController {
                 transactions
             });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching daily stats');
             res.status(500).json({ message: 'Error fetching daily stats' });
         }
     }
@@ -301,7 +302,7 @@ export class ReportController {
             });
 
         } catch (error) {
-            console.error('Error fetching consolidated report:', error);
+            logger.error({ error }, 'Error fetching consolidated report:');
             res.status(500).json({ message: 'Error fetching consolidated report' });
         }
     }

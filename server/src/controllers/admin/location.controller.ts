@@ -4,6 +4,7 @@ import { Location } from '../../entities/Location';
 import { Tenant } from '../../entities/Tenant';
 import { AuditService } from '../../services/AuditService';
 import { User } from '../../entities/User';
+import { logger } from '../../utils/logger';
 
 // Create new location
 export const createLocation = async (req: Request, res: Response) => {
@@ -56,7 +57,7 @@ export const createLocation = async (req: Request, res: Response) => {
 
         return res.status(201).json(location);
     } catch (error) {
-        console.error('Error creating location:', error);
+        logger.error({ error }, 'Error creating location:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -107,7 +108,7 @@ export const getAllLocations = async (req: Request, res: Response) => {
 
         return res.json(locations);
     } catch (error) {
-        console.error('Error fetching locations:', error);
+        logger.error({ error }, 'Error fetching locations:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -140,7 +141,7 @@ export const getLocationById = async (req: Request, res: Response) => {
 
         return res.json(location);
     } catch (error) {
-        console.error('Error fetching location:', error);
+        logger.error({ error }, 'Error fetching location:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -169,7 +170,7 @@ export const updateLocation = async (req: Request, res: Response) => {
 
         return res.json(location);
     } catch (error) {
-        console.error('Error updating location:', error);
+        logger.error({ error }, 'Error updating location:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -194,7 +195,7 @@ export const deleteLocation = async (req: Request, res: Response) => {
 
         return res.json({ message: 'Location deactivated successfully' });
     } catch (error) {
-        console.error('Error deleting location:', error);
+        logger.error({ error }, 'Error deleting location:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

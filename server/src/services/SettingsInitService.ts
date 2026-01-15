@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/core';
 import { SystemSetting } from '../entities/SystemSetting';
+import { logger } from '../utils/logger';
 
 /**
  * Service to initialize default settings for new tenants and locations
@@ -56,6 +57,6 @@ export class SettingsInitService {
 
         await em.flush();
 
-        console.log(`✅ Default settings created for tenant ${tenantId}${locationId ? ` / location ${locationId}` : ''}`);
+        logger.info(`Default settings created for tenant ${tenantId}${locationId ? ` / location ${locationId}` : ''}`);
     }
 }

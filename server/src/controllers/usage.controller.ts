@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { UsageService } from '../services/usage.service';
 import { RequestContext } from '@mikro-orm/core';
 import { Tenant } from '../entities/Tenant';
+import { logger } from '../utils/logger';
 
 const usageService = new UsageService();
 
@@ -53,7 +54,7 @@ export const getCurrentUsage = async (req: Request, res: Response) => {
 
         return res.json(response);
     } catch (error) {
-        console.error('Get current usage error:', error);
+        logger.error({ error }, 'Get current usage error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

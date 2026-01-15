@@ -4,6 +4,7 @@ import { Shift } from '../entities/Shift';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { AuditService } from '../services/AuditService';
+import { logger } from '../utils/logger';
 
 export const openShift = async (req: AuthRequest, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -65,10 +66,10 @@ export const getActiveShift = async (req: AuthRequest, res: Response) => {
     const locationIdRaw = req.headers['x-location-id'];
     const locationId = Array.isArray(locationIdRaw) ? locationIdRaw[0] : locationIdRaw;
 
-    console.log(`[getActiveShift] Checking for user ${req.user.id} at location ${locationId}`);
+    logger.info({ userId: req.user.id, locationId }, '[getActiveShift] Checking for active shift');
 
     if (!locationId) {
-        console.warn(`[getActiveShift] Missing location ID`);
+        logger.warn('[getActiveShift] Missing location ID');
         return res.status(400).json({ message: 'Valid Location context required' });
     }
 
@@ -79,11 +80,11 @@ export const getActiveShift = async (req: AuthRequest, res: Response) => {
     });
 
     if (!shift) {
-        // console.log(`[getActiveShift] No active shift found for user ${req.user.id} at location ${locationId}`);
+        // logger.debug({ userId: req.user.id, locationId }, '[getActiveShift] No active shift found');
         return res.status(404).json({ message: 'No active shift found' });
     }
 
-    // console.log(`[getActiveShift] Found shift ${shift.id}`);
+    // logger.debug({ shiftId: shift.id }, '[getActiveShift] Found shift');
     return res.json(shift);
 };
 
@@ -226,7 +227,7 @@ export const getAllClosed = async (req: Request, res: Response) => {
 
         res.json(shiftsWithSummary);
     } catch (error) {
-        console.error(error);
+        logger.error({ error }, 'Error fetching closed shifts');
         res.status(500).json({ message: 'Error fetching closed shifts' });
     }
 };

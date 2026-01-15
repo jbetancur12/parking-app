@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { Tariff } from '../entities/Tariff';
+import { logger } from '../utils/logger';
 
 const debug = async () => {
     try {
@@ -16,7 +17,7 @@ const debug = async () => {
 
         await orm.close();
     } catch (error) {
-        console.error('Error debugging tariffs:', error);
+        logger.error({ error }, 'Error debugging tariffs:');
     }
 };
 

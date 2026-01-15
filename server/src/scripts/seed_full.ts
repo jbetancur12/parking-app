@@ -214,7 +214,7 @@ const seed = async () => {
 
         console.log('✅ Seeding complete!');
     } catch (error) {
-        console.error('❌ Seeding failed:', error);
+        logger.error({ error }, '❌ Seeding failed:');
     } finally {
         await orm.close();
     }

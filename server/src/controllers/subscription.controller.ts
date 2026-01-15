@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { SubscriptionService } from '../services/subscription.service';
 import { PRICING_PLANS } from '../config/pricing.config';
+import { logger } from '../utils/logger';
 
 const subscriptionService = new SubscriptionService();
 
@@ -23,7 +24,7 @@ export const getCurrentSubscription = async (req: Request, res: Response) => {
 
         return res.json(subscription);
     } catch (error) {
-        console.error('Get subscription error:', error);
+        logger.error({ error }, 'Get subscription error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -35,7 +36,7 @@ export const getPlans = async (req: Request, res: Response) => {
     try {
         return res.json(PRICING_PLANS);
     } catch (error) {
-        console.error('Get plans error:', error);
+        logger.error({ error }, 'Get plans error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -63,7 +64,7 @@ export const changePlan = async (req: Request, res: Response) => {
             subscription
         });
     } catch (error) {
-        console.error('Change plan error:', error);
+        logger.error({ error }, 'Change plan error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -87,7 +88,7 @@ export const cancelSubscription = async (req: Request, res: Response) => {
             subscription
         });
     } catch (error) {
-        console.error('Cancel subscription error:', error);
+        logger.error({ error }, 'Cancel subscription error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -100,7 +101,7 @@ export const getAllSubscriptions = async (req: Request, res: Response) => {
         const subscriptions = await subscriptionService.getAll();
         return res.json(subscriptions);
     } catch (error) {
-        console.error('Get all subscriptions error:', error);
+        logger.error({ error }, 'Get all subscriptions error:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

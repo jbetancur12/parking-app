@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/core';
+import { RequestContext } from '@mikro-orm/core';
 import { MonthlyClient, BillingPeriod } from '../entities/MonthlyClient';
 import { Transaction, TransactionType, PaymentMethod } from '../entities/Transaction';
 import { Shift } from '../entities/Shift';
 import { MonthlyPayment } from '../entities/MonthlyPayment';
 import { ReceiptService } from '../services/ReceiptService';
 import { addDays, addMonths } from 'date-fns';
+import { logger } from '../utils/logger';
 
 // Helper to calculate end date based on period
 const getEndDate = (startDate: Date, period: BillingPeriod): Date => {
@@ -47,7 +48,7 @@ export class MonthlyClientController {
             const clients = await em.find(MonthlyClient, where, { orderBy: { name: 'ASC' } });
             res.json(clients);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching clients');
             res.status(500).json({ message: 'Error fetching clients' });
         }
     }
@@ -215,7 +216,7 @@ export class MonthlyClientController {
             // Return both client and payment for receipt
             res.status(201).json({ client, payment, receiptNumber: creationResult.receiptNumber });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error creating client');
             res.status(500).json({ message: 'Error creating client' });
         }
     }
@@ -299,7 +300,7 @@ export class MonthlyClientController {
                     } as any);
                     emTx.persist(transaction);
                 } else {
-                    console.warn('Renewing monthly without active shift');
+                    logger.warn('Renewing monthly without active shift');
                     throw new Error('No active shift found. Please start a shift to renew.');
                 }
 
@@ -311,7 +312,7 @@ export class MonthlyClientController {
 
             res.json({ client, payment, receiptNumber: renewalResult.receiptNumber });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error renewing subscription');
             res.status(500).json({ message: 'Error renewing subscription' });
         }
     }
@@ -338,7 +339,7 @@ export class MonthlyClientController {
 
             res.json(payments);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching history');
             res.status(500).json({ message: 'Error fetching history' });
         }
     }
@@ -365,7 +366,7 @@ export class MonthlyClientController {
 
             res.json({ message: 'Status updated', isActive: client.isActive });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error updating status');
             res.status(500).json({ message: 'Error updating status' });
         }
     }
@@ -398,11 +399,11 @@ export class MonthlyClientController {
 
             await em.flush();
 
-            console.log(`[PRIVACY] Client ${client.id} anonymized. Old: ${oldName} (${oldPlate})`);
+            logger.info({ id: client.id, oldName, oldPlate }, '[PRIVACY] Client anonymized');
 
             res.json({ message: 'Client anonymized successfully', client });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error anonymizing client');
             res.status(500).json({ message: 'Error anonymizing client' });
         }
     }

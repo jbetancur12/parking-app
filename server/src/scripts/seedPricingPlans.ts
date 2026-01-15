@@ -9,6 +9,7 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { PricingPlan } from '../entities/PricingPlan';
+import { logger } from '../utils/logger';
 
 const defaultPlans = [
     {
@@ -128,7 +129,7 @@ async function seedPricingPlans() {
             await em.flush();
             console.log(`\n🎉 Successfully seeded ${defaultPlans.length} pricing plans!`);
         } catch (error) {
-            console.error('❌ Error seeding pricing plans:', error);
+            logger.error({ error }, '❌ Error seeding pricing plans:');
             throw error;
         }
     });
@@ -143,6 +144,6 @@ seedPricingPlans()
         process.exit(0);
     })
     .catch((error) => {
-        console.error('\n💥 Seeding failed:', error);
+        logger.error({ error }, '\n💥 Seeding failed:');
         process.exit(1);
     });

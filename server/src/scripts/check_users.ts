@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import config from '../mikro-orm.config';
 import { User } from '../entities/User';
+import { logger } from '../utils/logger';
 
 async function checkUsers() {
     const orm = await MikroORM.init(config);
@@ -18,7 +19,7 @@ async function checkUsers() {
             console.log('\n⚠️  No users found! The seed script may not have run successfully.');
         }
     } catch (error) {
-        console.error('❌ Error:', error);
+        logger.error({ error }, '❌ Error:');
     } finally {
         await orm.close();
     }

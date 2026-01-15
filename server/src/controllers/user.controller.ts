@@ -9,6 +9,7 @@ import { addDays } from 'date-fns';
 import crypto from 'crypto';
 
 import { Location } from '../entities/Location';
+import { logger } from '../utils/logger';
 
 export class UserController {
     // Get all users (filtered by tenant for non-SUPER_ADMIN)
@@ -65,7 +66,7 @@ export class UserController {
 
             res.json(serialized);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching users');
             res.status(500).json({ message: 'Error fetching users' });
         }
     }
@@ -110,7 +111,7 @@ export class UserController {
                 lastActiveLocation: user.lastActiveLocation ? { id: user.lastActiveLocation.id, name: user.lastActiveLocation.name } : null
             });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error fetching profile');
             res.status(500).json({ message: 'Error fetching profile' });
         }
     }
@@ -255,7 +256,7 @@ export class UserController {
                     // Use username as email
                     await emailService.sendWelcomeEmail(username, username.split('@')[0], resetToken);
                 } catch (emailError: any) {
-                    console.error('Failed to send welcome email:', emailError);
+                    logger.error({ emailError }, 'Failed to send welcome email');
                     emailWarning = `User created but email failed: ${emailError.message || 'Unknown error'}`;
                 }
             }
@@ -273,7 +274,7 @@ export class UserController {
             res.status(201).json(userWithoutPassword);
 
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error creating user');
             res.status(500).json({ message: 'Error creating user' });
         }
     }
@@ -320,7 +321,7 @@ export class UserController {
             const { password: _, ...userWithoutPassword } = user;
             res.json(userWithoutPassword);
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error updating user');
             res.status(500).json({ message: 'Error updating user' });
         }
     }
@@ -370,7 +371,7 @@ export class UserController {
 
             res.json({ message: 'Password updated successfully' });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error changing password');
             res.status(500).json({ message: 'Error changing password' });
         }
     }
@@ -404,7 +405,7 @@ export class UserController {
 
             res.json({ message: 'User deleted successfully' });
         } catch (error) {
-            console.error(error);
+            logger.error({ error }, 'Error deleting user');
             res.status(500).json({ message: 'Error deleting user' });
         }
     }

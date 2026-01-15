@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { User } from '../entities/User';
 import { Location } from '../entities/Location';
+import { logger } from '../utils/logger';
 
 // Assign user to locations
 export const assignUserToLocation = async (req: Request, res: Response) => {
@@ -61,7 +62,7 @@ export const assignUserToLocation = async (req: Request, res: Response) => {
             }))
         });
     } catch (error) {
-        console.error('Error assigning user to locations:', error);
+        logger.error({ error }, 'Error assigning user to locations:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -86,7 +87,7 @@ export const getUserLocation = async (req: Request, res: Response) => {
             }))
         });
     } catch (error) {
-        console.error('Error fetching user location:', error);
+        logger.error({ error }, 'Error fetching user location:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

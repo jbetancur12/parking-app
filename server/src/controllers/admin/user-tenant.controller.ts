@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mikro-orm/core';
 import { User } from '../../entities/User';
 import { Tenant } from '../../entities/Tenant';
+import { logger } from '../../utils/logger';
 
 // Assign user to tenant(s)
 export const assignUserToTenants = async (req: Request, res: Response) => {
@@ -42,7 +43,7 @@ export const assignUserToTenants = async (req: Request, res: Response) => {
             tenants: user.tenants.getItems().map(t => ({ id: t.id, name: t.name, slug: t.slug }))
         });
     } catch (error) {
-        console.error('Error assigning user to tenants:', error);
+        logger.error({ error }, 'Error assigning user to tenants:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -78,7 +79,7 @@ export const getUserTenants = async (req: Request, res: Response) => {
             })),
         });
     } catch (error) {
-        console.error('Error fetching user tenants:', error);
+        logger.error({ error }, 'Error fetching user tenants:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -109,7 +110,7 @@ export const removeUserFromTenant = async (req: Request, res: Response) => {
 
         return res.json({ message: 'User removed from tenant successfully' });
     } catch (error) {
-        console.error('Error removing user from tenant:', error);
+        logger.error({ error }, 'Error removing user from tenant:');
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

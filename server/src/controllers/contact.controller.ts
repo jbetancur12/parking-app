@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { EmailService } from '../services/email.service';
+import { logger } from '../utils/logger';
 
 const emailService = new EmailService();
 
@@ -21,7 +22,7 @@ export const sendContactEmail = async (req: Request, res: Response) => {
             message: 'Mensaje enviado correctamente. Nos pondremos en contacto pronto.'
         });
     } catch (error) {
-        console.error('Error in sendContactEmail controller:', error);
+        logger.error({ error }, 'Error in sendContactEmail controller:');
         return res.status(500).json({
             success: false,
             message: 'Error al enviar el mensaje. Intente de nuevo más tarde.'

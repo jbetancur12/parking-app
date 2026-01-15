@@ -3,6 +3,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { Transaction } from '../entities/Transaction';
 import { AuditService } from '../services/AuditService';
 import { User } from '../entities/User';
+import { logger } from '../utils/logger';
 
 export const getByShift = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager();
@@ -18,7 +19,7 @@ export const getByShift = async (req: Request, res: Response) => {
 
         res.json(transactions);
     } catch (error) {
-        console.error(error);
+        logger.error({ error }, 'Error fetching transactions');
         res.status(500).json({ message: 'Error fetching transactions' });
     }
 };
@@ -62,7 +63,7 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 
         res.json({ message: 'Transaction deleted and audited' });
     } catch (error) {
-        console.error(error);
+        logger.error({ error }, 'Error deleting transaction');
         res.status(500).json({ message: 'Error deleting transaction' });
     }
 };

@@ -30,7 +30,7 @@ async function fixPlans() {
         console.log('✅ Update complete. Rows should now be compliant.');
         await orm.close();
     } catch (e) {
-        console.error('❌ Error:', e);
+        logger.error({ e }, '❌ Error:');
     }
 }
 
