@@ -51,6 +51,8 @@ services:
     restart: always
     depends_on:
       - server
+    env_file:
+      - .env.client
     networks:
       - app_network
 
