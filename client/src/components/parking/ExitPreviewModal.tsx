@@ -65,14 +65,14 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
 
                     {/* Notes Section - Display Only */}
                     {hasNotes && (
-                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3 my-2 animate-in fade-in duration-300">
-                            <div className="flex items-center gap-2 mb-1">
-                                <StickyNote size={16} className="text-amber-600 dark:text-amber-400" />
-                                <span className="font-bold text-sm text-amber-800 dark:text-amber-300">Observaciones</span>
+                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-md p-2 my-1 animate-in fade-in duration-300">
+                            <div className="flex items-start gap-2">
+                                <StickyNote size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-break-spaces leading-snug">
+                                    <span className="font-bold text-amber-800 dark:text-amber-300 mr-1">Observaciones:</span>
+                                    {hasNotes}
+                                </p>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 italic whitespace-break-spaces leading-relaxed">
-                                {hasNotes}
-                            </p>
                         </div>
                     )}
 
