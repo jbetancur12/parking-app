@@ -131,21 +131,21 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                     {/* BARCODE */}
                     <div className="flex justify-center my-2">
                         <Barcode
-                            value={session.plate}
+                            value={session.plate.trim()}
                             format="CODE128"
                             width={2}
-                            height={50}
-                            fontSize={10}
+                            height={60}
+                            fontSize={14}
                             displayValue={false}
-                            margin={0}
+                            margin={10}
                         />
                     </div>
 
 
                     {/* The following lines are added based on the instruction */}
                     {session.notes && (
-                        <div className="ticket-row" style={{ fontSize: '14px', marginTop: '5px', borderTop: '1px dashed black', paddingTop: '2px' }}>
-                            <span style={{ fontWeight: 'bold' }}>Obs:</span> {session.notes}
+                        <div className="ticket-row" style={{ fontSize: '18px', marginTop: '5px', borderTop: '1px dashed black', paddingTop: '2px' }}>
+                            <span style={{ fontWeight: 'bold' }}>Obs:</span> <span style={{ fontSize: '20px' }}>{session.notes}</span>
                         </div>
                     )}
 

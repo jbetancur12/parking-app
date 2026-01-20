@@ -51,13 +51,19 @@ export const EntryModal: React.FC<EntryModalProps> = ({
                         <input
                             type="text"
                             value={plate}
-                            onChange={(e) => setPlate(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value.toUpperCase();
+                                if (val.length <= 7) {
+                                    setPlate(val);
+                                }
+                            }}
                             className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 uppercase bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-blue focus:border-brand-blue"
                             placeholder="ABC-123"
                             required
                             name="plate"
                             id="plate"
                             autoFocus
+                            maxLength={7}
                         />
                     </div>
                     <div>
