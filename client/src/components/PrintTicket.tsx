@@ -129,7 +129,7 @@ export const PrintTicket = React.forwardRef<HTMLDivElement, PrintTicketProps>(
                     )}
 
                     {/* BARCODE */}
-                    <div className="flex justify-center my-2">
+                    <div className="flex justify-start pl-12 my-2">
                         <Barcode
                             value={session.plate.trim()}
                             format="CODE128"
