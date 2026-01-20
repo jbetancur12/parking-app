@@ -14,6 +14,7 @@ interface ParkingSession {
     entryTime: string;
     planType?: string;
     ticketNumber?: string;
+    notes?: string;
 }
 
 /**
@@ -343,7 +344,8 @@ export const useParkingPage = (
                         vehicleType: offlineEntry.payload.vehicleType,
                         planType: offlineEntry.payload.planType,
                         entryTime: offlineEntry.payload.entryTime || new Date(offlineEntry.timestamp).toISOString(),
-                        ticketNumber: 'OFFLINE'
+                        ticketNumber: 'OFFLINE',
+                        notes: offlineEntry.payload.notes
                     };
                 }
             }
@@ -361,7 +363,8 @@ export const useParkingPage = (
                     cost: cost,
                     durationMinutes: durationMinutes,
                     hourlyRate: 0,
-                    isOffline: true
+                    isOffline: true,
+                    notes: session.notes
                 });
             } else {
                 // Fallback if session not found in list (weird but safe)
@@ -396,7 +399,8 @@ export const useParkingPage = (
                         cost: cost,
                         durationMinutes: durationMinutes,
                         hourlyRate: 0,
-                        isOffline: true
+                        isOffline: true,
+                        notes: session.notes
                     });
                     return;
                 }

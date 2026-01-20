@@ -310,7 +310,8 @@ export const previewExit = async (req: AuthRequest, res: Response) => {
         ...result,
         hourlyRate: tariffs.find(t => t.tariffType === 'HOUR')?.cost || 0,
         loyalty,
-        canRedeem
+        canRedeem,
+        notes: session.notes
     });
 };
 

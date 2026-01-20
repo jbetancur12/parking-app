@@ -3,6 +3,7 @@ import type { Tariff } from '../../services/tariff.service';
 import { formatCurrency } from '../../utils/formatters';
 import { CurrencyInput } from '../common/CurrencyInput';
 import { useExitCalculations } from '../../hooks/useExitCalculations';
+import { StickyNote } from 'lucide-react';
 
 interface ExitPreviewModalProps {
     previewData: any;
@@ -50,6 +51,9 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
 
     const totalInfo = calculateTotal();
 
+    // Check for notes or observations in the preview data
+    const hasNotes = previewData?.notes || previewData?.observation;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-sm shadow-xl border dark:border-gray-700 transition-colors max-h-[90vh] flex flex-col">
@@ -58,6 +62,19 @@ export const ExitPreviewModal: React.FC<ExitPreviewModalProps> = ({
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Placa:</strong> {previewData.plate}</p>
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Plan:</strong> {getPlanLabel()}</p>
                     <p className="text-lg text-gray-900 dark:text-gray-200"><strong>Duración:</strong> {Math.floor(previewData.durationMinutes / 60)}h {previewData.durationMinutes % 60}m</p>
+
+                    {/* Notes Section - Display Only */}
+                    {hasNotes && (
+                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3 my-2 animate-in fade-in duration-300">
+                            <div className="flex items-center gap-2 mb-1">
+                                <StickyNote size={16} className="text-amber-600 dark:text-amber-400" />
+                                <span className="font-bold text-sm text-amber-800 dark:text-amber-300">Observaciones</span>
+                            </div>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 italic whitespace-break-spaces leading-relaxed">
+                                {hasNotes}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Loyalty Badge */}
                     {previewData.loyalty && (
